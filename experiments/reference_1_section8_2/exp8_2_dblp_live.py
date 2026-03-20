@@ -19,14 +19,11 @@ if str(ROOT) not in sys.path:
 from src.common import (  # noqa: E402
     LiveProgress,
     eigvecs_eigsh_sparse,
-    eigvecs_lobpcg_sparse,
     eigvecs_random_projection_sparse,
     eigvecs_random_sampling_sparse,
     kmeans_on_rows,
     load_undirected_edgelist_csr,
     pairwise_ari,
-    singular_vecs_randomized_svd_sparse,
-    singular_vecs_svds_sparse,
     upper_triangle_edges,
 )
 
@@ -34,10 +31,7 @@ from src.common import (  # noqa: E402
 METHODS_82 = [
     "Random Projection",
     "Random Sampling",
-    "irlba",
-    "svds",
-    "svdr",
-    "partial_eigen",
+    "Non-random",
 ]
 
 
@@ -109,7 +103,6 @@ def run_experiment(cfg: Exp82Config):
     master_rng = np.random.default_rng(cfg.seed)
     time_rows = []
     ari_rows = []
-    warn_rows = []
 
     total_steps = cfg.reps * len(METHODS_82)
     progress = None if cfg.no_progress else LiveProgress(total_steps)
@@ -148,52 +141,12 @@ def run_experiment(cfg: Exp82Config):
             progress.update("rep", rep, rep, cfg.reps, "Random Sampling")
 
         t0 = perf_counter()
-        try:
-            _, U_irlba = singular_vecs_svds_sparse(A, cfg.target_rank, solver="lobpcg")
-        except Exception as e:
-            warn_rows.append(
-                {"rep": rep, "method": "irlba", "warning": f"lobpcg fallback to arpack: {e}"}
-            )
-            _, U_irlba = singular_vecs_svds_sparse(A, cfg.target_rank, solver="arpack")
-        t_irlba = perf_counter() - t0
-        label_map["irlba"] = kmeans_on_rows(U_irlba, cfg.n_clusters, rng)
-        time_rows.append({"rep": rep, "method": "irlba", "time_sec": t_irlba})
+        _, U_nr = eigvecs_eigsh_sparse(A, cfg.target_rank)
+        t_nr = perf_counter() - t0
+        label_map["Non-random"] = kmeans_on_rows(U_nr, cfg.n_clusters, rng)
+        time_rows.append({"rep": rep, "method": "Non-random", "time_sec": t_nr})
         if progress is not None:
-            progress.update("rep", rep, rep, cfg.reps, "irlba")
-
-        t0 = perf_counter()
-        _, U_svds = singular_vecs_svds_sparse(A, cfg.target_rank, solver="arpack")
-        t_svds = perf_counter() - t0
-        label_map["svds"] = kmeans_on_rows(U_svds, cfg.n_clusters, rng)
-        time_rows.append({"rep": rep, "method": "svds", "time_sec": t_svds})
-        if progress is not None:
-            progress.update("rep", rep, rep, cfg.reps, "svds")
-
-        t0 = perf_counter()
-        _, U_svdr = singular_vecs_randomized_svd_sparse(A, cfg.target_rank, n_iter=2, rng=rng)
-        t_svdr = perf_counter() - t0
-        label_map["svdr"] = kmeans_on_rows(U_svdr, cfg.n_clusters, rng)
-        time_rows.append({"rep": rep, "method": "svdr", "time_sec": t_svdr})
-        if progress is not None:
-            progress.update("rep", rep, rep, cfg.reps, "svdr")
-
-        t0 = perf_counter()
-        try:
-            _, U_pe = eigvecs_lobpcg_sparse(A, cfg.target_rank, rng)
-        except Exception as e:
-            warn_rows.append(
-                {
-                    "rep": rep,
-                    "method": "partial_eigen",
-                    "warning": f"lobpcg fallback to eigsh: {e}",
-                }
-            )
-            _, U_pe = eigvecs_eigsh_sparse(A, cfg.target_rank)
-        t_pe = perf_counter() - t0
-        label_map["partial_eigen"] = kmeans_on_rows(U_pe, cfg.n_clusters, rng)
-        time_rows.append({"rep": rep, "method": "partial_eigen", "time_sec": t_pe})
-        if progress is not None:
-            progress.update("rep", rep, rep, cfg.reps, "partial_eigen")
+            progress.update("rep", rep, rep, cfg.reps, "Non-random")
 
         methods, mat = pairwise_ari(label_map)
         for i in range(len(methods)):
@@ -212,7 +165,6 @@ def run_experiment(cfg: Exp82Config):
 
     df_time_raw = pd.DataFrame(time_rows)
     df_ari_raw = pd.DataFrame(ari_rows)
-    df_warn = pd.DataFrame(warn_rows)
 
     med_time = (
         df_time_raw.groupby("method", as_index=False)
@@ -237,7 +189,7 @@ def run_experiment(cfg: Exp82Config):
         "p": cfg.p,
         "edgelist": str(cfg.edgelist),
     }
-    return meta, df_time_raw, med_time, df_ari_raw, ari_mat, df_warn
+    return meta, df_time_raw, med_time, df_ari_raw, ari_mat
 
 
 def main():
@@ -286,7 +238,7 @@ def main():
     )
 
     cfg.outdir.mkdir(parents=True, exist_ok=True)
-    meta, df_time_raw, med_time, df_ari_raw, ari_mat, df_warn = run_experiment(cfg)
+    meta, df_time_raw, med_time, df_ari_raw, ari_mat = run_experiment(cfg)
 
     time_raw_csv = cfg.outdir / "dblp_time_raw.csv"
     time_med_csv = cfg.outdir / "dblp_table4_like_median_time.csv"
@@ -294,7 +246,6 @@ def main():
     ari_mat_csv = cfg.outdir / "dblp_pairwise_ari_mean_matrix.csv"
     ari_png = cfg.outdir / "dblp_pairwise_ari_heatmap.png"
     meta_json = cfg.outdir / "dblp_meta.json"
-    warn_csv = cfg.outdir / "dblp_warnings.csv"
 
     df_time_raw.to_csv(time_raw_csv, index=False)
     med_time.to_csv(time_med_csv, index=False)
@@ -302,8 +253,6 @@ def main():
     ari_mat.to_csv(ari_mat_csv, index=True)
     _plot_ari_heatmap(ari_mat, ari_png)
     pd.Series(meta).to_json(meta_json, indent=2)
-    if not df_warn.empty:
-        df_warn.to_csv(warn_csv, index=False)
 
     print("Done.")
     print(f"Nodes / edges : {meta['n_nodes']} / {meta['n_edges']}")
@@ -313,8 +262,6 @@ def main():
     print(f"Mean ARI CSV  : {ari_mat_csv.resolve()}")
     print(f"ARI heatmap   : {ari_png.resolve()}")
     print(f"Meta JSON     : {meta_json.resolve()}")
-    if not df_warn.empty:
-        print(f"Warnings CSV  : {warn_csv.resolve()}")
 
 
 if __name__ == "__main__":
