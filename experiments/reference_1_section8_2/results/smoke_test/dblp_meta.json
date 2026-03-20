@@ -1,0 +1,11 @@
+{
+  "n_nodes":389,
+  "n_edges":770,
+  "target_rank":3,
+  "n_clusters":3,
+  "reps":1,
+  "q":2,
+  "r":10,
+  "p":0.7,
+  "edgelist":"data\/tmp_small_graph.edgelist"
+}

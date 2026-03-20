@@ -1,0 +1,16 @@
+rep,method_i,method_j,ari
+1,Random Projection,Random Sampling,0.31701346067216274
+1,Random Projection,irlba,0.3096536897433323
+1,Random Projection,svds,0.2800513375759666
+1,Random Projection,svdr,0.22009218097115973
+1,Random Projection,partial_eigen,0.23537043599317134
+1,Random Sampling,irlba,0.39644183189706117
+1,Random Sampling,svds,0.35612377749841784
+1,Random Sampling,svdr,0.17840900111461777
+1,Random Sampling,partial_eigen,0.24247417438734922
+1,irlba,svds,0.28813242463566013
+1,irlba,svdr,0.36531243312482264
+1,irlba,partial_eigen,0.32757224105425575
+1,svds,svdr,0.3214424704067226
+1,svds,partial_eigen,0.39351324467205956
+1,svdr,partial_eigen,0.3024001777456786

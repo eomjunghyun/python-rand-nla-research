@@ -209,3 +209,7 @@ __marimo__/
 
 # macOS Finder metadata
 .DS_Store
+
+# Local paper artifacts
+paper.pdf
+paper_extracted.txt
