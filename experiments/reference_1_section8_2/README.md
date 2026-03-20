@@ -1,6 +1,10 @@
 # Section 8.2 (DBLP) Efficiency Experiment
 
-Large-scale sparse benchmark for Table 4 / Figure 9 style outputs.
+Large-scale sparse benchmark using three methods:
+
+- Random Projection
+- Random Sampling
+- Non-random spectral clustering
 
 ## Expected input format
 
@@ -33,4 +37,3 @@ By default, results are written to:
 - `experiments/reference_1_section8_2/results/dblp_live/dblp_pairwise_ari_mean_matrix.csv`
 - `experiments/reference_1_section8_2/results/dblp_live/dblp_pairwise_ari_heatmap.png`
 - `experiments/reference_1_section8_2/results/dblp_live/dblp_meta.json`
-- `experiments/reference_1_section8_2/results/dblp_live/dblp_warnings.csv` (if fallback used)
