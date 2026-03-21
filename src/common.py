@@ -7,10 +7,9 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 from scipy.optimize import linear_sum_assignment
-from scipy.sparse.linalg import eigsh, lobpcg, svds
+from scipy.sparse.linalg import eigsh
 from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_rand_score
-from sklearn.utils.extmath import randomized_svd
 
 
 METHODS = ["Random Projection", "Random Sampling", "Non-random"]
@@ -366,8 +365,7 @@ def load_undirected_edgelist_csr(
 ):
     """Load an undirected edge list into a symmetric binary CSR matrix.
 
-    Node ids are remapped to contiguous [0, n) indices, so non-contiguous
-    raw ids are handled safely.
+    Node ids are remapped to contiguous [0, n) indices.
     """
     path = Path(path)
     if not path.exists():
@@ -377,7 +375,7 @@ def load_undirected_edgelist_csr(
     cols = []
     node_to_idx = {}
 
-    def get_idx(token: str) -> int:
+    def idx_of(token: str) -> int:
         if token not in node_to_idx:
             node_to_idx[token] = len(node_to_idx)
         return node_to_idx[token]
@@ -392,8 +390,8 @@ def load_undirected_edgelist_csr(
             parts = s.split(delimiter) if delimiter is not None else s.split()
             if len(parts) < 2:
                 continue
-            u = get_idx(parts[0])
-            v = get_idx(parts[1])
+            u = idx_of(parts[0])
+            v = idx_of(parts[1])
             if u == v:
                 continue
             rows.extend((u, v))
@@ -410,87 +408,20 @@ def load_undirected_edgelist_csr(
 
 
 def upper_triangle_edges(A_csr: sp.csr_matrix):
-    """Return (row, col) arrays for upper-triangle edges (i < j)."""
+    """Return upper-triangle edge indices (i < j)."""
     A_upper = sp.triu(A_csr, k=1, format="coo")
     return A_upper.row.astype(np.int64), A_upper.col.astype(np.int64)
 
 
-def sample_rescaled_adjacency_from_edges(
-    n: int,
-    upper_rows: np.ndarray,
-    upper_cols: np.ndarray,
-    p: float,
-    rng: np.random.Generator,
-):
-    """Uniformly sample edges with prob p and rescale by 1/p."""
-    if not (0 < p <= 1):
-        raise ValueError(f"Sampling probability p must be in (0,1], got: {p}")
-
-    keep = rng.random(upper_rows.shape[0]) < p
-    r = upper_rows[keep]
-    c = upper_cols[keep]
-    if r.size == 0:
-        return sp.csr_matrix((n, n), dtype=np.float32)
-
-    w = np.full(r.shape[0], 1.0 / p, dtype=np.float32)
-    rows = np.concatenate([r, c])
-    cols = np.concatenate([c, r])
-    data = np.concatenate([w, w])
-    A_s = sp.coo_matrix((data, (rows, cols)), shape=(n, n), dtype=np.float32).tocsr()
-    A_s.sum_duplicates()
-    A_s.setdiag(0.0)
-    A_s.eliminate_zeros()
-    return A_s
-
-
-def _sort_cols_by_abs_vals(vals: np.ndarray, cols: np.ndarray):
-    idx = np.argsort(np.abs(vals))[::-1]
-    return vals[idx], cols[:, idx]
+def _sort_cols_by_abs_vals(vals: np.ndarray, vecs: np.ndarray):
+    order = np.argsort(np.abs(vals))[::-1]
+    return vals[order], vecs[:, order]
 
 
 def eigvecs_eigsh_sparse(A_csr: sp.csr_matrix, k: int):
     vals, vecs = eigsh(A_csr, k=k, which="LM")
     vals, vecs = _sort_cols_by_abs_vals(vals, vecs)
     return vals, vecs
-
-
-def eigvecs_lobpcg_sparse(
-    A_csr: sp.csr_matrix,
-    k: int,
-    rng: np.random.Generator,
-):
-    n = A_csr.shape[0]
-    X = rng.standard_normal((n, k))
-    vals, vecs = lobpcg(A_csr, X, largest=True, maxiter=200, tol=1e-4)
-    vals, vecs = _sort_cols_by_abs_vals(vals, vecs)
-    return vals, vecs
-
-
-def singular_vecs_svds_sparse(
-    A_csr: sp.csr_matrix,
-    k: int,
-    solver: str = "arpack",
-):
-    u, s, _ = svds(A_csr, k=k, which="LM", solver=solver)
-    idx = np.argsort(s)[::-1]
-    return s[idx], u[:, idx]
-
-
-def singular_vecs_randomized_svd_sparse(
-    A_csr: sp.csr_matrix,
-    k: int,
-    n_iter: int,
-    rng: np.random.Generator,
-):
-    seed = int(rng.integers(1, 2**31 - 1))
-    u, s, _ = randomized_svd(
-        A_csr,
-        n_components=k,
-        n_iter=n_iter,
-        random_state=seed,
-    )
-    idx = np.argsort(s)[::-1]
-    return s[idx], u[:, idx]
 
 
 def eigvecs_random_projection_sparse(
@@ -502,9 +433,9 @@ def eigvecs_random_projection_sparse(
 ):
     n = A_csr.shape[0]
     l = k + r
-    Omega = rng.standard_normal((n, l))
+    omega = rng.standard_normal((n, l))
 
-    Y = Omega
+    Y = omega
     for _ in range(2 * q + 1):
         Y = A_csr @ Y
 
@@ -513,7 +444,36 @@ def eigvecs_random_projection_sparse(
     B = 0.5 * (B + B.T)
     vals, vecs = np.linalg.eigh(B)
     vals, vecs = _sort_cols_by_abs_vals(vals, vecs)
-    return vals[:k], (Q @ vecs[:, :k])
+    return vals[:k], Q @ vecs[:, :k]
+
+
+def sample_rescaled_adjacency_from_edges(
+    n: int,
+    upper_rows: np.ndarray,
+    upper_cols: np.ndarray,
+    p: float,
+    rng: np.random.Generator,
+):
+    """Sample edges with probability p and rescale kept edges by 1/p."""
+    if not (0.0 < p <= 1.0):
+        raise ValueError(f"Sampling probability must be in (0,1], got {p}")
+
+    keep = rng.random(upper_rows.shape[0]) < p
+    r = upper_rows[keep]
+    c = upper_cols[keep]
+    if r.size == 0:
+        return sp.csr_matrix((n, n), dtype=np.float32)
+
+    w = np.full(r.shape[0], 1.0 / p, dtype=np.float32)
+    rows = np.concatenate([r, c])
+    cols = np.concatenate([c, r])
+    data = np.concatenate([w, w])
+
+    A_s = sp.coo_matrix((data, (rows, cols)), shape=(n, n), dtype=np.float32).tocsr()
+    A_s.sum_duplicates()
+    A_s.setdiag(0.0)
+    A_s.eliminate_zeros()
+    return A_s
 
 
 def eigvecs_random_sampling_sparse(

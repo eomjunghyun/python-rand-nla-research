@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 
-"""Section 8.2 (DBLP) efficiency experiment on a large sparse graph."""
+"""Section 8.2 (DBLP) efficiency experiment for three methods.
+
+Methods:
+- Random Projection
+- Random Sampling
+- Non-random spectral clustering
+"""
 
 import argparse
 import sys
@@ -51,7 +57,7 @@ class Exp82Config:
     no_progress: bool = False
 
 
-def _ari_mean_matrix(df_ari: pd.DataFrame):
+def ari_mean_matrix(df_ari: pd.DataFrame):
     mat = pd.DataFrame(np.eye(len(METHODS_82)), index=METHODS_82, columns=METHODS_82)
     for _, row in df_ari.groupby(["method_i", "method_j"], as_index=False)["ari"].mean().iterrows():
         i = row["method_i"]
@@ -61,9 +67,10 @@ def _ari_mean_matrix(df_ari: pd.DataFrame):
     return mat
 
 
-def _plot_ari_heatmap(ari_mat: pd.DataFrame, out_png: Path):
+def plot_ari_heatmap(ari_mat: pd.DataFrame, out_png: Path):
     fig, ax = plt.subplots(figsize=(7.2, 6.2))
     im = ax.imshow(ari_mat.values, vmin=0.0, vmax=1.0, cmap="viridis")
+
     ax.set_xticks(range(len(ari_mat.columns)))
     ax.set_yticks(range(len(ari_mat.index)))
     ax.set_xticklabels(ari_mat.columns, rotation=35, ha="right")
@@ -71,7 +78,7 @@ def _plot_ari_heatmap(ari_mat: pd.DataFrame, out_png: Path):
 
     for i in range(ari_mat.shape[0]):
         for j in range(ari_mat.shape[1]):
-            v = ari_mat.iat[i, j]
+            v = float(ari_mat.iat[i, j])
             ax.text(
                 j,
                 i,
@@ -85,13 +92,14 @@ def _plot_ari_heatmap(ari_mat: pd.DataFrame, out_png: Path):
     cbar = fig.colorbar(im, ax=ax)
     cbar.set_label("ARI")
     ax.set_title("Pairwise ARI (mean across replications)")
+
     fig.tight_layout()
     fig.savefig(out_png, dpi=180, bbox_inches="tight")
     plt.close(fig)
 
 
 def run_experiment(cfg: Exp82Config):
-    A, _node_to_idx = load_undirected_edgelist_csr(
+    A, _ = load_undirected_edgelist_csr(
         cfg.edgelist,
         delimiter=cfg.delimiter,
         comment_prefix=cfg.comment_prefix,
@@ -104,18 +112,17 @@ def run_experiment(cfg: Exp82Config):
     time_rows = []
     ari_rows = []
 
-    total_steps = cfg.reps * len(METHODS_82)
-    progress = None if cfg.no_progress else LiveProgress(total_steps)
+    progress = None if cfg.no_progress else LiveProgress(cfg.reps * len(METHODS_82))
 
     for rep in range(1, cfg.reps + 1):
         rep_seed = int(master_rng.integers(1, 2**31 - 1))
         rng = np.random.default_rng(rep_seed)
-        label_map = {}
+        labels = {}
 
         t0 = perf_counter()
         _, U_rp = eigvecs_random_projection_sparse(A, cfg.target_rank, cfg.r, cfg.q, rng)
         t_rp = perf_counter() - t0
-        label_map["Random Projection"] = kmeans_on_rows(U_rp, cfg.n_clusters, rng)
+        labels["Random Projection"] = kmeans_on_rows(U_rp, cfg.n_clusters, rng)
         time_rows.append({"rep": rep, "method": "Random Projection", "time_sec": t_rp})
         if progress is not None:
             progress.update("rep", rep, rep, cfg.reps, "Random Projection")
@@ -128,7 +135,7 @@ def run_experiment(cfg: Exp82Config):
             k=cfg.target_rank,
             rng=rng,
         )
-        label_map["Random Sampling"] = kmeans_on_rows(U_rs, cfg.n_clusters, rng)
+        labels["Random Sampling"] = kmeans_on_rows(U_rs, cfg.n_clusters, rng)
         time_rows.append(
             {
                 "rep": rep,
@@ -143,12 +150,12 @@ def run_experiment(cfg: Exp82Config):
         t0 = perf_counter()
         _, U_nr = eigvecs_eigsh_sparse(A, cfg.target_rank)
         t_nr = perf_counter() - t0
-        label_map["Non-random"] = kmeans_on_rows(U_nr, cfg.n_clusters, rng)
+        labels["Non-random"] = kmeans_on_rows(U_nr, cfg.n_clusters, rng)
         time_rows.append({"rep": rep, "method": "Non-random", "time_sec": t_nr})
         if progress is not None:
             progress.update("rep", rep, rep, cfg.reps, "Non-random")
 
-        methods, mat = pairwise_ari(label_map)
+        methods, mat = pairwise_ari(labels)
         for i in range(len(methods)):
             for j in range(i + 1, len(methods)):
                 ari_rows.append(
@@ -176,7 +183,7 @@ def run_experiment(cfg: Exp82Config):
         .sort_values("method")
         .assign(method=lambda d: d["method"].astype(str))
     )
-    ari_mat = _ari_mean_matrix(df_ari_raw)
+    ari_mat = ari_mean_matrix(df_ari_raw)
 
     meta = {
         "n_nodes": n_nodes,
@@ -194,12 +201,7 @@ def run_experiment(cfg: Exp82Config):
 
 def main():
     parser = argparse.ArgumentParser(description="Section 8.2 DBLP efficiency experiment")
-    parser.add_argument(
-        "--edgelist",
-        type=str,
-        required=True,
-        help="Path to undirected edge-list file (two columns: node_u node_v)",
-    )
+    parser.add_argument("--edgelist", type=str, required=True, help="Path to undirected edge-list file")
     parser.add_argument("--target-rank", type=int, default=3, help="target rank K")
     parser.add_argument("--clusters", type=int, default=3, help="cluster number for k-means")
     parser.add_argument("--reps", type=int, default=20, help="replications")
@@ -207,18 +209,9 @@ def main():
     parser.add_argument("--r", type=int, default=10, help="oversampling for random projection")
     parser.add_argument("--q", type=int, default=2, help="power iteration for random projection")
     parser.add_argument("--p", type=float, default=0.7, help="edge sampling probability")
-    parser.add_argument(
-        "--delimiter",
-        type=str,
-        default=None,
-        help="Edge delimiter, default=None means whitespace split",
-    )
+    parser.add_argument("--delimiter", type=str, default=None, help="edge delimiter (default: whitespace)")
     parser.add_argument("--comment-prefix", type=str, default="#")
-    parser.add_argument(
-        "--outdir",
-        type=str,
-        default="experiments/reference_1_section8_2/results/dblp_live",
-    )
+    parser.add_argument("--outdir", type=str, default="experiments/reference_1_section8_2/results/dblp_live")
     parser.add_argument("--no-progress", action="store_true")
     args, _ = parser.parse_known_args()
 
@@ -251,7 +244,7 @@ def main():
     med_time.to_csv(time_med_csv, index=False)
     df_ari_raw.to_csv(ari_raw_csv, index=False)
     ari_mat.to_csv(ari_mat_csv, index=True)
-    _plot_ari_heatmap(ari_mat, ari_png)
+    plot_ari_heatmap(ari_mat, ari_png)
     pd.Series(meta).to_json(meta_json, indent=2)
 
     print("Done.")

@@ -1,17 +1,17 @@
 # Section 8.2 (DBLP) Efficiency Experiment
 
-Large-scale sparse benchmark using three methods:
+Fresh implementation for three methods:
 
 - Random Projection
 - Random Sampling
 - Non-random spectral clustering
 
-## Expected input format
+## Input format
 
 - Undirected edge list text file
 - Each line: `node_u node_v`
 - Comment lines start with `#` by default
-- Node ids can be non-contiguous; script remaps them internally
+- Node IDs may be non-contiguous (script remaps them)
 
 ## Run
 
@@ -29,11 +29,9 @@ python experiments/reference_1_section8_2/exp8_2_dblp_live.py \
 
 ## Outputs
 
-By default, results are written to:
-
-- `experiments/reference_1_section8_2/results/dblp_live/dblp_time_raw.csv`
-- `experiments/reference_1_section8_2/results/dblp_live/dblp_table4_like_median_time.csv`
-- `experiments/reference_1_section8_2/results/dblp_live/dblp_pairwise_ari_raw.csv`
-- `experiments/reference_1_section8_2/results/dblp_live/dblp_pairwise_ari_mean_matrix.csv`
-- `experiments/reference_1_section8_2/results/dblp_live/dblp_pairwise_ari_heatmap.png`
-- `experiments/reference_1_section8_2/results/dblp_live/dblp_meta.json`
+- `dblp_time_raw.csv`
+- `dblp_table4_like_median_time.csv`
+- `dblp_pairwise_ari_raw.csv`
+- `dblp_pairwise_ari_mean_matrix.csv`
+- `dblp_pairwise_ari_heatmap.png`
+- `dblp_meta.json`
