@@ -213,3 +213,10 @@ __marimo__/
 # Local paper artifacts
 paper.pdf
 paper_extracted.txt
+
+# Local large datasets
+data/dblp/
+
+# Section 8.2 generated artifacts
+experiments/reference_1_section8_2/results/**/*.csv
+experiments/reference_1_section8_2/results/**/*.png
