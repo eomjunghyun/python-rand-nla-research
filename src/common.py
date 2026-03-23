@@ -128,21 +128,45 @@ def top_eigpairs_symmetric(M: np.ndarray, k: int):
     return vals_top[order], vecs_top[:, order]
 
 
-def kmeans_on_rows(U: np.ndarray, K: int, rng: np.random.Generator) -> np.ndarray:
+def normalize_rows_l2(U: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    norms = np.linalg.norm(U, axis=1, keepdims=True)
+    return np.divide(U, norms, out=np.zeros_like(U), where=(norms > eps))
+
+
+def kmeans_on_rows(
+    U: np.ndarray,
+    K: int,
+    rng: np.random.Generator,
+    normalize_rows: bool = False,
+) -> np.ndarray:
+    if normalize_rows:
+        U = normalize_rows_l2(U)
     rs = int(rng.integers(1, 2**31 - 1))
     km = KMeans(n_clusters=K, n_init=20, random_state=rs)
     return km.fit_predict(U)
 
 
-def run_non_random(A: np.ndarray, K: int, K_prime: int, rng: np.random.Generator):
+def run_non_random(
+    A: np.ndarray,
+    K: int,
+    K_prime: int,
+    rng: np.random.Generator,
+    normalize_rows: bool = False,
+):
     U = top_eigvecs_symmetric(A, K_prime)
-    labels = kmeans_on_rows(U, K, rng)
+    labels = kmeans_on_rows(U, K, rng, normalize_rows=normalize_rows)
     A_hat = A.copy()
     return A_hat, labels
 
 
 def run_random_projection(
-    A: np.ndarray, K: int, K_prime: int, r: int, q: int, rng: np.random.Generator
+    A: np.ndarray,
+    K: int,
+    K_prime: int,
+    r: int,
+    q: int,
+    rng: np.random.Generator,
+    normalize_rows: bool = False,
 ):
     n = A.shape[0]
     Omega = rng.standard_normal(size=(n, K_prime + r))
@@ -154,12 +178,17 @@ def run_random_projection(
     A_hat = Q @ C @ Q.T
     Uc = top_eigvecs_symmetric(C, K_prime)
     U_rp = Q @ Uc
-    labels = kmeans_on_rows(U_rp, K, rng)
+    labels = kmeans_on_rows(U_rp, K, rng, normalize_rows=normalize_rows)
     return A_hat, labels
 
 
 def run_random_sampling(
-    A: np.ndarray, K: int, K_prime: int, p: float, rng: np.random.Generator
+    A: np.ndarray,
+    K: int,
+    K_prime: int,
+    p: float,
+    rng: np.random.Generator,
+    normalize_rows: bool = False,
 ):
     n = A.shape[0]
     tri = np.triu_indices(n, k=1)
@@ -179,7 +208,7 @@ def run_random_sampling(
 
     A_hat = vecs @ np.diag(vals) @ vecs.T
     A_hat = 0.5 * (A_hat + A_hat.T)
-    labels = kmeans_on_rows(vecs, K, rng)
+    labels = kmeans_on_rows(vecs, K, rng, normalize_rows=normalize_rows)
     return A_hat, labels
 
 
