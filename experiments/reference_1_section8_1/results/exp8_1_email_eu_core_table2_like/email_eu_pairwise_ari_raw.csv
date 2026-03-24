@@ -1,0 +1,121 @@
+rep,method_i,method_j,ari
+1,Random Projection,Random Sampling (p=0.7),0.7442788857400836
+1,Random Projection,Random Sampling (p=0.8),0.8160293188199232
+1,Random Projection,Non-random,0.797769114628178
+1,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7635573721315895
+1,Random Sampling (p=0.7),Non-random,0.7320669685573824
+1,Random Sampling (p=0.8),Non-random,0.8142672093989894
+2,Random Projection,Random Sampling (p=0.7),0.7610164551480367
+2,Random Projection,Random Sampling (p=0.8),0.7144242719308317
+2,Random Projection,Non-random,0.7715310219302423
+2,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7273160388018204
+2,Random Sampling (p=0.7),Non-random,0.741754604700119
+2,Random Sampling (p=0.8),Non-random,0.7705740962049997
+3,Random Projection,Random Sampling (p=0.7),0.7491688925757067
+3,Random Projection,Random Sampling (p=0.8),0.8005796348058365
+3,Random Projection,Non-random,0.837607948476159
+3,Random Sampling (p=0.7),Random Sampling (p=0.8),0.6916857706442786
+3,Random Sampling (p=0.7),Non-random,0.7088300902847573
+3,Random Sampling (p=0.8),Non-random,0.7390459361360415
+4,Random Projection,Random Sampling (p=0.7),0.7803469256992724
+4,Random Projection,Random Sampling (p=0.8),0.8059851284777599
+4,Random Projection,Non-random,0.7374783756660009
+4,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7783039815484569
+4,Random Sampling (p=0.7),Non-random,0.6666008818323272
+4,Random Sampling (p=0.8),Non-random,0.7188975179732955
+5,Random Projection,Random Sampling (p=0.7),0.8069042170576057
+5,Random Projection,Random Sampling (p=0.8),0.7481024497466733
+5,Random Projection,Non-random,0.8117426577002133
+5,Random Sampling (p=0.7),Random Sampling (p=0.8),0.8088665955333401
+5,Random Sampling (p=0.7),Non-random,0.7204736667679372
+5,Random Sampling (p=0.8),Non-random,0.6876044194514822
+6,Random Projection,Random Sampling (p=0.7),0.6668914711309927
+6,Random Projection,Random Sampling (p=0.8),0.7517144181331602
+6,Random Projection,Non-random,0.7861632682878773
+6,Random Sampling (p=0.7),Random Sampling (p=0.8),0.6696202797744538
+6,Random Sampling (p=0.7),Non-random,0.6464566628173615
+6,Random Sampling (p=0.8),Non-random,0.7367614187398658
+7,Random Projection,Random Sampling (p=0.7),0.7139851559564543
+7,Random Projection,Random Sampling (p=0.8),0.7126133000466037
+7,Random Projection,Non-random,0.7766814664514323
+7,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7370883554740546
+7,Random Sampling (p=0.7),Non-random,0.7180257436482379
+7,Random Sampling (p=0.8),Non-random,0.7514336939459821
+8,Random Projection,Random Sampling (p=0.7),0.7808863943180611
+8,Random Projection,Random Sampling (p=0.8),0.7809839520520191
+8,Random Projection,Non-random,0.8555613094919949
+8,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7493122655143343
+8,Random Sampling (p=0.7),Non-random,0.7558385186502532
+8,Random Sampling (p=0.8),Non-random,0.770446698449085
+9,Random Projection,Random Sampling (p=0.7),0.788129360913099
+9,Random Projection,Random Sampling (p=0.8),0.7733284142588503
+9,Random Projection,Non-random,0.8843910181584359
+9,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7545550552987798
+9,Random Sampling (p=0.7),Non-random,0.7806928554670314
+9,Random Sampling (p=0.8),Non-random,0.7569504984222692
+10,Random Projection,Random Sampling (p=0.7),0.744175600579696
+10,Random Projection,Random Sampling (p=0.8),0.7462346850455909
+10,Random Projection,Non-random,0.8051321284362423
+10,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7445651510914912
+10,Random Sampling (p=0.7),Non-random,0.68783358225173
+10,Random Sampling (p=0.8),Non-random,0.770655280103196
+11,Random Projection,Random Sampling (p=0.7),0.7370827256073187
+11,Random Projection,Random Sampling (p=0.8),0.7825127429599106
+11,Random Projection,Non-random,0.8115441150799592
+11,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7815455137649887
+11,Random Sampling (p=0.7),Non-random,0.7155442301573154
+11,Random Sampling (p=0.8),Non-random,0.7181298242950008
+12,Random Projection,Random Sampling (p=0.7),0.6647648598795614
+12,Random Projection,Random Sampling (p=0.8),0.7041801380159489
+12,Random Projection,Non-random,0.8033960675885738
+12,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7662524551970866
+12,Random Sampling (p=0.7),Non-random,0.7533344750333679
+12,Random Sampling (p=0.8),Non-random,0.7779467812609884
+13,Random Projection,Random Sampling (p=0.7),0.6722065032449603
+13,Random Projection,Random Sampling (p=0.8),0.7813518428489382
+13,Random Projection,Non-random,0.7992787922989785
+13,Random Sampling (p=0.7),Random Sampling (p=0.8),0.6695123801206598
+13,Random Sampling (p=0.7),Non-random,0.7093214449020342
+13,Random Sampling (p=0.8),Non-random,0.7260277822117479
+14,Random Projection,Random Sampling (p=0.7),0.6903589201731614
+14,Random Projection,Random Sampling (p=0.8),0.7760947388452208
+14,Random Projection,Non-random,0.7213236300203123
+14,Random Sampling (p=0.7),Random Sampling (p=0.8),0.6889687969882384
+14,Random Sampling (p=0.7),Non-random,0.6979411262982047
+14,Random Sampling (p=0.8),Non-random,0.6321281083576327
+15,Random Projection,Random Sampling (p=0.7),0.7101879476292379
+15,Random Projection,Random Sampling (p=0.8),0.7841300479819927
+15,Random Projection,Non-random,0.8463500729195405
+15,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7341591489937285
+15,Random Sampling (p=0.7),Non-random,0.6967637626343702
+15,Random Sampling (p=0.8),Non-random,0.7785789270639177
+16,Random Projection,Random Sampling (p=0.7),0.7378494904808859
+16,Random Projection,Random Sampling (p=0.8),0.755709716728694
+16,Random Projection,Non-random,0.8075638400160574
+16,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7584624742540549
+16,Random Sampling (p=0.7),Non-random,0.7480801491255311
+16,Random Sampling (p=0.8),Non-random,0.8271341785819969
+17,Random Projection,Random Sampling (p=0.7),0.7743100810435806
+17,Random Projection,Random Sampling (p=0.8),0.8118500461943887
+17,Random Projection,Non-random,0.8584449523846465
+17,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7854291043462066
+17,Random Sampling (p=0.7),Non-random,0.7633979209661228
+17,Random Sampling (p=0.8),Non-random,0.7995114434843117
+18,Random Projection,Random Sampling (p=0.7),0.7625411102233226
+18,Random Projection,Random Sampling (p=0.8),0.8326554041995887
+18,Random Projection,Non-random,0.806333673453169
+18,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7774406992408682
+18,Random Sampling (p=0.7),Non-random,0.7199968455742306
+18,Random Sampling (p=0.8),Non-random,0.832381296980059
+19,Random Projection,Random Sampling (p=0.7),0.68010539294261
+19,Random Projection,Random Sampling (p=0.8),0.7124225981291218
+19,Random Projection,Non-random,0.8398514278654664
+19,Random Sampling (p=0.7),Random Sampling (p=0.8),0.6743458314548325
+19,Random Sampling (p=0.7),Non-random,0.7510391847212036
+19,Random Sampling (p=0.8),Non-random,0.7300867787909648
+20,Random Projection,Random Sampling (p=0.7),0.6501330080356389
+20,Random Projection,Random Sampling (p=0.8),0.6794850201075555
+20,Random Projection,Non-random,0.7759528524398702
+20,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7092116819592575
+20,Random Sampling (p=0.7),Non-random,0.6876130642637753
+20,Random Sampling (p=0.8),Non-random,0.7146895543180318
