@@ -1,13 +1,22 @@
 # Section 7.2 (Models 1-6) Experiments
 
 Reproduction scripts with live progress, timing, and paper-aligned metrics.
-All clustering/evaluation pipelines follow `src/common.py`.
+
+Fresh implementation for two runs:
+
+- Models 1-3 (`sec72_models123_live.py`)
+- Models 4-6 (`sec72_models456_live.py`)
 
 ## Run
 
 ```bash
-python experiments/reference_1_section7_2/sec72_models123_live.py --reps 20 --seed 2026
-python experiments/reference_1_section7_2/sec72_models456_live.py --reps 20 --seed 2026
+python experiments/reference_1_section7_2/sec72_models123_live.py \
+  --reps 20 \
+  --seed 2026
+
+python experiments/reference_1_section7_2/sec72_models456_live.py \
+  --reps 20 \
+  --seed 2026
 ```
 
 ## Outputs
