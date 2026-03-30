@@ -741,8 +741,10 @@ def _sort_cols_by_abs_vals(vals: np.ndarray, vecs: np.ndarray):
 
 
 def eigvecs_eigsh_sparse(A_csr: sp.csr_matrix, k: int):
-    vals, vecs = eigsh(A_csr, k=k, which="LM")
-    vals, vecs = _sort_cols_by_abs_vals(vals, vecs)
+    vals, vecs = eigsh(A_csr, k=k, which="LA")
+    order = np.argsort(vals)[::-1]
+    vals = vals[order]
+    vecs = vecs[:, order]
     return vals, vecs
 
 

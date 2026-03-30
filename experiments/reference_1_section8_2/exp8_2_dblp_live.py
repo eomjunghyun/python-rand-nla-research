@@ -121,9 +121,21 @@ def run_experiment(cfg: Exp82Config):
 
         t0 = perf_counter()
         _, U_rp = eigvecs_random_projection_sparse(A, cfg.target_rank, cfg.r, cfg.q, rng)
-        t_rp = perf_counter() - t0
+        t_rp_eig = perf_counter() - t0
+        t0 = perf_counter()
         labels["Random Projection"] = kmeans_on_rows(U_rp, cfg.n_clusters, rng)
-        time_rows.append({"rep": rep, "method": "Random Projection", "time_sec": t_rp})
+        t_rp_kmeans = perf_counter() - t0
+        time_rows.append(
+            {
+                "rep": rep,
+                "method": "Random Projection",
+                "time_sec": t_rp_eig + t_rp_kmeans,
+                "time_eig_sec": t_rp_eig,
+                "time_kmeans_sec": t_rp_kmeans,
+                "time_sampling_sec": 0.0,
+                "time_sec_excl_sampling": t_rp_eig + t_rp_kmeans,
+            }
+        )
         if progress is not None:
             progress.update("rep", rep, rep, cfg.reps, "Random Projection")
 
@@ -135,13 +147,20 @@ def run_experiment(cfg: Exp82Config):
             k=cfg.target_rank,
             rng=rng,
         )
+        t0 = perf_counter()
         labels["Random Sampling"] = kmeans_on_rows(U_rs, cfg.n_clusters, rng)
+        t_rs_kmeans = perf_counter() - t0
+        t_rs_sampling = max(0.0, float(t_rs_with - t_rs_without))
+        t_rs_excl_sampling = float(t_rs_without + t_rs_kmeans)
         time_rows.append(
             {
                 "rep": rep,
                 "method": "Random Sampling",
-                "time_sec": t_rs_with,
-                "time_sec_excl_sampling": t_rs_without,
+                "time_sec": t_rs_with + t_rs_kmeans,
+                "time_eig_sec": float(t_rs_without),
+                "time_kmeans_sec": t_rs_kmeans,
+                "time_sampling_sec": t_rs_sampling,
+                "time_sec_excl_sampling": t_rs_excl_sampling,
             }
         )
         if progress is not None:
@@ -149,9 +168,21 @@ def run_experiment(cfg: Exp82Config):
 
         t0 = perf_counter()
         _, U_nr = eigvecs_eigsh_sparse(A, cfg.target_rank)
-        t_nr = perf_counter() - t0
+        t_nr_eig = perf_counter() - t0
+        t0 = perf_counter()
         labels["Non-random"] = kmeans_on_rows(U_nr, cfg.n_clusters, rng)
-        time_rows.append({"rep": rep, "method": "Non-random", "time_sec": t_nr})
+        t_nr_kmeans = perf_counter() - t0
+        time_rows.append(
+            {
+                "rep": rep,
+                "method": "Non-random",
+                "time_sec": t_nr_eig + t_nr_kmeans,
+                "time_eig_sec": t_nr_eig,
+                "time_kmeans_sec": t_nr_kmeans,
+                "time_sampling_sec": 0.0,
+                "time_sec_excl_sampling": t_nr_eig + t_nr_kmeans,
+            }
+        )
         if progress is not None:
             progress.update("rep", rep, rep, cfg.reps, "Non-random")
 
@@ -177,6 +208,9 @@ def run_experiment(cfg: Exp82Config):
         df_time_raw.groupby("method", as_index=False)
         .agg(
             median_time_sec=("time_sec", "median"),
+            median_time_eig_sec=("time_eig_sec", "median"),
+            median_time_kmeans_sec=("time_kmeans_sec", "median"),
+            median_time_sampling_sec=("time_sampling_sec", "median"),
             median_time_excl_sampling_sec=("time_sec_excl_sampling", "median"),
         )
         .assign(method=lambda d: pd.Categorical(d["method"], categories=METHODS_82, ordered=True))

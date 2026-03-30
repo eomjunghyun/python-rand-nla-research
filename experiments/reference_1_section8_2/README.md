@@ -35,3 +35,11 @@ python experiments/reference_1_section8_2/exp8_2_dblp_live.py \
 - `dblp_pairwise_ari_mean_matrix.csv`
 - `dblp_pairwise_ari_heatmap.png`
 - `dblp_meta.json`
+
+## Runtime notes
+
+- `time_sec` / `median_time_sec` measure the full algorithm pipeline for each method:
+  eigenvector computation plus k-means.
+- `time_sampling_sec` is nonzero only for Random Sampling.
+- `time_sec_excl_sampling` means "sampling excluded total runtime", so for Random Sampling it is
+  eigenvector computation plus k-means, and for the other two methods it matches total runtime.

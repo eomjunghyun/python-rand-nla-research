@@ -17,8 +17,8 @@ def plot_runtime_median(med_csv: Path, out_png: Path):
 
     fig, ax = plt.subplots(figsize=(7, 4.5))
     ax.bar(df["method"], df["median_time_sec"], color=colors[: len(df)])
-    ax.set_ylabel("Median runtime (sec)")
-    ax.set_title("Table4-like Median Runtime")
+    ax.set_ylabel("Median total runtime (sec)")
+    ax.set_title("Table4-like Median Total Runtime")
     ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
     fig.savefig(out_png, dpi=180)
@@ -32,8 +32,8 @@ def plot_runtime_raw_box(raw_csv: Path, out_png: Path):
 
     fig, ax = plt.subplots(figsize=(7, 4.5))
     ax.boxplot(data, tick_labels=methods, showfliers=False)
-    ax.set_ylabel("Runtime (sec)")
-    ax.set_title("Per-rep Runtime Distribution")
+    ax.set_ylabel("Total runtime (sec)")
+    ax.set_title("Per-rep Total Runtime Distribution")
     ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
     fig.savefig(out_png, dpi=180)
