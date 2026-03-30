@@ -1,0 +1,35 @@
+{
+  "strategy": "min",
+  "settings": {
+    "N": 1000,
+    "E": 200,
+    "K": 4,
+    "p": 0.1,
+    "q_over_p": [
+      0.1,
+      0.01
+    ],
+    "num_graphs": 100
+  },
+  "peak_check": {
+    "0.1": {
+      "q_over_p": 0.1,
+      "q": 0.010000000000000002,
+      "peak_count": 1,
+      "peak_positions": [
+        13
+      ],
+      "bimodal": false
+    },
+    "0.01": {
+      "q_over_p": 0.01,
+      "q": 0.001,
+      "peak_count": 2,
+      "peak_positions": [
+        7,
+        25
+      ],
+      "bimodal": true
+    }
+  }
+}
