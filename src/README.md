@@ -195,3 +195,19 @@
 2. `error_Theta`가 작을수록 커뮤니티 복원이 정확합니다.  
 3. `error_B`가 작을수록 블록 확률행렬 추정이 정확합니다.  
 4. `time_sec`는 방법별 계산비용 비교 지표입니다.
+
+---
+
+## Hypergraph SBM 유틸 (`src/hypergraph_sbm.py`)
+
+하이퍼그래프 스펙트럴 클러스터링 연구를 위한 데이터 생성/행렬화 유틸입니다.
+
+- 생성:
+  - `generate_uniform_hsbm_instance(...)`
+  - `generate_nonuniform_hsbm_instance(...)`
+- 변환:
+  - `hyperedges_to_incidence_csr(...)`
+  - `clique_expansion_adjacency(...)`
+  - `zhou_normalized_laplacian(...)`
+- 통계:
+  - `hypergraph_basic_stats(...)`
