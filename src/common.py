@@ -146,16 +146,62 @@ def kmeans_on_rows(
     return km.fit_predict(U)
 
 
+def _finalize_algorithm_timing(timings: dict, total_start: float) -> dict:
+    total_sec = perf_counter() - total_start
+    step_sum_sec = sum(float(v) for k, v in timings.items() if k.endswith("_sec"))
+    timings["algo_total_sec"] = total_sec
+    timings["algo_step_sum_sec"] = step_sum_sec
+    timings["algo_other_sec"] = max(0.0, total_sec - step_sum_sec)
+    return timings
+
+
+def attach_timing_breakdown(
+    record: dict,
+    algo_timing=None,
+    instance_sec=None,
+    metric_sec=None,
+) -> dict:
+    merged = dict(record)
+    if instance_sec is not None:
+        merged["instance_gen_sec"] = float(instance_sec)
+    if metric_sec is not None:
+        merged["metric_eval_sec"] = float(metric_sec)
+    if algo_timing:
+        merged.update(algo_timing)
+        pipeline_total_sec = float(algo_timing.get("algo_total_sec", 0.0))
+        if instance_sec is not None:
+            pipeline_total_sec += float(instance_sec)
+        if metric_sec is not None:
+            pipeline_total_sec += float(metric_sec)
+        merged["pipeline_total_sec"] = pipeline_total_sec
+    return merged
+
+
 def run_non_random(
     A: np.ndarray,
     K: int,
     K_prime: int,
     rng: np.random.Generator,
     normalize_rows: bool = False,
+    return_timing: bool = False,
 ):
+    total_start = perf_counter()
+    timings = {}
+
+    t0 = perf_counter()
     U = top_eigvecs_symmetric(A, K_prime)
+    timings["nr_eig_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     labels = kmeans_on_rows(U, K, rng, normalize_rows=normalize_rows)
+    timings["nr_kmeans_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     A_hat = A.copy()
+    timings["nr_copy_sec"] = perf_counter() - t0
+
+    if return_timing:
+        return A_hat, labels, _finalize_algorithm_timing(timings, total_start)
     return A_hat, labels
 
 
@@ -167,18 +213,48 @@ def run_random_projection(
     q: int,
     rng: np.random.Generator,
     normalize_rows: bool = False,
+    return_timing: bool = False,
 ):
+    total_start = perf_counter()
+    timings = {}
     n = A.shape[0]
+
+    t0 = perf_counter()
     Omega = rng.standard_normal(size=(n, K_prime + r))
+    timings["rp_draw_omega_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     Y = Omega.copy()
     for _ in range(2 * q + 1):
         Y = A @ Y
+    timings["rp_power_iter_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     Q, _ = np.linalg.qr(Y, mode="reduced")
+    timings["rp_qr_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     C = Q.T @ A @ Q
+    timings["rp_build_core_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     A_hat = Q @ C @ Q.T
+    timings["rp_reconstruct_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     Uc = top_eigvecs_symmetric(C, K_prime)
+    timings["rp_small_eig_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     U_rp = Q @ Uc
+    timings["rp_lift_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     labels = kmeans_on_rows(U_rp, K, rng, normalize_rows=normalize_rows)
+    timings["rp_kmeans_sec"] = perf_counter() - t0
+
+    if return_timing:
+        return A_hat, labels, _finalize_algorithm_timing(timings, total_start)
     return A_hat, labels
 
 
@@ -189,15 +265,25 @@ def run_random_sampling(
     p: float,
     rng: np.random.Generator,
     normalize_rows: bool = False,
+    return_timing: bool = False,
 ):
+    total_start = perf_counter()
+    timings = {}
     n = A.shape[0]
+
+    t0 = perf_counter()
     tri = np.triu_indices(n, k=1)
     mask = (rng.random(tri[0].shape[0]) < p).astype(float)
+    timings["rs_sample_mask_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     A_s = np.zeros_like(A)
     A_s[tri] = A[tri] * mask / p
     A_s += A_s.T
     np.fill_diagonal(A_s, 0.0)
+    timings["rs_build_sampled_matrix_sec"] = perf_counter() - t0
 
+    t0 = perf_counter()
     try:
         vals, vecs = eigsh(A_s, k=K_prime, which="LA")
         order = np.argsort(vals)[::-1]
@@ -205,10 +291,22 @@ def run_random_sampling(
         vecs = vecs[:, order]
     except Exception:
         vals, vecs = top_eigpairs_symmetric(A_s, K_prime)
+    timings["rs_eig_sec"] = perf_counter() - t0
 
+    t0 = perf_counter()
     A_hat = vecs @ np.diag(vals) @ vecs.T
+    timings["rs_reconstruct_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     A_hat = 0.5 * (A_hat + A_hat.T)
+    timings["rs_symmetrize_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
     labels = kmeans_on_rows(vecs, K, rng, normalize_rows=normalize_rows)
+    timings["rs_kmeans_sec"] = perf_counter() - t0
+
+    if return_timing:
+        return A_hat, labels, _finalize_algorithm_timing(timings, total_start)
     return A_hat, labels
 
 
@@ -334,6 +432,26 @@ def summarize_metrics(df_raw: pd.DataFrame, group_cols):
         time_mean=("time_sec", "mean"),
         time_std=("time_sec", "std"),
     )
+
+
+def extract_timing_breakdown(df_raw: pd.DataFrame, id_cols):
+    keep_cols = []
+    for col in list(id_cols) + [c for c in df_raw.columns if c.endswith("_sec")]:
+        if col in df_raw.columns and col not in keep_cols:
+            keep_cols.append(col)
+    return df_raw.loc[:, keep_cols].copy()
+
+
+def summarize_timing_breakdown(df_raw: pd.DataFrame, group_cols):
+    if isinstance(group_cols, str):
+        group_cols = [group_cols]
+    keys = list(group_cols) + ["method"]
+    timing_cols = [c for c in df_raw.columns if c.endswith("_sec")]
+    agg = {}
+    for col in timing_cols:
+        agg[f"{col}_mean"] = (col, "mean")
+        agg[f"{col}_std"] = (col, "std")
+    return df_raw.groupby(keys, as_index=False).agg(**agg)
 
 
 def plot_metric_panels(summary: pd.DataFrame, x_col: str, out_png: Path):

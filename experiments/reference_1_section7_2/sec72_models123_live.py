@@ -20,11 +20,14 @@ from src.common import (  # noqa: E402
     LiveProgress,
     METHODS,
     METHOD_COLORS,
+    attach_timing_breakdown,
     evaluate_metrics,
+    extract_timing_breakdown,
     run_non_random,
     run_random_projection,
     run_random_sampling,
     summarize_metrics,
+    summarize_timing_breakdown,
 )
 
 
@@ -127,6 +130,7 @@ def run_experiment72_models123(
     cfg: Exp72Models123Config,
     show_progress: bool = True,
     theta_mode: str = "exact",
+    detailed_timing: bool = False,
 ) -> pd.DataFrame:
     master_rng = np.random.default_rng(cfg.seed)
     records = []
@@ -140,70 +144,135 @@ def run_experiment72_models123(
                 rep_seed = int(master_rng.integers(1, 2**31 - 1))
                 rng = np.random.default_rng(rep_seed)
 
+                t0 = perf_counter()
                 A, P, B_true, y_true = generate_model123_instance(model_id=model_id, n=n, rng=rng)
+                t_instance = perf_counter() - t0
                 Theta_true = np.eye(cfg.K)[y_true]
                 K_prime = cfg.K_prime_rankdef if model_id == 3 else cfg.K_prime_fullrank
 
+                if detailed_timing:
+                    Ahat_rp, y_rp, timing_rp = run_random_projection(
+                        A,
+                        cfg.K,
+                        K_prime,
+                        cfg.r,
+                        cfg.q,
+                        rng,
+                        return_timing=True,
+                    )
+                    t_rp = timing_rp["algo_total_sec"]
+                else:
+                    t0 = perf_counter()
+                    Ahat_rp, y_rp = run_random_projection(A, cfg.K, K_prime, cfg.r, cfg.q, rng)
+                    t_rp = perf_counter() - t0
+                    timing_rp = None
+
                 t0 = perf_counter()
-                Ahat_rp, y_rp = run_random_projection(A, cfg.K, K_prime, cfg.r, cfg.q, rng)
-                t_rp = perf_counter() - t0
                 eP_rp, eT_rp, eB_rp = evaluate_metrics(
                     Ahat_rp, y_rp, P, B_true, Theta_true, y_true, cfg.K, theta_mode=theta_mode
                 )
-                records.append(
-                    {
-                        "model": model_id,
-                        "n": n,
-                        "rep": rep,
-                        "method": "Random Projection",
-                        "error_P": eP_rp,
-                        "error_Theta": eT_rp,
-                        "error_B": eB_rp,
-                        "time_sec": t_rp,
-                    }
-                )
+                t_eval_rp = perf_counter() - t0
+                record_rp = {
+                    "model": model_id,
+                    "n": n,
+                    "rep": rep,
+                    "method": "Random Projection",
+                    "error_P": eP_rp,
+                    "error_Theta": eT_rp,
+                    "error_B": eB_rp,
+                    "time_sec": t_rp,
+                }
+                if detailed_timing:
+                    record_rp = attach_timing_breakdown(
+                        record_rp,
+                        algo_timing=timing_rp,
+                        instance_sec=t_instance,
+                        metric_sec=t_eval_rp,
+                    )
+                records.append(record_rp)
                 if progress is not None:
                     progress.update("model/n", f"{model_id}/{n}", rep, cfg.reps, "Random Projection")
 
+                if detailed_timing:
+                    Ahat_rs, y_rs, timing_rs = run_random_sampling(
+                        A,
+                        cfg.K,
+                        K_prime,
+                        cfg.p,
+                        rng,
+                        return_timing=True,
+                    )
+                    t_rs = timing_rs["algo_total_sec"]
+                else:
+                    t0 = perf_counter()
+                    Ahat_rs, y_rs = run_random_sampling(A, cfg.K, K_prime, cfg.p, rng)
+                    t_rs = perf_counter() - t0
+                    timing_rs = None
+
                 t0 = perf_counter()
-                Ahat_rs, y_rs = run_random_sampling(A, cfg.K, K_prime, cfg.p, rng)
-                t_rs = perf_counter() - t0
                 eP_rs, eT_rs, eB_rs = evaluate_metrics(
                     Ahat_rs, y_rs, P, B_true, Theta_true, y_true, cfg.K, theta_mode=theta_mode
                 )
-                records.append(
-                    {
-                        "model": model_id,
-                        "n": n,
-                        "rep": rep,
-                        "method": "Random Sampling",
-                        "error_P": eP_rs,
-                        "error_Theta": eT_rs,
-                        "error_B": eB_rs,
-                        "time_sec": t_rs,
-                    }
-                )
+                t_eval_rs = perf_counter() - t0
+                record_rs = {
+                    "model": model_id,
+                    "n": n,
+                    "rep": rep,
+                    "method": "Random Sampling",
+                    "error_P": eP_rs,
+                    "error_Theta": eT_rs,
+                    "error_B": eB_rs,
+                    "time_sec": t_rs,
+                }
+                if detailed_timing:
+                    record_rs = attach_timing_breakdown(
+                        record_rs,
+                        algo_timing=timing_rs,
+                        instance_sec=t_instance,
+                        metric_sec=t_eval_rs,
+                    )
+                records.append(record_rs)
                 if progress is not None:
                     progress.update("model/n", f"{model_id}/{n}", rep, cfg.reps, "Random Sampling")
 
+                if detailed_timing:
+                    Ahat_nr, y_nr, timing_nr = run_non_random(
+                        A,
+                        cfg.K,
+                        K_prime,
+                        rng,
+                        return_timing=True,
+                    )
+                    t_nr = timing_nr["algo_total_sec"]
+                else:
+                    t0 = perf_counter()
+                    Ahat_nr, y_nr = run_non_random(A, cfg.K, K_prime, rng)
+                    t_nr = perf_counter() - t0
+                    timing_nr = None
+
                 t0 = perf_counter()
-                Ahat_nr, y_nr = run_non_random(A, cfg.K, K_prime, rng)
-                t_nr = perf_counter() - t0
                 eP_nr, eT_nr, eB_nr = evaluate_metrics(
                     Ahat_nr, y_nr, P, B_true, Theta_true, y_true, cfg.K, theta_mode=theta_mode
                 )
-                records.append(
-                    {
-                        "model": model_id,
-                        "n": n,
-                        "rep": rep,
-                        "method": "Non-random",
-                        "error_P": eP_nr,
-                        "error_Theta": eT_nr,
-                        "error_B": eB_nr,
-                        "time_sec": t_nr,
-                    }
-                )
+                t_eval_nr = perf_counter() - t0
+                record_nr = {
+                    "model": model_id,
+                    "n": n,
+                    "rep": rep,
+                    "method": "Non-random",
+                    "error_P": eP_nr,
+                    "error_Theta": eT_nr,
+                    "error_B": eB_nr,
+                    "time_sec": t_nr,
+                }
+                if detailed_timing:
+                    record_nr = attach_timing_breakdown(
+                        record_nr,
+                        algo_timing=timing_nr,
+                        instance_sec=t_instance,
+                        metric_sec=t_eval_nr,
+                    )
+                records.append(record_nr)
                 if progress is not None:
                     progress.update("model/n", f"{model_id}/{n}", rep, cfg.reps, "Non-random")
 
@@ -301,6 +370,11 @@ def main():
         help="output directory",
     )
     parser.add_argument("--theta-mode", choices=["exact", "hungarian"], default="exact")
+    parser.add_argument(
+        "--detailed-timing",
+        action="store_true",
+        help="record per-step timing breakdown CSVs",
+    )
     parser.add_argument("--no-plot", action="store_true", help="skip plotting")
     parser.add_argument("--no-progress", action="store_true", help="disable live progress")
     args, _ = parser.parse_known_args()
@@ -326,6 +400,7 @@ def main():
         cfg,
         show_progress=(not args.no_progress),
         theta_mode=args.theta_mode,
+        detailed_timing=args.detailed_timing,
     )
     df_sum = summarize(df_raw)
 
@@ -334,6 +409,16 @@ def main():
     df_raw.to_csv(raw_csv, index=False)
     df_sum.to_csv(sum_csv, index=False)
 
+    timing_raw_csv = None
+    timing_sum_csv = None
+    if args.detailed_timing:
+        df_timing_raw = extract_timing_breakdown(df_raw, id_cols=["model", "n", "rep", "method"])
+        df_timing_sum = summarize_timing_breakdown(df_timing_raw, group_cols=["model", "n"])
+        timing_raw_csv = outdir / "sec72_models123_timing_breakdown_raw.csv"
+        timing_sum_csv = outdir / "sec72_models123_timing_breakdown_summary.csv"
+        df_timing_raw.to_csv(timing_raw_csv, index=False)
+        df_timing_sum.to_csv(timing_sum_csv, index=False)
+
     if not args.no_plot:
         plot_models123_metrics(df_sum, outdir / "sec72_models123_metrics_figure5_like.png")
         plot_models123_runtime(df_sum, outdir / "sec72_models123_runtime.png")
@@ -341,6 +426,9 @@ def main():
     print("Done.")
     print(f"Raw CSV     : {raw_csv.resolve()}")
     print(f"Summary CSV : {sum_csv.resolve()}")
+    if timing_raw_csv is not None and timing_sum_csv is not None:
+        print(f"Timing Raw  : {timing_raw_csv.resolve()}")
+        print(f"Timing Sum  : {timing_sum_csv.resolve()}")
     if not args.no_plot:
         print(f"Metrics PNG : {(outdir / 'sec72_models123_metrics_figure5_like.png').resolve()}")
         print(f"Runtime PNG : {(outdir / 'sec72_models123_runtime.png').resolve()}")
