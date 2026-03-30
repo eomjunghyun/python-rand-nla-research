@@ -222,6 +222,4 @@ experiments/reference_1_section8_2/results/**/*.csv
 experiments/reference_1_section8_2/results/**/*.png
 
 # Section 7 generated image artifacts
-experiments/section7_1/results/**/*.png
-experiments/timing_visualizations/**/*.png
-experiments/timing_percentages/**/*.png
+experiments/reference_1_section7_1/results/**/*.png
