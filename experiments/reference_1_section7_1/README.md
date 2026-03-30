@@ -19,9 +19,9 @@ Each notebook:
 
 ## Shared Code
 
-Common experiment logic lives in `src/section7_experiments.py`.
+Common experiment logic lives in `src/common.py`.
 
-Common visualization logic lives in `src/section7_visualizations.py`.
+Common visualization logic also lives in `src/common.py`.
 
 ## Outputs
 
