@@ -2910,11 +2910,8 @@ def plot_method_runtime_stack(
         )
         bottom = bottom + values
 
-    annotate_stack_percentages(ax, table, component_cols, x_pos, shared_ymax)
-
-    max_outside = _count_outside_labels(table, component_cols, shared_ymax)
-    headroom = 1.18 + 0.12 * max_outside
-    ax.set_ylim(0, shared_ymax * headroom)
+    # Keep the composition view as pure stacked bars (no percentage labels).
+    ax.set_ylim(0, shared_ymax)
     ax.set_xticks(x_pos)
     ax.set_xticklabels(x_labels)
     ax.set_ylabel("Runtime (sec)")
