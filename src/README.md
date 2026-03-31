@@ -18,6 +18,50 @@
 - 기존 `src/hypergraph_sbm.py`는 더 이상 사용하지 않으며, 관련 함수는 모두 `src/common.py`로 통합되었습니다.
 - 실험 스크립트는 `from src.common import ...` 경로를 사용합니다.
 
+## Section 7.2 / 8.x 연관 함수
+
+아래는 `experiments`의 주요 실험이 `src/common.py`에서 공통으로 가져다 쓰는 함수 정리입니다.
+
+### Section 7.2 (Models 1-6)
+
+대상 스크립트:
+- `experiments/reference_1_section7_2/sec72_models123_live.py`
+- `experiments/reference_1_section7_2/sec72_models456_live.py`
+
+주요 공통 함수:
+- 진행/메타: `LiveProgress`, `METHODS`, `METHOD_COLORS`
+- 알고리즘 실행: `run_non_random`, `run_random_projection`, `run_random_sampling`
+- 성능평가: `evaluate_metrics`
+- timing 병합/요약: `attach_timing_breakdown`, `extract_timing_breakdown`, `summarize_metrics`, `summarize_timing_breakdown`
+
+참고:
+- Model별 `B`, `Theta`, 라벨 생성 로직은 각 `sec72_*.py` 내부에 구현되어 있고,
+  공통 spectral pipeline과 metric/timing 유틸만 `common.py`를 사용합니다.
+
+### Section 8.1 (European Email Accuracy)
+
+대상 스크립트:
+- `experiments/reference_1_section8_1/exp8_1_email_eu_core_live.py`
+
+주요 공통 함수:
+- 데이터 로드/전처리 보조: `load_undirected_edgelist_csr`, `upper_triangle_edges`
+- 고유벡터 계산: `eigvecs_eigsh_sparse`, `eigvecs_random_projection_sparse`, `eigvecs_random_sampling_sparse`
+- 클러스터링/정렬: `kmeans_on_rows`, `align_labels_weighted_hungarian`
+- 일치도 분석: `pairwise_ari`
+- 진행 표시: `LiveProgress`
+
+### Section 8.2 (Table 4 Runtime)
+
+대상 스크립트:
+- `experiments/reference_1_section8_2/exp8_2_live.py`
+
+주요 공통 함수:
+- 대규모 edge list 로더: `load_large_integer_edgelist_csr`
+- Table 4 벤치마크: `benchmark_table4_methods_sparse`
+- 요약/리포트 생성: `summarize_table4_median_times`, `format_table4_markdown`
+- 시각화: `plot_table4_median_bars`, `plot_table4_runtime_boxplots`
+- 진행 표시: `LiveProgress`
+
 ## Section 7.1 에 추가한 함수들
 
 ### 실험 설정/메타데이터
