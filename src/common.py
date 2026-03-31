@@ -748,6 +748,16 @@ def eigvecs_eigsh_sparse(A_csr: sp.csr_matrix, k: int):
     return vals, vecs
 
 
+def eigvecs_partial_eigen_proxy_sparse(A_csr: sp.csr_matrix, k: int):
+    """Python proxy for irlba::partial_eigen used in paper-style timing only.
+
+    This uses ARPACK via scipy and returns the leading eigenpairs by magnitude.
+    """
+    vals, vecs = eigsh(A_csr, k=k, which="LM")
+    vals, vecs = _sort_cols_by_abs_vals(vals, vecs)
+    return vals[:k], vecs[:, :k]
+
+
 def eigvecs_random_projection_sparse(
     A_csr: sp.csr_matrix,
     k: int,
@@ -814,6 +824,342 @@ def eigvecs_random_sampling_sparse(
     _, vecs = eigvecs_eigsh_sparse(A_s, k=k)
     t2 = perf_counter()
     return vecs, (t2 - t0), (t2 - t1)
+
+
+def eigvecs_random_sampling_sparse_table4(
+    n: int,
+    upper_rows: np.ndarray,
+    upper_cols: np.ndarray,
+    p: float,
+    k: int,
+    rng: np.random.Generator,
+):
+    """Paper-style random sampling timing for partial eigenvector computation."""
+    t0 = perf_counter()
+    A_s = sample_rescaled_adjacency_from_edges(n, upper_rows, upper_cols, p, rng)
+    t1 = perf_counter()
+    _, vecs = eigvecs_partial_eigen_proxy_sparse(A_s, k=k)
+    t2 = perf_counter()
+    return vecs, (t2 - t0), (t2 - t1)
+
+
+def load_large_integer_edgelist_csr(
+    path: Path,
+    delimiter: str = None,
+    comment_prefix: str = "#",
+):
+    """Load a large integer edge list into a symmetric binary CSR matrix.
+
+    This path is optimized for SNAP-style datasets used in Section 8.2.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Edge list not found: {path}")
+
+    sep = delimiter if delimiter is not None else r"\s+"
+    df = pd.read_csv(
+        path,
+        sep=sep,
+        comment=comment_prefix,
+        header=None,
+        usecols=[0, 1],
+        names=["src", "dst"],
+        dtype=np.int64,
+        engine="c",
+    )
+    df = df[df["src"] != df["dst"]].reset_index(drop=True)
+
+    endpoints = pd.concat([df["src"], df["dst"]], ignore_index=True)
+    codes, uniques = pd.factorize(endpoints, sort=False)
+    m = len(df)
+    rows = codes[:m].astype(np.int32, copy=False)
+    cols = codes[m:].astype(np.int32, copy=False)
+    rows_sym = np.concatenate([rows, cols])
+    cols_sym = np.concatenate([cols, rows])
+    data = np.ones(rows_sym.shape[0], dtype=np.float32)
+
+    A = sp.coo_matrix(
+        (data, (rows_sym, cols_sym)),
+        shape=(len(uniques), len(uniques)),
+        dtype=np.float32,
+    ).tocsr()
+    A.sum_duplicates()
+    A.data[:] = 1.0
+    A.setdiag(0.0)
+    A.eliminate_zeros()
+    return A, uniques.to_numpy()
+
+
+TABLE4_PLOT_ORDER = [
+    "Random Projection",
+    "Random Sampling",
+    "Random Sampling (excl. sampling)",
+    "partial_eigen",
+]
+
+TABLE4_PLOT_COLORS = {
+    "Random Projection": "#4C78A8",
+    "Random Sampling": "#F58518",
+    "Random Sampling (excl. sampling)": "#E45756",
+    "partial_eigen": "#54A24B",
+}
+
+TABLE4_PLOT_LABELS = {
+    "Random Projection": "Random projection",
+    "Random Sampling": "Random sampling",
+    "Random Sampling (excl. sampling)": "Random sampling\n(excl. sampling)",
+    "partial_eigen": "partial_eigen",
+}
+
+
+def benchmark_table4_methods_sparse(
+    A_csr: sp.csr_matrix,
+    dataset_name: str,
+    target_rank: int,
+    reps: int,
+    seed: int,
+    r: int,
+    q: int,
+    p: float,
+    progress=None,
+):
+    """Benchmark paper-style eigenvector timing for Section 8.2 Table 4."""
+    n_nodes = int(A_csr.shape[0])
+    n_edges = int(A_csr.nnz // 2)
+    upper_rows, upper_cols = upper_triangle_edges(A_csr)
+    master_rng = np.random.default_rng(seed)
+    rows = []
+
+    for rep in range(1, reps + 1):
+        rep_seed = int(master_rng.integers(1, 2**31 - 1))
+        rng = np.random.default_rng(rep_seed)
+
+        t0 = perf_counter()
+        eigvecs_random_projection_sparse(A_csr, target_rank, r, q, rng)
+        t_rp = perf_counter() - t0
+        rows.append(
+            {
+                "dataset": dataset_name,
+                "rep": rep,
+                "method": "Random Projection",
+                "time_sec": t_rp,
+                "time_sec_excl_sampling": t_rp,
+                "time_sampling_sec": 0.0,
+                "target_rank": target_rank,
+                "n_nodes": n_nodes,
+                "n_edges": n_edges,
+            }
+        )
+        if progress is not None:
+            progress.update("dataset", dataset_name, rep, reps, "Random Projection")
+
+        _, t_rs_with, t_rs_without = eigvecs_random_sampling_sparse_table4(
+            n=n_nodes,
+            upper_rows=upper_rows,
+            upper_cols=upper_cols,
+            p=p,
+            k=target_rank,
+            rng=rng,
+        )
+        rows.append(
+            {
+                "dataset": dataset_name,
+                "rep": rep,
+                "method": "Random Sampling",
+                "time_sec": float(t_rs_with),
+                "time_sec_excl_sampling": float(t_rs_without),
+                "time_sampling_sec": max(0.0, float(t_rs_with - t_rs_without)),
+                "target_rank": target_rank,
+                "n_nodes": n_nodes,
+                "n_edges": n_edges,
+            }
+        )
+        if progress is not None:
+            progress.update("dataset", dataset_name, rep, reps, "Random Sampling")
+
+        t0 = perf_counter()
+        eigvecs_partial_eigen_proxy_sparse(A_csr, target_rank)
+        t_pe = perf_counter() - t0
+        rows.append(
+            {
+                "dataset": dataset_name,
+                "rep": rep,
+                "method": "partial_eigen",
+                "time_sec": t_pe,
+                "time_sec_excl_sampling": t_pe,
+                "time_sampling_sec": 0.0,
+                "target_rank": target_rank,
+                "n_nodes": n_nodes,
+                "n_edges": n_edges,
+            }
+        )
+        if progress is not None:
+            progress.update("dataset", dataset_name, rep, reps, "partial_eigen")
+
+    return pd.DataFrame(rows)
+
+
+def summarize_table4_median_times(df_raw: pd.DataFrame):
+    """Summarize paper-style Table 4 medians into one row per dataset."""
+    records = []
+    for dataset, block in df_raw.groupby("dataset", sort=False):
+        rp = block[block["method"] == "Random Projection"]["time_sec"].median()
+        rs = block[block["method"] == "Random Sampling"]["time_sec"].median()
+        rs_excl = block[block["method"] == "Random Sampling"]["time_sec_excl_sampling"].median()
+        pe = block[block["method"] == "partial_eigen"]["time_sec"].median()
+        meta = block.iloc[0]
+        records.append(
+            {
+                "dataset": dataset,
+                "n_nodes": int(meta["n_nodes"]),
+                "n_edges": int(meta["n_edges"]),
+                "target_rank": int(meta["target_rank"]),
+                "random_projection_median_sec": float(rp),
+                "random_sampling_median_sec": float(rs),
+                "random_sampling_excl_sampling_median_sec": float(rs_excl),
+                "partial_eigen_median_sec": float(pe),
+                "random_sampling_display": f"{rs:.3f}({rs_excl:.3f})",
+            }
+        )
+    return pd.DataFrame(records)
+
+
+def format_table4_markdown(df_summary: pd.DataFrame):
+    """Render a markdown table in the paper's Table 4 style."""
+    lines = [
+        "Table 4-like median time (seconds) over 20 replications.",
+        "",
+        "| Networks | Random projection | Random sampling | partial_eigen |",
+        "|---|---:|---:|---:|",
+    ]
+    for row in df_summary.itertuples(index=False):
+        lines.append(
+            "| "
+            f"{row.dataset} | "
+            f"{row.random_projection_median_sec:.3f} | "
+            f"{row.random_sampling_display} | "
+            f"{row.partial_eigen_median_sec:.3f} |"
+        )
+    lines.append("")
+    lines.append(
+        "Note: For random sampling, the value outside parentheses includes sampling time and "
+        "the value inside parentheses excludes sampling time."
+    )
+    return "\n".join(lines)
+
+
+def _table4_plot_long_frame(df_summary: pd.DataFrame):
+    rows = []
+    for row in df_summary.itertuples(index=False):
+        rows.extend(
+            [
+                {
+                    "dataset": row.dataset,
+                    "method_variant": "Random Projection",
+                    "time_sec": row.random_projection_median_sec,
+                },
+                {
+                    "dataset": row.dataset,
+                    "method_variant": "Random Sampling",
+                    "time_sec": row.random_sampling_median_sec,
+                },
+                {
+                    "dataset": row.dataset,
+                    "method_variant": "Random Sampling (excl. sampling)",
+                    "time_sec": row.random_sampling_excl_sampling_median_sec,
+                },
+                {
+                    "dataset": row.dataset,
+                    "method_variant": "partial_eigen",
+                    "time_sec": row.partial_eigen_median_sec,
+                },
+            ]
+        )
+    return pd.DataFrame(rows)
+
+
+def plot_table4_median_bars(df_summary: pd.DataFrame, out_png: Path):
+    """Plot grouped median bars for the paper-style Table 4 comparison."""
+    plot_df = _table4_plot_long_frame(df_summary)
+    datasets = list(dict.fromkeys(plot_df["dataset"].tolist()))
+    x = np.arange(len(datasets))
+    width = 0.18
+
+    fig, ax = plt.subplots(figsize=(9.2, 4.8))
+    for idx, method in enumerate(TABLE4_PLOT_ORDER):
+        d = plot_df[plot_df["method_variant"] == method]
+        offsets = x + (idx - 1.5) * width
+        bars = ax.bar(
+            offsets,
+            d["time_sec"].values,
+            width=width,
+            color=TABLE4_PLOT_COLORS[method],
+            edgecolor="black",
+            linewidth=0.6,
+            label=TABLE4_PLOT_LABELS[method],
+            hatch="//" if "excl." in method else None,
+        )
+        for bar in bars:
+            h = float(bar.get_height())
+            ax.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                h,
+                f"{h:.3f}",
+                ha="center",
+                va="bottom",
+                fontsize=8,
+                rotation=90,
+            )
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(datasets)
+    ax.set_ylabel("Median eigenvector runtime (sec)")
+    ax.set_title("Table 4-like Median Runtime Comparison")
+    ax.grid(axis="y", alpha=0.3)
+    ax.legend(ncols=2)
+    fig.tight_layout()
+    fig.savefig(out_png, dpi=180, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_table4_runtime_boxplots(df_raw: pd.DataFrame, out_png: Path):
+    """Plot per-rep runtime distributions for each dataset and method variant."""
+    datasets = list(dict.fromkeys(df_raw["dataset"].tolist()))
+    fig, axes = plt.subplots(1, len(datasets), figsize=(5.4 * len(datasets), 4.8), sharey=True)
+    if len(datasets) == 1:
+        axes = [axes]
+
+    for ax, dataset in zip(axes, datasets):
+        block = df_raw[df_raw["dataset"] == dataset]
+        series = []
+        for variant in TABLE4_PLOT_ORDER:
+            if variant == "Random Sampling (excl. sampling)":
+                vals = block.loc[block["method"] == "Random Sampling", "time_sec_excl_sampling"].values
+            else:
+                vals = block.loc[block["method"] == variant, "time_sec"].values
+            series.append(vals)
+
+        box = ax.boxplot(
+            series,
+            tick_labels=[TABLE4_PLOT_LABELS[v] for v in TABLE4_PLOT_ORDER],
+            showfliers=False,
+            patch_artist=True,
+        )
+        for patch, variant in zip(box["boxes"], TABLE4_PLOT_ORDER):
+            patch.set_facecolor(TABLE4_PLOT_COLORS[variant])
+            patch.set_edgecolor("black")
+            if "excl." in variant:
+                patch.set_hatch("//")
+
+        ax.set_title(dataset)
+        ax.tick_params(axis="x", rotation=20)
+        ax.grid(axis="y", alpha=0.3)
+
+    axes[0].set_ylabel("Per-rep eigenvector runtime (sec)")
+    fig.suptitle("Table 4-like Runtime Distribution", y=1.02)
+    fig.tight_layout()
+    fig.savefig(out_png, dpi=180, bbox_inches="tight")
+    plt.close(fig)
 
 
 def pairwise_ari(label_map: dict):

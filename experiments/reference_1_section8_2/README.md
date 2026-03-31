@@ -1,25 +1,41 @@
-# Section 8.2 (DBLP) Efficiency Experiment
+# Section 8.2 (Table 4-style) Efficiency Experiment
 
-Fresh implementation for three methods:
+Paper-aligned timing benchmark for three large-scale real networks:
+
+- DBLP collaboration network
+- Youtube social network
+- Internet topology graph
+
+Methods reproduced in this workspace:
 
 - Random Projection
 - Random Sampling
-- Non-random spectral clustering
+- `partial_eigen` (Python proxy using `scipy.sparse.linalg.eigsh`)
 
-## Input format
+## Paper alignment
 
-- Undirected edge list text file
-- Each line: `node_u node_v`
-- Comment lines start with `#` by default
-- Node IDs may be non-contiguous (script remaps them)
+- The timing target matches Table 4 of the paper: only the eigenvector computation step is timed.
+- `k-means`, ARI, and any clustering post-processing are excluded.
+- For Random Sampling, both
+  - time including sampling, and
+  - time excluding sampling
+  are reported, matching the paper's parenthesized format.
+
+## Dataset files
+
+Expected local files:
+
+- `data/com-dblp.ungraph.txt`
+- `data/com-youtube.ungraph.txt`
+- `data/as-skitter.txt`
 
 ## Run
 
 ```bash
-python experiments/reference_1_section8_2/exp8_2_dblp_live.py \
-  --edgelist /absolute/path/to/com-dblp.ungraph.txt \
-  --target-rank 3 \
-  --clusters 3 \
+python experiments/reference_1_section8_2/exp8_2_live.py \
+  --dblp-edgelist data/com-dblp.ungraph.txt \
+  --youtube-edgelist data/com-youtube.ungraph.txt \
+  --internet-edgelist data/as-skitter.txt \
   --reps 20 \
   --seed 2026 \
   --q 2 \
@@ -29,17 +45,17 @@ python experiments/reference_1_section8_2/exp8_2_dblp_live.py \
 
 ## Outputs
 
-- `dblp_time_raw.csv`
-- `dblp_table4_like_median_time.csv`
-- `dblp_pairwise_ari_raw.csv`
-- `dblp_pairwise_ari_mean_matrix.csv`
-- `dblp_pairwise_ari_heatmap.png`
-- `dblp_meta.json`
+- `table4_time_raw.csv`
+- `table4_like_median_time.csv`
+- `table4_like_median_time.md`
+- `table4_meta.json`
+- `viz/table4_median_bar.png`
+- `viz/table4_runtime_boxplots.png`
 
-## Runtime notes
+## Notes
 
-- `time_sec` / `median_time_sec` measure the full algorithm pipeline for each method:
-  eigenvector computation plus k-means.
-- `time_sampling_sec` is nonzero only for Random Sampling.
-- `time_sec_excl_sampling` means "sampling excluded total runtime", so for Random Sampling it is
-  eigenvector computation plus k-means, and for the other two methods it matches total runtime.
+- Target ranks are fixed from the paper's Table 3:
+  - DBLP: `3`
+  - Youtube: `7`
+  - Internet: `4`
+- Since the original paper used R implementations, `partial_eigen` here is a Python-side proxy rather than the exact same software stack.

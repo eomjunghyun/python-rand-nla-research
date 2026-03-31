@@ -216,10 +216,18 @@ paper_extracted.txt
 
 # Local large datasets
 data/dblp/
+data/com-dblp.ungraph.txt
+data/com-dblp.ungraph.txt.gz
+data/com-youtube.ungraph.txt
+data/com-youtube.ungraph.txt.gz
+data/as-skitter.txt
+data/as-skitter.txt.gz
 
 # Section 8.2 generated artifacts
 experiments/reference_1_section8_2/results/**/*.csv
 experiments/reference_1_section8_2/results/**/*.png
+experiments/reference_1_section8_2/results/**/*.json
+experiments/reference_1_section8_2/results/**/*.md
 
 # Section 7 generated image artifacts
 experiments/reference_1_section7_1/results/**/*.png

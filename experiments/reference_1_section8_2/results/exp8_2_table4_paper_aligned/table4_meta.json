@@ -1,0 +1,31 @@
+{
+  "datasets": [
+    {
+      "dataset": "DBLP",
+      "edgelist": "data\\com-dblp.ungraph.txt",
+      "target_rank": 3,
+      "n_nodes": 317080,
+      "n_edges": 1049866
+    },
+    {
+      "dataset": "Youtube",
+      "edgelist": "data\\com-youtube.ungraph.txt",
+      "target_rank": 7,
+      "n_nodes": 1134890,
+      "n_edges": 2987624
+    },
+    {
+      "dataset": "Internet",
+      "edgelist": "data\\as-skitter.txt",
+      "target_rank": 4,
+      "n_nodes": 1696415,
+      "n_edges": 11095298
+    }
+  ],
+  "reps": 20,
+  "seed": 2026,
+  "q": 2,
+  "r": 10,
+  "p": 0.7,
+  "partial_eigen_note": "Python proxy implemented with scipy.sparse.linalg.eigsh"
+}
