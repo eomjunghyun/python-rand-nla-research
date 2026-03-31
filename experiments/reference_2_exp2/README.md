@@ -7,7 +7,7 @@
 - Figure 4: effective parameter (`E*/E`, `N*/N`) vs `q/p`
 - Figure 5: `min` strategy에서 size distribution의 bimodal 경향 점검
 
-공통 생성 로직은 `src/hypergraph_sbm.py`의 함수를 재사용합니다.
+공통 생성 로직은 `src/common.py`의 함수를 재사용합니다.
 
 ## Run
 

@@ -21,8 +21,8 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.common import LiveProgress  # noqa: E402
-from src.hypergraph_sbm import (  # noqa: E402
+from src.common import (  # noqa: E402
+    LiveProgress,
     generate_hypergraph,
     hyperedge_sizes,
     node_degrees_from_hyperedges,

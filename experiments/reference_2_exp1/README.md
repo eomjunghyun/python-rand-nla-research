@@ -1,7 +1,7 @@
 # Reference 2 - Experiment 1 (Figure 2 Runtime)
 
 논문 "A Stochastic Block Hypergraph model"의 Figure 2(시간복잡도 benchmark)를 재현하는 코드입니다.
-공통 생성 로직은 `src/hypergraph_sbm.py`의 함수를 재사용합니다.
+공통 생성 로직은 `src/common.py`의 함수를 재사용합니다.
 
 ## Run
 
