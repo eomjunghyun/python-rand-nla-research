@@ -6,11 +6,17 @@
 
 - `common.py`
   - SBM 생성
+  - Hypergraph SBM 생성/통계/라플라시안 유틸 (기존 `hypergraph_sbm.py` 통합)
   - randomized / non-random spectral 알고리즘
   - 오차 metric 계산
   - 상세 timing breakdown 집계
   - Section 7.1 실험 실행/저장 유틸
   - Section 7.1 timing 시각화 유틸
+
+## 파일 정리 메모
+
+- 기존 `src/hypergraph_sbm.py`는 더 이상 사용하지 않으며, 관련 함수는 모두 `src/common.py`로 통합되었습니다.
+- 실험 스크립트는 `from src.common import ...` 경로를 사용합니다.
 
 ## Section 7.1 에 추가한 함수들
 
