@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.common import LiveProgress, METHOD_COLORS  # noqa: E402
+from src.common import LiveProgress  # noqa: E402
+from src.hypergraph_sbm import generate_hypergraph, hyperedge_sizes  # noqa: E402
 
 
 @dataclass
@@ -36,116 +37,6 @@ class Figure2RuntimeConfig:
     seed: int = 2026
     auto_skip_large_n: bool = True
     max_seconds_per_n: float = 20.0
-
-
-def build_probability_matrix(K: int, p: float, q: float) -> np.ndarray:
-    """Build a planted-partition community probability matrix.
-
-    Diagonal entries are within-community probability p, and off-diagonal
-    entries are between-community probability q.
-    """
-    if K <= 0:
-        raise ValueError(f"K must be positive, got {K}.")
-    if not (0.0 <= q <= p <= 1.0):
-        raise ValueError(f"Expected 0 <= q <= p <= 1. Got p={p}, q={q}.")
-
-    P = np.full((K, K), q, dtype=float)
-    np.fill_diagonal(P, p)
-    return P
-
-
-def assign_equal_communities(N: int, K: int) -> np.ndarray:
-    """Assign N nodes into K communities with as-equal-as-possible sizes."""
-    if N <= 0:
-        raise ValueError(f"N must be positive, got {N}.")
-    if K <= 0:
-        raise ValueError(f"K must be positive, got {K}.")
-    if K > N:
-        raise ValueError(f"K must be <= N for non-empty communities. Got K={K}, N={N}.")
-
-    sizes = np.full(K, N // K, dtype=np.int64)
-    sizes[: (N % K)] += 1
-    return np.repeat(np.arange(K, dtype=np.int64), sizes)
-
-
-def _node_sequence(
-    N: int,
-    communities: np.ndarray,
-    node_order: str,
-    rng: np.random.Generator,
-) -> np.ndarray:
-    """Create node traversal order for one hyperedge update."""
-    if node_order == "random":
-        return rng.permutation(N)
-    if node_order == "fixed":
-        return np.arange(N, dtype=np.int64)
-    if node_order == "community":
-        return np.argsort(communities, kind="stable")
-    raise ValueError(f"Unsupported node_order: {node_order}")
-
-
-def generate_hypergraph(
-    N: int,
-    E: int,
-    K: int,
-    p: float,
-    q: float,
-    strategy: str,
-    node_order: str = "random",
-    seed: int | None = None,
-) -> list[np.ndarray]:
-    """Generate a stochastic block hypergraph using the paper's join process.
-
-    For each hyperedge:
-    1) start from one random seed node,
-    2) iterate over all nodes once,
-    3) for each candidate node v not in edge, compute Prob(v -> e),
-    4) include v via Bernoulli draw.
-
-    Weighted strategy:
-    Prob(v -> e) = average_u_in_e P[c(u), c(v)].
-    """
-    if strategy != "weighted":
-        raise ValueError("This benchmark reproduces Figure 2 with strategy='weighted' only.")
-    if N <= 0 or E <= 0:
-        raise ValueError(f"N and E must be positive, got N={N}, E={E}.")
-
-    rng = np.random.default_rng(seed)
-    communities = assign_equal_communities(N, K)
-    P = build_probability_matrix(K, p, q)
-
-    hyperedges: list[np.ndarray] = []
-
-    # Complexity note:
-    # - For each hyperedge, we scan N nodes once.
-    # - Prob(v->e) uses only K community counts (K is constant here), so each
-    #   node check is O(1) w.r.t. N.
-    # => Total O(N * E). If E = N, this becomes O(N^2).
-    for _ in range(E):
-        seed_node = int(rng.integers(0, N))
-        in_edge = np.zeros(N, dtype=bool)
-        in_edge[seed_node] = True
-
-        members = [seed_node]
-        edge_comm_counts = np.zeros(K, dtype=np.int64)
-        edge_comm_counts[communities[seed_node]] = 1
-
-        for v in _node_sequence(N, communities, node_order, rng):
-            if in_edge[v]:
-                continue
-
-            c_v = int(communities[v])
-            prob_join = float(np.dot(edge_comm_counts, P[:, c_v])) / float(len(members))
-            prob_join = float(np.clip(prob_join, 0.0, 1.0))
-
-            if rng.random() < prob_join:
-                in_edge[v] = True
-                members.append(int(v))
-                edge_comm_counts[c_v] += 1
-
-        hyperedges.append(np.asarray(members, dtype=np.int32))
-
-    return hyperedges
 
 
 def _fit_quadratic(x: np.ndarray, y: np.ndarray) -> dict:
@@ -209,7 +100,7 @@ def run_runtime_benchmark(
             )
             runtime_sec = perf_counter() - t0
 
-            edge_sizes = np.asarray([len(e) for e in hyperedges], dtype=float)
+            edge_sizes = hyperedge_sizes(hyperedges).astype(float)
             records.append(
                 {
                     "N": N,
@@ -268,43 +159,108 @@ def run_runtime_benchmark(
     return df_raw, df_summary, fit
 
 
-def plot_runtime_figure(df_summary: pd.DataFrame, fit: dict, out_png: Path) -> None:
-    """Plot runtime-vs-N with error bars and optional quadratic fit."""
-    color = METHOD_COLORS["Random Projection"]
+def plot_runtime_figure(
+    df_summary: pd.DataFrame,
+    fit: dict,
+    out_png: Path,
+    requested_n_values: list | None = None,
+    paper_style_axes: bool = True,
+) -> None:
+    """Plot Figure 2 style: panel (a) runtime vs N, panel (b) time vs fitted f(N)."""
     x = df_summary["N"].to_numpy(dtype=float)
     y = df_summary["runtime_mean_sec"].to_numpy(dtype=float)
     yerr = df_summary["runtime_std_sec"].to_numpy(dtype=float)
 
-    fig, ax = plt.subplots(1, 1, figsize=(7.2, 4.8))
-    ax.errorbar(
+    fig, axes = plt.subplots(1, 2, figsize=(10.6, 4.8))
+    ax0, ax1 = axes
+
+    # (a) runtime benchmark for different N
+    ax0.errorbar(
         x,
         y,
         yerr=yerr,
         fmt="o-",
-        color=color,
-        linewidth=2.0,
-        markersize=4.5,
+        color="black",
+        linewidth=1.8,
+        markersize=4.2,
         capsize=3.0,
-        label="Measured runtime (mean ± std)",
+        elinewidth=1.2,
+        label="Measured runtime",
     )
+    ax0.set_xlabel("N")
+    ax0.set_ylabel("Time (s)")
+    ax0.text(0.5, -0.18, "(a)", transform=ax0.transAxes, ha="center", va="top")
 
+    if requested_n_values:
+        req_max = float(max(requested_n_values))
+        used_max = float(np.max(x))
+        # If larger N values were skipped, zoom to used range for readability.
+        if used_max < 0.95 * req_max:
+            ax0.set_xlim(0.0, used_max * 1.05)
+        else:
+            ax0.set_xlim(0.0, req_max)
+    else:
+        ax0.set_xlim(0.0, float(np.max(x)) * 1.03)
+
+    # paper-like y-range for visual comparability
+    if paper_style_axes:
+        ymax = float(np.max(y + yerr)) if y.size else 1.0
+        ax0.set_ylim(0.0, max(22.0, ymax * 1.08))
+    else:
+        ymax = float(np.max(y + yerr)) if y.size else 1.0
+        ax0.set_ylim(0.0, max(1.0, ymax * 1.15))
+
+    # (b) quadratic fit check: Time(s) vs f(N)
     if fit.get("status") == "ok":
-        x_fit = np.linspace(float(x.min()), float(x.max()), 200)
-        y_fit = fit["a"] * x_fit**2 + fit["b"] * x_fit + fit["c"]
-        ax.plot(
-            x_fit,
-            y_fit,
-            linestyle="--",
-            linewidth=2.0,
-            color="#d62728",
-            label=f"Quadratic fit (R^2={fit['r2']:.4f})",
+        fN = fit["a"] * x**2 + fit["b"] * x + fit["c"]
+        ax1.plot(
+            fN,
+            y,
+            "o",
+            color="black",
+            markersize=4.2,
+        )
+        hi = float(max(np.max(fN), np.max(y))) if y.size else 1.0
+        if paper_style_axes:
+            hi = max(22.0, hi * 1.08)
+        else:
+            hi = max(1.0, hi * 1.10)
+        ax1.plot([0.0, hi], [0.0, hi], linestyle="--", color="#666666", linewidth=1.5)
+        ax1.set_xlim(0.0, hi)
+        ax1.set_ylim(0.0, hi)
+        ax1.text(
+            0.03,
+            0.97,
+            "\n".join(
+                [
+                    f"R^2={fit['r2']:.4f}",
+                    "f(N)=aN^2+bN+c",
+                    f"a={fit['a']:.2e}, b={fit['b']:.2e}, c={fit['c']:.2e}",
+                ]
+            ),
+            transform=ax1.transAxes,
+            ha="left",
+            va="top",
+            fontsize=9,
+        )
+    else:
+        ax1.text(
+            0.5,
+            0.5,
+            "Not enough points\nfor quadratic fit",
+            transform=ax1.transAxes,
+            ha="center",
+            va="center",
+            fontsize=10,
         )
 
-    ax.set_xlabel("N (with E = N)")
-    ax.set_ylabel("Runtime (sec)")
-    ax.set_title("Figure 2-like Runtime Benchmark (weighted strategy)")
-    ax.grid(alpha=0.3)
-    ax.legend()
+    ax1.set_xlabel("f(N)")
+    ax1.set_ylabel("Time (s)")
+    ax1.text(0.5, -0.18, "(b)", transform=ax1.transAxes, ha="center", va="top")
+
+    for ax in (ax0, ax1):
+        ax.tick_params(direction="out")
+        ax.grid(False)
 
     fig.tight_layout()
     fig.savefig(out_png, dpi=180, bbox_inches="tight")
@@ -383,7 +339,7 @@ def main() -> None:
     parser.add_argument(
         "--outdir",
         type=str,
-        default="experiments/reference_1_exp1",
+        default="experiments/reference_2_exp1",
         help="Output root directory containing figures/ and results/.",
     )
     parser.add_argument("--no-progress", action="store_true", help="Disable live progress output.")
@@ -420,7 +376,13 @@ def main() -> None:
     df_summary.to_csv(out_csv, index=False)
     with out_json.open("w", encoding="utf-8") as f:
         json.dump(fit, f, indent=2, ensure_ascii=False)
-    plot_runtime_figure(df_summary, fit, out_png)
+    plot_runtime_figure(
+        df_summary=df_summary,
+        fit=fit,
+        out_png=out_png,
+        requested_n_values=cfg.n_values,
+        paper_style_axes=True,
+    )
 
     print("Done.")
     print(f"Runtime CSV : {out_csv.resolve()}")
