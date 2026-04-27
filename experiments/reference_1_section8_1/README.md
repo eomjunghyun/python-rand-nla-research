@@ -11,6 +11,7 @@
 ## 현재 구현 상태
 
 - `exp8_1_email_eu_core_live.py`: European Email network
+- `exp8_1_email_eu_core_rank30_live.py`: European Email network, embedding rank 30
 - `exp8_1_political_blog_live.ipynb`: Political blog network
 - `exp8_1_statisticians_coauthor_live.ipynb`: Statisticians coauthor network
 - `exp8_1_statisticians_citation_live.ipynb`: Statisticians citation network
@@ -37,6 +38,22 @@ python experiments/reference_1_section8_1/exp8_1_email_eu_core_live.py \
   --seed 2026 \
   --q 2 \
   --r 10 \
+  --p-values 0.7,0.8
+```
+
+## European Email rank 30 실행 방법
+
+`target_rank=30`은 spectral embedding 차원만 바꾸며, 최종 KMeans 군집 수는 정답 class 수(`K=42`)를 그대로 사용한다.
+
+```bash
+python experiments/reference_1_section8_1/exp8_1_email_eu_core_rank30_live.py \
+  --edge-path data/email-Eu-core.txt \
+  --label-path data/email-Eu-core-department-labels.txt \
+  --reps 20 \
+  --seed 2026 \
+  --q 2 \
+  --r 10 \
+  --target-rank 30 \
   --p-values 0.7,0.8
 ```
 
@@ -81,6 +98,27 @@ python experiments/reference_1_section8_1/exp8_1_remaining_real_networks_live.py
 
 ## 출력 파일
 
+European Email 기본 rank 결과:
+- `results/exp8_1_email_eu_core_table2_like/email_eu_raw_per_rep.csv`
+- `results/exp8_1_email_eu_core_table2_like/email_eu_summary_mean_std.csv`
+- `results/exp8_1_email_eu_core_table2_like/email_eu_table2a_like.csv`
+- `results/exp8_1_email_eu_core_table2_like/email_eu_table2a_like.md`
+- `results/exp8_1_email_eu_core_table2_like/email_eu_pairwise_ari_raw.csv`
+- `results/exp8_1_email_eu_core_table2_like/email_eu_pairwise_ari_mean_matrix.csv`
+- `results/exp8_1_email_eu_core_table2_like/email_eu_pairwise_ari_heatmap.png`
+- `results/exp8_1_email_eu_core_table2_like/email_eu_meta.json`
+
+European Email rank 30 결과:
+- `results/exp8_1_email_eu_core_rank30_table2_like/email_eu_raw_per_rep.csv`
+- `results/exp8_1_email_eu_core_rank30_table2_like/email_eu_summary_mean_std.csv`
+- `results/exp8_1_email_eu_core_rank30_table2_like/email_eu_table2a_like.csv`
+- `results/exp8_1_email_eu_core_rank30_table2_like/email_eu_table2a_like.md`
+- `results/exp8_1_email_eu_core_rank30_table2_like/email_eu_pairwise_ari_raw.csv`
+- `results/exp8_1_email_eu_core_rank30_table2_like/email_eu_pairwise_ari_mean_matrix.csv`
+- `results/exp8_1_email_eu_core_rank30_table2_like/email_eu_pairwise_ari_heatmap.png`
+- `results/exp8_1_email_eu_core_rank30_table2_like/email_eu_meta.json`
+
+공통 파일명:
 - `email_eu_raw_per_rep.csv`
 - `email_eu_summary_mean_std.csv`
 - `email_eu_table2a_like.csv`

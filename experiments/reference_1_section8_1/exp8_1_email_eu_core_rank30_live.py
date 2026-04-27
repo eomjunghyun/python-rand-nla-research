@@ -58,7 +58,7 @@ class Exp81Config:
     target_rank: int = 30
     p_values: tuple = (0.7, 0.8)
     n_init: int = 20
-    outdir: Path = Path("experiments/reference_1_section8_1_rank30/results/exp8_1_email_eu_core_rank30_table2_like")
+    outdir: Path = Path("experiments/reference_1_section8_1/results/exp8_1_email_eu_core_rank30_table2_like")
     no_progress: bool = False
 
 
@@ -377,7 +377,7 @@ def main():
     parser.add_argument(
         "--outdir",
         type=str,
-        default="experiments/reference_1_section8_1_rank30/results/exp8_1_email_eu_core_rank30_table2_like",
+        default="experiments/reference_1_section8_1/results/exp8_1_email_eu_core_rank30_table2_like",
         help="output directory",
     )
     parser.add_argument("--no-progress", action="store_true")
