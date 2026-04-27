@@ -1,0 +1,121 @@
+dataset,rep,method_i,method_j,ari
+statisticians_coauthor,1,Non-random,Random Projection,1.0
+statisticians_coauthor,1,Non-random,Random Sampling (p=0.7),0.873941660097483
+statisticians_coauthor,1,Non-random,Random Sampling (p=0.8),0.9840979315835654
+statisticians_coauthor,1,Random Projection,Random Sampling (p=0.7),0.873941660097483
+statisticians_coauthor,1,Random Projection,Random Sampling (p=0.8),0.9840979315835654
+statisticians_coauthor,1,Random Sampling (p=0.7),Random Sampling (p=0.8),0.8584009252952688
+statisticians_coauthor,2,Non-random,Random Projection,1.0
+statisticians_coauthor,2,Non-random,Random Sampling (p=0.7),0.7351781370952749
+statisticians_coauthor,2,Non-random,Random Sampling (p=0.8),0.5113939380975115
+statisticians_coauthor,2,Random Projection,Random Sampling (p=0.7),0.7351781370952749
+statisticians_coauthor,2,Random Projection,Random Sampling (p=0.8),0.5113939380975115
+statisticians_coauthor,2,Random Sampling (p=0.7),Random Sampling (p=0.8),0.40252436873308506
+statisticians_coauthor,3,Non-random,Random Projection,1.0
+statisticians_coauthor,3,Non-random,Random Sampling (p=0.7),0.8652812149631528
+statisticians_coauthor,3,Non-random,Random Sampling (p=0.8),0.9206138068720067
+statisticians_coauthor,3,Random Projection,Random Sampling (p=0.7),0.8652812149631528
+statisticians_coauthor,3,Random Projection,Random Sampling (p=0.8),0.9206138068720067
+statisticians_coauthor,3,Random Sampling (p=0.7),Random Sampling (p=0.8),0.852352253755475
+statisticians_coauthor,4,Non-random,Random Projection,1.0
+statisticians_coauthor,4,Non-random,Random Sampling (p=0.7),0.9374045475681162
+statisticians_coauthor,4,Non-random,Random Sampling (p=0.8),0.9493388313431004
+statisticians_coauthor,4,Random Projection,Random Sampling (p=0.7),0.9374045475681162
+statisticians_coauthor,4,Random Projection,Random Sampling (p=0.8),0.9493388313431004
+statisticians_coauthor,4,Random Sampling (p=0.7),Random Sampling (p=0.8),0.8855691637473816
+statisticians_coauthor,5,Non-random,Random Projection,1.0
+statisticians_coauthor,5,Non-random,Random Sampling (p=0.7),0.968672346037863
+statisticians_coauthor,5,Non-random,Random Sampling (p=0.8),0.9314009267944705
+statisticians_coauthor,5,Random Projection,Random Sampling (p=0.7),0.968672346037863
+statisticians_coauthor,5,Random Projection,Random Sampling (p=0.8),0.9314009267944705
+statisticians_coauthor,5,Random Sampling (p=0.7),Random Sampling (p=0.8),0.9003927453994334
+statisticians_coauthor,6,Non-random,Random Projection,1.0
+statisticians_coauthor,6,Non-random,Random Sampling (p=0.7),0.8535181521711975
+statisticians_coauthor,6,Non-random,Random Sampling (p=0.8),0.9677333876525449
+statisticians_coauthor,6,Random Projection,Random Sampling (p=0.7),0.8535181521711975
+statisticians_coauthor,6,Random Projection,Random Sampling (p=0.8),0.9677333876525449
+statisticians_coauthor,6,Random Sampling (p=0.7),Random Sampling (p=0.8),0.8535181521711975
+statisticians_coauthor,7,Non-random,Random Projection,1.0
+statisticians_coauthor,7,Non-random,Random Sampling (p=0.7),0.9374004600400555
+statisticians_coauthor,7,Non-random,Random Sampling (p=0.8),0.45805204348629347
+statisticians_coauthor,7,Random Projection,Random Sampling (p=0.7),0.9374004600400555
+statisticians_coauthor,7,Random Projection,Random Sampling (p=0.8),0.45805204348629347
+statisticians_coauthor,7,Random Sampling (p=0.7),Random Sampling (p=0.8),0.44260496775385094
+statisticians_coauthor,8,Non-random,Random Projection,1.0
+statisticians_coauthor,8,Non-random,Random Sampling (p=0.7),0.5214433100198943
+statisticians_coauthor,8,Non-random,Random Sampling (p=0.8),0.9523362379938006
+statisticians_coauthor,8,Random Projection,Random Sampling (p=0.7),0.5214433100198943
+statisticians_coauthor,8,Random Projection,Random Sampling (p=0.8),0.9523362379938006
+statisticians_coauthor,8,Random Sampling (p=0.7),Random Sampling (p=0.8),0.5114828005531321
+statisticians_coauthor,9,Non-random,Random Projection,1.0
+statisticians_coauthor,9,Non-random,Random Sampling (p=0.7),0.5113939380975115
+statisticians_coauthor,9,Non-random,Random Sampling (p=0.8),0.9667345453594134
+statisticians_coauthor,9,Random Projection,Random Sampling (p=0.7),0.5113939380975115
+statisticians_coauthor,9,Random Projection,Random Sampling (p=0.8),0.9667345453594134
+statisticians_coauthor,9,Random Sampling (p=0.7),Random Sampling (p=0.8),0.5317131484612001
+statisticians_coauthor,10,Non-random,Random Projection,1.0
+statisticians_coauthor,10,Non-random,Random Sampling (p=0.7),0.48333595046376554
+statisticians_coauthor,10,Non-random,Random Sampling (p=0.8),0.5113939380975115
+statisticians_coauthor,10,Random Projection,Random Sampling (p=0.7),0.48333595046376554
+statisticians_coauthor,10,Random Projection,Random Sampling (p=0.8),0.5113939380975115
+statisticians_coauthor,10,Random Sampling (p=0.7),Random Sampling (p=0.8),0.5900404491604773
+statisticians_coauthor,11,Non-random,Random Projection,1.0
+statisticians_coauthor,11,Non-random,Random Sampling (p=0.7),0.8740521032398002
+statisticians_coauthor,11,Non-random,Random Sampling (p=0.8),0.48333595046376554
+statisticians_coauthor,11,Random Projection,Random Sampling (p=0.7),0.8740521032398002
+statisticians_coauthor,11,Random Projection,Random Sampling (p=0.8),0.48333595046376554
+statisticians_coauthor,11,Random Sampling (p=0.7),Random Sampling (p=0.8),0.5535787749035114
+statisticians_coauthor,12,Non-random,Random Projection,0.8536535369862165
+statisticians_coauthor,12,Non-random,Random Sampling (p=0.7),0.9355546817176904
+statisticians_coauthor,12,Non-random,Random Sampling (p=0.8),0.9667345453594134
+statisticians_coauthor,12,Random Projection,Random Sampling (p=0.7),0.8534948590649357
+statisticians_coauthor,12,Random Projection,Random Sampling (p=0.8),0.8862002027139909
+statisticians_coauthor,12,Random Sampling (p=0.7),Random Sampling (p=0.8),0.9003544753562642
+statisticians_coauthor,13,Non-random,Random Projection,0.9493388313431004
+statisticians_coauthor,13,Non-random,Random Sampling (p=0.7),0.9033333056364632
+statisticians_coauthor,13,Non-random,Random Sampling (p=0.8),0.4501706824663464
+statisticians_coauthor,13,Random Projection,Random Sampling (p=0.7),0.8819442869575396
+statisticians_coauthor,13,Random Projection,Random Sampling (p=0.8),0.4745479771601524
+statisticians_coauthor,13,Random Sampling (p=0.7),Random Sampling (p=0.8),0.41687951636316595
+statisticians_coauthor,14,Non-random,Random Projection,0.9493388313431004
+statisticians_coauthor,14,Non-random,Random Sampling (p=0.7),0.45805204348629347
+statisticians_coauthor,14,Non-random,Random Sampling (p=0.8),0.8740521032398002
+statisticians_coauthor,14,Random Projection,Random Sampling (p=0.7),0.4832388595069538
+statisticians_coauthor,14,Random Projection,Random Sampling (p=0.8),0.9240595403399237
+statisticians_coauthor,14,Random Sampling (p=0.7),Random Sampling (p=0.8),0.521217394930774
+statisticians_coauthor,15,Non-random,Random Projection,0.9493388313431004
+statisticians_coauthor,15,Non-random,Random Sampling (p=0.7),0.8951629830358669
+statisticians_coauthor,15,Non-random,Random Sampling (p=0.8),0.43625976577556297
+statisticians_coauthor,15,Random Projection,Random Sampling (p=0.7),0.843950989995792
+statisticians_coauthor,15,Random Projection,Random Sampling (p=0.8),0.4629333930023902
+statisticians_coauthor,15,Random Sampling (p=0.7),Random Sampling (p=0.8),0.3978100436373495
+statisticians_coauthor,16,Non-random,Random Projection,1.0
+statisticians_coauthor,16,Non-random,Random Sampling (p=0.7),0.8325562742137851
+statisticians_coauthor,16,Non-random,Random Sampling (p=0.8),0.9667345453594134
+statisticians_coauthor,16,Random Projection,Random Sampling (p=0.7),0.8325562742137851
+statisticians_coauthor,16,Random Projection,Random Sampling (p=0.8),0.9667345453594134
+statisticians_coauthor,16,Random Sampling (p=0.7),Random Sampling (p=0.8),0.8648786410688982
+statisticians_coauthor,17,Non-random,Random Projection,1.0
+statisticians_coauthor,17,Non-random,Random Sampling (p=0.7),0.8365268459712468
+statisticians_coauthor,17,Non-random,Random Sampling (p=0.8),0.9314009267944705
+statisticians_coauthor,17,Random Projection,Random Sampling (p=0.7),0.8365268459712468
+statisticians_coauthor,17,Random Projection,Random Sampling (p=0.8),0.9314009267944705
+statisticians_coauthor,17,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7710065623142968
+statisticians_coauthor,18,Non-random,Random Projection,1.0
+statisticians_coauthor,18,Non-random,Random Sampling (p=0.7),0.9493388313431004
+statisticians_coauthor,18,Non-random,Random Sampling (p=0.8),0.9840979315835654
+statisticians_coauthor,18,Random Projection,Random Sampling (p=0.7),0.9493388313431004
+statisticians_coauthor,18,Random Projection,Random Sampling (p=0.8),0.9840979315835654
+statisticians_coauthor,18,Random Sampling (p=0.7),Random Sampling (p=0.8),0.9335311752005274
+statisticians_coauthor,19,Non-random,Random Projection,1.0
+statisticians_coauthor,19,Non-random,Random Sampling (p=0.7),0.9667345453594134
+statisticians_coauthor,19,Non-random,Random Sampling (p=0.8),0.9836136127421897
+statisticians_coauthor,19,Random Projection,Random Sampling (p=0.7),0.9667345453594134
+statisticians_coauthor,19,Random Projection,Random Sampling (p=0.8),0.9836136127421897
+statisticians_coauthor,19,Random Sampling (p=0.7),Random Sampling (p=0.8),0.949337350298119
+statisticians_coauthor,20,Non-random,Random Projection,1.0
+statisticians_coauthor,20,Non-random,Random Sampling (p=0.7),0.8614087859306687
+statisticians_coauthor,20,Non-random,Random Sampling (p=0.8),0.9493388313431004
+statisticians_coauthor,20,Random Projection,Random Sampling (p=0.7),0.8614087859306687
+statisticians_coauthor,20,Random Projection,Random Sampling (p=0.8),0.9493388313431004
+statisticians_coauthor,20,Random Sampling (p=0.7),Random Sampling (p=0.8),0.8391466067453686

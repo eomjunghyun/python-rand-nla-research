@@ -15,9 +15,9 @@
 - `exp8_1_political_blog_live.ipynb`: Political blog network
 - `exp8_1_statisticians_coauthor_live.ipynb`: Statisticians coauthor network
 - `exp8_1_statisticians_citation_live.ipynb`: Statisticians citation network
-- `exp8_1_political_blog_rank8_live.ipynb`: Political blog network, embedding rank 8
-- `exp8_1_statisticians_coauthor_rank8_live.ipynb`: Statisticians coauthor network, embedding rank 8
-- `exp8_1_statisticians_citation_rank8_live.ipynb`: Statisticians citation network, embedding rank 8
+- `exp8_1_political_blog_rank5_live.ipynb`: Political blog network, embedding rank 5
+- `exp8_1_statisticians_coauthor_rank5_live.ipynb`: Statisticians coauthor network, embedding rank 5
+- `exp8_1_statisticians_citation_rank5_live.ipynb`: Statisticians citation network, embedding rank 5
 - `exp8_1_remaining_real_networks_live.py`: 위 세 노트북이 공통으로 사용하는 실행 엔진
 - `prepare_exp8_1_real_data.py`: Political blog / statisticians 원자료 전처리
 
@@ -78,11 +78,11 @@ python experiments/reference_1_section8_1/prepare_exp8_1_real_data.py
 - `exp8_1_political_blog_live.ipynb`
 - `exp8_1_statisticians_coauthor_live.ipynb`
 - `exp8_1_statisticians_citation_live.ipynb`
-- `exp8_1_political_blog_rank8_live.ipynb`
-- `exp8_1_statisticians_coauthor_rank8_live.ipynb`
-- `exp8_1_statisticians_citation_rank8_live.ipynb`
+- `exp8_1_political_blog_rank5_live.ipynb`
+- `exp8_1_statisticians_coauthor_rank5_live.ipynb`
+- `exp8_1_statisticians_citation_rank5_live.ipynb`
 
-Rank 8 노트북은 최종 군집 수는 논문값 그대로 유지하고, spectral embedding에 사용하는 eigenvector 수만 8로 늘린다.
+Rank 5 노트북은 최종 군집 수는 논문값 그대로 유지하고, spectral embedding에 사용하는 eigenvector 수만 5로 늘린다.
 
 CLI로 한 번에 실행하려면 다음 명령을 사용할 수 있다.
 

@@ -1,4 +1,0 @@
-Dataset,Methods,F 1,NMI,ARI
-statisticians_citation,Random Projection,0.851(0.202),0.757(0.214),0.801(0.232)
-statisticians_citation,Random Sampling (p= 0.7),0.782(0.208),0.607(0.210),0.675(0.253)
-statisticians_citation,Random Sampling (p= 0.8),0.794(0.246),0.692(0.200),0.756(0.231)

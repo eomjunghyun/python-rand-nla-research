@@ -9,10 +9,10 @@
       0.7,
       0.8
     ],
-    "embedding_rank": 8,
+    "embedding_rank": 5,
     "cluster_count": 3,
     "data_dir": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/data/reference_1_section8_1/processed",
-    "outdir": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section8_1/results/exp8_1_statisticians_coauthor_rank8_table2_like"
+    "outdir": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section8_1/results/exp8_1_statisticians_coauthor_rank5_table2_like"
   },
   "dataset_meta": {
     "name": "statisticians_coauthor",
