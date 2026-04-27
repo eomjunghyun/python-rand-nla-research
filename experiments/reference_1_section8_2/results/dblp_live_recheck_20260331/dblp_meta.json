@@ -1,0 +1,11 @@
+{
+  "n_nodes":317080,
+  "n_edges":1049866,
+  "target_rank":3,
+  "n_clusters":3,
+  "reps":20,
+  "q":2,
+  "r":10,
+  "p":0.7,
+  "edgelist":"data\/dblp\/com-dblp.ungraph.txt"
+}

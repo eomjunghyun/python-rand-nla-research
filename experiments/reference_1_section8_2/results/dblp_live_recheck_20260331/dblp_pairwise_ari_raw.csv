@@ -1,0 +1,61 @@
+rep,method_i,method_j,ari
+1,Random Projection,Random Sampling,1.0
+1,Random Projection,Non-random,1.0
+1,Random Sampling,Non-random,1.0
+2,Random Projection,Random Sampling,1.0
+2,Random Projection,Non-random,1.0
+2,Random Sampling,Non-random,1.0
+3,Random Projection,Random Sampling,0.5336757950728935
+3,Random Projection,Non-random,0.5336757950728935
+3,Random Sampling,Non-random,1.0
+4,Random Projection,Random Sampling,1.0
+4,Random Projection,Non-random,1.0
+4,Random Sampling,Non-random,1.0
+5,Random Projection,Random Sampling,1.0
+5,Random Projection,Non-random,1.0
+5,Random Sampling,Non-random,1.0
+6,Random Projection,Random Sampling,0.5336757950728935
+6,Random Projection,Non-random,0.5336757950728935
+6,Random Sampling,Non-random,1.0
+7,Random Projection,Random Sampling,1.0
+7,Random Projection,Non-random,1.0
+7,Random Sampling,Non-random,1.0
+8,Random Projection,Random Sampling,1.0
+8,Random Projection,Non-random,1.0
+8,Random Sampling,Non-random,1.0
+9,Random Projection,Random Sampling,1.0
+9,Random Projection,Non-random,1.0
+9,Random Sampling,Non-random,1.0
+10,Random Projection,Random Sampling,1.0
+10,Random Projection,Non-random,1.0
+10,Random Sampling,Non-random,1.0
+11,Random Projection,Random Sampling,1.0
+11,Random Projection,Non-random,1.0
+11,Random Sampling,Non-random,1.0
+12,Random Projection,Random Sampling,0.5336757950728935
+12,Random Projection,Non-random,0.5336757950728935
+12,Random Sampling,Non-random,1.0
+13,Random Projection,Random Sampling,0.5336757950728935
+13,Random Projection,Non-random,0.5336757950728935
+13,Random Sampling,Non-random,1.0
+14,Random Projection,Random Sampling,0.5336757950728935
+14,Random Projection,Non-random,0.5336757950728935
+14,Random Sampling,Non-random,1.0
+15,Random Projection,Random Sampling,0.5336757950728935
+15,Random Projection,Non-random,0.5336757950728935
+15,Random Sampling,Non-random,1.0
+16,Random Projection,Random Sampling,1.0
+16,Random Projection,Non-random,1.0
+16,Random Sampling,Non-random,1.0
+17,Random Projection,Random Sampling,1.0
+17,Random Projection,Non-random,1.0
+17,Random Sampling,Non-random,1.0
+18,Random Projection,Random Sampling,0.5336757950728935
+18,Random Projection,Non-random,0.5336757950728935
+18,Random Sampling,Non-random,1.0
+19,Random Projection,Random Sampling,1.0
+19,Random Projection,Non-random,1.0
+19,Random Sampling,Non-random,1.0
+20,Random Projection,Random Sampling,0.5336757950728935
+20,Random Projection,Non-random,0.5336757950728935
+20,Random Sampling,Non-random,1.0
