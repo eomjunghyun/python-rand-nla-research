@@ -7,6 +7,7 @@
 - `common.py`
   - SBM 생성
   - Hypergraph SBM 생성/통계/라플라시안 유틸 (기존 `hypergraph_sbm.py` 통합)
+  - Hayashi et al. EDVW random walk 기반 transition matrix와 Chung directed Laplacian
   - randomized / non-random spectral 알고리즘
   - 오차 metric 계산
   - 상세 timing breakdown 집계
@@ -17,6 +18,19 @@
 
 - 기존 `src/hypergraph_sbm.py`는 더 이상 사용하지 않으며, 관련 함수는 모두 `src/common.py`로 통합되었습니다.
 - 실험 스크립트는 `from src.common import ...` 경로를 사용합니다.
+
+## Hayashi et al. EDVW Laplacian 함수
+
+논문 "Hypergraph Random Walks, Laplacians, and Clustering"의 Eq. (3), Eq. (5), Eq. (6), Algorithm 1에서 쓰는 행렬 구성을 `src/common.py`에 추가했습니다.
+
+주요 함수:
+- `edvw_transition_matrix`: hyperedge list와 optional EDVW weight에서 `P = D_V^{-1} W D_E^{-1} R` 생성
+- `edvw_transition_matrix_from_incidence`: `|E| x |V|` EDVW incidence matrix `R`에서 transition matrix 생성
+- `stationary_distribution_power`: `pi^T P = pi^T`를 만족하는 stationary distribution 계산
+- `chung_directed_laplacian`: Chung directed combinatorial/normalized Laplacian 생성
+- `chung_directed_similarity`: RDC-Spec에서 쓰는 `T = I - L` 행렬 생성
+- `hayashi_edvw_laplacian`: hyperedge list에서 Hayashi EDVW Laplacian까지 한 번에 생성
+- `hayashi_edvw_similarity_matrix`: hyperedge list에서 Algorithm 1의 spectral embedding용 `T` 행렬까지 한 번에 생성
 
 ## Section 7.2 / 8.x 연관 함수
 

@@ -1,21 +1,24 @@
-# Reference 2 - Experiment 2 (Figure 3/4/5)
+# Reference 2 Experiment 2: Figure 3/4/5
 
-논문 "A Stochastic Block Hypergraph model"의 실험 2를 재현합니다.
+이 폴더는 논문 "A Stochastic Block Hypergraph model"의 Experiment 2를 재현한다.
 
-재현 대상:
-- Figure 3: degree / hyperedge size distribution + binomial 근사
-- Figure 4: effective parameter (`E*/E`, `N*/N`) vs `q/p`
-- Figure 5: `min` strategy에서 size distribution의 bimodal 경향 점검
+## 재현 대상
 
-공통 생성 로직은 `src/common.py`의 함수를 재사용합니다.
+- Figure 3: degree distribution, hyperedge size distribution, binomial 근사
+- Figure 4: effective parameter인 `E*/E`, `N*/N`과 `q/p`의 관계
+- Figure 5: `min` strategy에서 hyperedge size distribution의 bimodal 경향
 
-## Run
+공통 hypergraph 생성 로직은 `src/common.py`의 함수를 재사용한다.
+
+## 실행 방법
 
 ```bash
-python3 experiments/reference_2_exp2/run_figure3_4_5.py
+python experiments/reference_2_exp2/run_figure3_4_5.py
 ```
 
-## Outputs
+환경에 따라 `python` 대신 프로젝트에서 사용하는 Python 실행 파일을 지정하면 된다.
+
+## 출력 파일
 
 - `experiments/reference_2_exp2/figures/figure3_degree_and_size.png`
 - `experiments/reference_2_exp2/figures/figure4_effective_parameters.png`
@@ -24,12 +27,14 @@ python3 experiments/reference_2_exp2/run_figure3_4_5.py
 - `experiments/reference_2_exp2/results/figure4_fit_summary.csv`
 - `experiments/reference_2_exp2/results/figure5_peak_check.json`
 
-## Assumptions
+## 구현 가정
 
-- Figure 3/4/5의 distribution은 각 설정에서 생성한 100개 hypergraph의 샘플을 풀링해 empirical PMF를 계산함.
-- degree 분포는 `Binomial(E, theta_deg)`로 근사하고, `theta_deg = mean(degree) / E` (MLE)로 추정.
-- hyperedge size 분포는 알고리즘이 seed node 1개로 시작하므로 `1 + Binomial(N-1, theta_size)`로 근사하고, `theta_size = (mean(size)-1)/(N-1)`로 추정.
-- effective ratio는 `q/p = 1`에서의 fitted theta를 기준으로 정규화하여 계산:
-  `E*/E = theta_deg(q) / theta_deg(q/p=1)`,
-  `N*/N = theta_size(q) / theta_size(q/p=1)`.
-- bimodal 진단은 size PMF를 이동평균으로 smoothing한 뒤 local peak 개수를 세는 단순 규칙을 사용.
+- Figure 3/4/5의 distribution은 각 설정에서 생성한 100개 hypergraph 샘플을 풀링해 empirical PMF로 계산한다.
+- degree distribution은 `Binomial(E, theta_deg)`로 근사하고, `theta_deg = mean(degree) / E`를 MLE로 사용한다.
+- hyperedge size distribution은 seed node 1개로 시작하는 생성 알고리즘을 반영해 `1 + Binomial(N-1, theta_size)`로 근사한다.
+- `theta_size = (mean(size) - 1) / (N - 1)`를 MLE로 사용한다.
+- effective ratio는 `q/p = 1`에서의 fitted theta를 기준으로 정규화한다.
+
+## 작성 규칙
+
+README와 실험 설명은 기본적으로 한글로 작성한다. Figure 번호, 분포 이름, 변수명은 영어를 섞어 쓴다.

@@ -1,0 +1,33 @@
+{
+  "CONFIG": {
+    "K": 3,
+    "m_values": [
+      2,
+      3
+    ],
+    "a_in": {
+      "2": 24.0,
+      "3": 36.0
+    },
+    "b_out": {
+      "2": 3.0,
+      "3": 4.0
+    },
+    "reps": 10,
+    "seed": 20260425,
+    "sampling": "sparse",
+    "max_enumeration": 1500000,
+    "normalize_embedding_rows": true,
+    "eigsh_tol": 1e-06
+  },
+  "N_FIXED": 5000,
+  "K_VALUES": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    10
+  ]
+}

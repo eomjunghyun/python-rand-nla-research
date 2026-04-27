@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import itertools
+import math
 from pathlib import Path
 from time import perf_counter
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -503,6 +504,1039 @@ def empirical_pmf(values: np.ndarray):
     return uniq.astype(int), probs
 
 
+def _validate_probability(p: float, name: str):
+    if not (0.0 <= p <= 1.0):
+        raise ValueError(f"{name} must be in [0, 1], got {p}")
+
+
+def _validate_hyperedge_size(m: int):
+    if int(m) != m or m < 2:
+        raise ValueError(f"Hyperedge size m must be an integer >= 2, got {m}")
+
+
+def _count_uniform_hsbm_candidates(labels: np.ndarray, m: int):
+    n = int(labels.shape[0])
+    total = math.comb(n, m)
+    within = 0
+    for k in np.unique(labels):
+        nk = int(np.sum(labels == k))
+        if nk >= m:
+            within += math.comb(nk, m)
+    mixed = total - within
+    return total, within, mixed
+
+
+def _sample_unique_edges_from_pool(
+    pool: np.ndarray,
+    m: int,
+    draws: int,
+    rng: np.random.Generator,
+    candidate_count: Optional[int] = None,
+    accept_fn: Optional[Callable[[Edge], bool]] = None,
+    max_attempt_factor: int = 80,
+    exhaustive_limit: int = 250000,
+):
+    if draws <= 0:
+        return set()
+    if pool.size < m:
+        return set()
+
+    edges = set()
+    attempts = 0
+    max_attempts = max(1500, int(draws) * max_attempt_factor)
+
+    while len(edges) < draws and attempts < max_attempts:
+        chosen = rng.choice(pool, size=m, replace=False)
+        edge = tuple(sorted(int(x) for x in chosen))
+        attempts += 1
+        if accept_fn is not None and not accept_fn(edge):
+            continue
+        edges.add(edge)
+
+    if len(edges) >= draws:
+        return edges
+
+    if candidate_count is not None and candidate_count <= exhaustive_limit:
+        all_candidates = []
+        for edge in itertools.combinations(pool.tolist(), m):
+            e = tuple(int(v) for v in edge)
+            if accept_fn is not None and not accept_fn(e):
+                continue
+            all_candidates.append(e)
+
+        if len(all_candidates) < draws:
+            raise RuntimeError(
+                "Not enough valid candidate hyperedges to satisfy requested draws."
+            )
+
+        order = rng.permutation(len(all_candidates))
+        for idx in order:
+            edges.add(all_candidates[idx])
+            if len(edges) >= draws:
+                break
+        return edges
+
+    raise RuntimeError(
+        "Sparse sampler could not collect enough unique hyperedges. "
+        "Try smaller probabilities, smaller n, or use sampling='exact'."
+    )
+
+
+def sample_uniform_hsbm_hyperedges_exact(
+    labels: np.ndarray,
+    m: int,
+    p_in: float,
+    p_out: float,
+    rng: np.random.Generator,
+):
+    edges = []
+    for edge in itertools.combinations(range(labels.shape[0]), m):
+        labs = labels[list(edge)]
+        is_within = bool(np.all(labs == labs[0]))
+        p = p_in if is_within else p_out
+        if rng.random() < p:
+            edges.append(edge)
+    return edges
+
+
+def sample_uniform_hsbm_hyperedges_sparse(
+    labels: np.ndarray,
+    m: int,
+    p_in: float,
+    p_out: float,
+    rng: np.random.Generator,
+):
+    n = int(labels.shape[0])
+    _, _, mixed_total = _count_uniform_hsbm_candidates(labels, m)
+
+    within_edges = set()
+    for k in np.unique(labels):
+        nodes_k = np.where(labels == k)[0]
+        nk = int(nodes_k.size)
+        if nk < m:
+            continue
+        cand_k = math.comb(nk, m)
+        draws_k = int(rng.binomial(cand_k, p_in))
+        sampled_k = _sample_unique_edges_from_pool(
+            pool=nodes_k,
+            m=m,
+            draws=draws_k,
+            rng=rng,
+            candidate_count=cand_k,
+            accept_fn=None,
+        )
+        within_edges.update(sampled_k)
+
+    all_nodes = np.arange(n, dtype=int)
+
+    def is_mixed(edge: Edge):
+        labs = labels[list(edge)]
+        return not bool(np.all(labs == labs[0]))
+
+    draws_mixed = int(rng.binomial(mixed_total, p_out))
+    mixed_edges = _sample_unique_edges_from_pool(
+        pool=all_nodes,
+        m=m,
+        draws=draws_mixed,
+        rng=rng,
+        candidate_count=mixed_total,
+        accept_fn=is_mixed,
+    )
+
+    all_edges = sorted(within_edges.union(mixed_edges))
+    return all_edges
+
+
+def generate_uniform_hsbm_instance(
+    n: int,
+    K: int,
+    m: int,
+    p_in: float,
+    p_out: float,
+    rng: np.random.Generator,
+    labels: Optional[np.ndarray] = None,
+    sampling: str = "auto",  # "auto" | "exact" | "sparse"
+    max_enumeration: int = 1500000,
+):
+    _validate_hyperedge_size(m)
+    _validate_probability(p_in, "p_in")
+    _validate_probability(p_out, "p_out")
+    if K < 1:
+        raise ValueError(f"K must be >=1, got {K}")
+    if n <= 0:
+        raise ValueError(f"n must be positive, got {n}")
+
+    if labels is None:
+        y_true = make_balanced_labels(n, K, rng)
+    else:
+        y_true = np.asarray(labels, dtype=int).copy()
+        if y_true.shape[0] != n:
+            raise ValueError(f"labels length mismatch: expected {n}, got {y_true.shape[0]}")
+
+    if np.min(y_true) < 0 or np.max(y_true) >= K:
+        raise ValueError("labels must be integer values in [0, K-1]")
+
+    total, within_total, mixed_total = _count_uniform_hsbm_candidates(y_true, m)
+    if sampling == "auto":
+        sampling_mode = "exact" if total <= max_enumeration else "sparse"
+    else:
+        sampling_mode = sampling
+
+    if sampling_mode == "exact":
+        hyperedges = sample_uniform_hsbm_hyperedges_exact(y_true, m, p_in, p_out, rng)
+    elif sampling_mode == "sparse":
+        hyperedges = sample_uniform_hsbm_hyperedges_sparse(y_true, m, p_in, p_out, rng)
+    else:
+        raise ValueError(f"Unknown sampling mode: {sampling_mode}")
+
+    Theta_true = np.eye(K)[y_true]
+    stats = {
+        "n": int(n),
+        "K": int(K),
+        "m": int(m),
+        "p_in": float(p_in),
+        "p_out": float(p_out),
+        "num_hyperedges": int(len(hyperedges)),
+        "num_candidates_total": int(total),
+        "num_candidates_within": int(within_total),
+        "num_candidates_mixed": int(mixed_total),
+        "sampling_mode": sampling_mode,
+    }
+    return hyperedges, y_true, Theta_true, stats
+
+
+def generate_planted_uniform_hsbm_instance(
+    n: int,
+    K: int,
+    d: int,
+    a_d: float,
+    b_d: float,
+    rho_n: float,
+    rng: np.random.Generator,
+    labels: Optional[np.ndarray] = None,
+    sampling: str = "auto",
+    max_enumeration: int = 1500000,
+    clip: bool = True,
+):
+    """Generate the planted d-uniform HSBM with sparse-regime probabilities.
+
+    This is a convenience wrapper for the model
+
+    ``P(A_e = 1 | z) = p_{d,n}`` if all vertices in ``e`` share a community,
+    and ``q_{d,n}`` otherwise, where
+
+    ``p_{d,n} = a_d * rho_n / n ** (d - 1)``
+
+    and
+
+    ``q_{d,n} = b_d * rho_n / n ** (d - 1)``.
+
+    Labels are balanced when not supplied. The returned hyperedges all have
+    size ``d``.
+    """
+    p_in, p_out = make_uniform_hsbm_probs(
+        n=n,
+        d=d,
+        a_d=a_d,
+        b_d=b_d,
+        rho_n=rho_n,
+        clip=clip,
+    )
+    hyperedges, y_true, Theta_true, stats = generate_uniform_hsbm_instance(
+        n=n,
+        K=K,
+        m=d,
+        p_in=p_in,
+        p_out=p_out,
+        rng=rng,
+        labels=labels,
+        sampling=sampling,
+        max_enumeration=max_enumeration,
+    )
+    stats.update(
+        {
+            "d": int(d),
+            "a_d": float(a_d),
+            "b_d": float(b_d),
+            "rho_n": float(rho_n),
+            "probability_model": "planted_uniform_hsbm_sparse_regime",
+        }
+    )
+    return hyperedges, y_true, Theta_true, stats
+
+
+def _resolve_prob_for_m(
+    prob: Union[float, Dict[int, float]],
+    m: int,
+    prob_name: str,
+):
+    if isinstance(prob, dict):
+        if m not in prob:
+            raise ValueError(f"Missing {prob_name} for m={m}")
+        p = float(prob[m])
+    else:
+        p = float(prob)
+    _validate_probability(p, f"{prob_name}[m={m}]")
+    return p
+
+
+def generate_nonuniform_hsbm_instance(
+    n: int,
+    K: int,
+    m_values: Sequence[int],
+    p_in: Union[float, Dict[int, float]],
+    p_out: Union[float, Dict[int, float]],
+    rng: np.random.Generator,
+    labels: Optional[np.ndarray] = None,
+    sampling: str = "auto",  # "auto" | "exact" | "sparse"
+    max_enumeration: int = 1500000,
+):
+    m_values = sorted(set(int(m) for m in m_values))
+    if not m_values:
+        raise ValueError("m_values must not be empty")
+    for m in m_values:
+        _validate_hyperedge_size(m)
+
+    if labels is None:
+        y_true = make_balanced_labels(n, K, rng)
+    else:
+        y_true = np.asarray(labels, dtype=int).copy()
+
+    per_size_stats = {}
+    all_edges = []
+    for m in m_values:
+        pin_m = _resolve_prob_for_m(p_in, m, "p_in")
+        pout_m = _resolve_prob_for_m(p_out, m, "p_out")
+        edges_m, _, _, stats_m = generate_uniform_hsbm_instance(
+            n=n,
+            K=K,
+            m=m,
+            p_in=pin_m,
+            p_out=pout_m,
+            rng=rng,
+            labels=y_true,
+            sampling=sampling,
+            max_enumeration=max_enumeration,
+        )
+        per_size_stats[str(m)] = stats_m
+        all_edges.extend(edges_m)
+
+    Theta_true = np.eye(K)[y_true]
+    stats = {
+        "n": int(n),
+        "K": int(K),
+        "m_values": [int(m) for m in m_values],
+        "num_hyperedges_total": int(len(all_edges)),
+        "per_size": per_size_stats,
+    }
+    return all_edges, y_true, Theta_true, stats
+
+
+def _normalize_hsbm_m_values(
+    m_values: Sequence[int],
+    n: Optional[int] = None,
+) -> List[int]:
+    """Validate and return sorted unique hyperedge sizes for HSBM helpers."""
+    normalized = []
+    for raw_m in m_values:
+        try:
+            m = int(raw_m)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"Hyperedge size must be an integer, got {raw_m!r}") from exc
+        if m != raw_m:
+            raise ValueError(f"Hyperedge size must be an integer, got {raw_m!r}")
+        _validate_hyperedge_size(m)
+        if n is not None and m > n:
+            raise ValueError(f"Hyperedge size m={m} must be <= n={n}.")
+        normalized.append(m)
+
+    out = sorted(set(normalized))
+    if not out:
+        raise ValueError("m_values must not be empty.")
+    return out
+
+
+def _as_m_dict(
+    value: Union[float, Dict[int, float]],
+    m_values: Sequence[int],
+    name: str,
+) -> Dict[int, float]:
+    """Convert a scalar or m-indexed dict into a validated nonnegative dict."""
+    out = {}
+    if isinstance(value, dict):
+        for m in m_values:
+            if m not in value:
+                raise ValueError(f"Missing {name} for m={m}.")
+            val = float(value[m])
+            if not np.isfinite(val) or val < 0.0:
+                raise ValueError(f"{name}[m={m}] must be finite and nonnegative, got {val}.")
+            out[int(m)] = val
+        return out
+
+    val = float(value)
+    if not np.isfinite(val) or val < 0.0:
+        raise ValueError(f"{name} must be finite and nonnegative, got {val}.")
+    for m in m_values:
+        out[int(m)] = val
+    return out
+
+
+def _clip_or_validate_prob(p: float, clip: bool, name: str) -> float:
+    """Clip a probability to [0, 1], or validate that it is already in range."""
+    p = float(p)
+    if not np.isfinite(p):
+        raise ValueError(f"{name} must be finite, got {p}.")
+    if clip:
+        return float(np.clip(p, 0.0, 1.0))
+    if not (0.0 <= p <= 1.0):
+        raise ValueError(f"{name} must be in [0, 1] when clip=False, got {p}.")
+    return p
+
+
+def _validate_planted_hsbm_constants(
+    a_in: float,
+    b_out: float,
+    rho_n: float,
+) -> Tuple[float, float, float]:
+    """Validate planted HSBM constants with within-community signal stronger than mixed."""
+    a = float(a_in)
+    b = float(b_out)
+    rho = float(rho_n)
+    if not np.isfinite(a) or not np.isfinite(b) or not np.isfinite(rho):
+        raise ValueError("a_in, b_out, and rho_n must be finite.")
+    if not (a > b > 0.0):
+        raise ValueError(f"Expected a_in > b_out > 0, got a_in={a}, b_out={b}.")
+    if rho <= 0.0:
+        raise ValueError(f"rho_n must be positive, got {rho}.")
+    return a, b, rho
+
+
+def _comb_count(n: int, m: int) -> int:
+    """Return C(n, m) using integer arithmetic without enumerating candidates."""
+    if m < 0 or n < 0 or m > n:
+        return 0
+    k = min(m, n - m)
+    result = 1
+    for i in range(1, k + 1):
+        result = (result * (n - k + i)) // i
+    return int(result)
+
+
+def _validate_labels(labels: Optional[np.ndarray], n: int, K: int, rng: np.random.Generator) -> np.ndarray:
+    """Return a length-n integer label vector, creating balanced labels if needed."""
+    if labels is None:
+        y_true = make_balanced_labels(n, K, rng)
+    else:
+        y_true = np.asarray(labels, dtype=int).copy()
+
+    if y_true.ndim != 1 or y_true.shape[0] != n:
+        raise ValueError(f"labels length mismatch: expected shape ({n},), got {y_true.shape}.")
+    if np.min(y_true) < 0 or np.max(y_true) >= K:
+        raise ValueError("labels must contain integer values in [0, K-1].")
+    return y_true
+
+
+def _one_hot(labels: np.ndarray, K: int) -> np.ndarray:
+    """Return one-hot community matrix for integer labels in [0, K-1]."""
+    return np.eye(K, dtype=float)[labels]
+
+
+def _canonical_edge(edge: Sequence[int]) -> Edge:
+    """Return tuple(sorted(edge)) and reject duplicate vertices."""
+    vertices = []
+    for raw_v in edge:
+        try:
+            v = int(raw_v)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"Hyperedge vertex must be an integer, got {raw_v!r}.") from exc
+        if v != raw_v:
+            raise ValueError(f"Hyperedge vertex must be an integer, got {raw_v!r}.")
+        vertices.append(v)
+
+    if len(vertices) != len(set(vertices)):
+        raise ValueError(f"Hyperedge contains duplicate vertices: {edge}.")
+    return tuple(sorted(vertices))
+
+
+def _validate_hyperedges(
+    n: int,
+    hyperedges: Sequence[Sequence[int]],
+    min_size: int,
+) -> List[Edge]:
+    """Validate hyperedge vertex ranges and return canonical sorted tuples."""
+    if n <= 0:
+        raise ValueError(f"n must be positive, got {n}.")
+
+    out = []
+    for edge in hyperedges:
+        canonical = _canonical_edge(edge)
+        if len(canonical) < min_size:
+            raise ValueError(
+                f"Hyperedge size must be at least {min_size}, got edge {canonical}."
+            )
+        for v in canonical:
+            if v < 0 or v >= n:
+                raise ValueError(f"Node index out of range in edge {canonical} for n={n}.")
+        out.append(canonical)
+    return out
+
+
+def _prepare_hyperedge_weights(
+    num_edges: int,
+    weights: Optional[Sequence[float]],
+) -> np.ndarray:
+    """Return nonnegative finite hyperedge weights with length num_edges."""
+    if weights is None:
+        return np.ones(num_edges, dtype=float)
+
+    w = np.asarray(list(weights), dtype=float)
+    if w.shape != (num_edges,):
+        raise ValueError(
+            f"weights length mismatch: expected {num_edges}, got {w.shape[0]}."
+        )
+    if np.any(~np.isfinite(w)) or np.any(w < 0.0):
+        raise ValueError("weights must be finite and nonnegative.")
+    return w
+
+
+def make_sparse_hsbm_probs(
+    n: int,
+    m_values: Sequence[int],
+    a_in: Union[float, Dict[int, float]],
+    b_out: Union[float, Dict[int, float]],
+    rho_n: float = 1.0,
+    clip: bool = True,
+) -> Tuple[Dict[int, float], Dict[int, float]]:
+    """Create sparse-regime non-uniform HSBM probabilities.
+
+    For each hyperedge size ``m``, this helper maps constant-scale parameters
+    ``a_in[m]`` and ``b_out[m]`` to Bernoulli probabilities
+
+    ``p_in[m] = a_in[m] * rho_n / n ** (m - 1)``
+
+    and
+
+    ``p_out[m] = b_out[m] * rho_n / n ** (m - 1)``.
+
+    Scalars are broadcast to all sizes in ``m_values``. Dictionaries must
+    contain every requested size. Inputs ``a_in`` and ``b_out`` must be finite,
+    nonnegative, and satisfy ``a_in[m] > b_out[m] > 0`` for every requested
+    size. The density factor ``rho_n`` must be finite and positive. If
+    ``clip=True``, probabilities are clipped to ``[0, 1]``; otherwise an
+    out-of-range probability raises ``ValueError``.
+    """
+    if n <= 0:
+        raise ValueError(f"n must be positive, got {n}.")
+    rho = float(rho_n)
+    if not np.isfinite(rho) or rho <= 0.0:
+        raise ValueError(f"rho_n must be finite and positive, got {rho}.")
+
+    sizes = _normalize_hsbm_m_values(m_values)
+    a_by_m = _as_m_dict(a_in, sizes, "a_in")
+    b_by_m = _as_m_dict(b_out, sizes, "b_out")
+
+    p_in = {}
+    p_out = {}
+    for m in sizes:
+        a_m, b_m, _ = _validate_planted_hsbm_constants(a_by_m[m], b_by_m[m], rho)
+        denom = float(n) ** float(m - 1)
+        p_in[m] = _clip_or_validate_prob(a_m * rho / denom, clip, f"p_in[m={m}]")
+        p_out[m] = _clip_or_validate_prob(b_m * rho / denom, clip, f"p_out[m={m}]")
+    return p_in, p_out
+
+
+def make_uniform_hsbm_probs(
+    n: int,
+    d: int,
+    a_d: float,
+    b_d: float,
+    rho_n: float = 1.0,
+    clip: bool = True,
+) -> Tuple[float, float]:
+    """Create probabilities for the planted d-uniform HSBM.
+
+    This matches the common sparse-regime model
+
+    ``p_{d,n} = a_d * rho_n / n ** (d - 1)``
+
+    and
+
+    ``q_{d,n} = b_d * rho_n / n ** (d - 1)``,
+
+    where ``a_d > b_d > 0`` and ``rho_n > 0``. If ``clip=True``,
+    probabilities are clipped to ``[0, 1]``; otherwise an out-of-range
+    probability raises ``ValueError``.
+    """
+    if n <= 0:
+        raise ValueError(f"n must be positive, got {n}.")
+    _validate_hyperedge_size(d)
+    a, b, rho = _validate_planted_hsbm_constants(a_d, b_d, rho_n)
+    denom = float(n) ** float(int(d) - 1)
+    p_in = _clip_or_validate_prob(a * rho / denom, clip, "p_in")
+    p_out = _clip_or_validate_prob(b * rho / denom, clip, "p_out")
+    return p_in, p_out
+
+
+def make_exact_recovery_hsbm_probs(
+    n: int,
+    m_values: Sequence[int],
+    a_in: Union[float, Dict[int, float]],
+    b_out: Union[float, Dict[int, float]],
+    clip: bool = True,
+) -> Tuple[Dict[int, float], Dict[int, float]]:
+    """Create log-degree / exact-recovery-regime HSBM probabilities.
+
+    For each hyperedge size ``m``, this helper maps constant-scale parameters
+    ``a_in[m]`` and ``b_out[m]`` to probabilities
+
+    ``p_in[m] = a_in[m] * log(n) / n ** (m - 1)``
+
+    and
+
+    ``p_out[m] = b_out[m] * log(n) / n ** (m - 1)``.
+
+    The logarithm is ``np.log(n)``. Scalars are broadcast to all sizes, and
+    dictionaries must contain every requested size. Inputs must be finite and
+    nonnegative. If ``clip=True``, probabilities are clipped to ``[0, 1]``;
+    otherwise an out-of-range probability raises ``ValueError``.
+    """
+    if n < 2:
+        raise ValueError(f"n must be at least 2 for log-degree scaling, got {n}.")
+
+    sizes = _normalize_hsbm_m_values(m_values)
+    a_by_m = _as_m_dict(a_in, sizes, "a_in")
+    b_by_m = _as_m_dict(b_out, sizes, "b_out")
+    log_n = float(np.log(float(n)))
+
+    p_in = {}
+    p_out = {}
+    for m in sizes:
+        denom = float(n) ** float(m - 1)
+        p_in[m] = _clip_or_validate_prob(
+            a_by_m[m] * log_n / denom,
+            clip,
+            f"p_in[m={m}]",
+        )
+        p_out[m] = _clip_or_validate_prob(
+            b_by_m[m] * log_n / denom,
+            clip,
+            f"p_out[m={m}]",
+        )
+    return p_in, p_out
+
+
+def generate_fast_sparse_nonuniform_hsbm_instance(
+    n: int,
+    K: int,
+    m_values: Sequence[int],
+    expected_edges_per_size: Union[float, Dict[int, float]],
+    within_fraction: Union[float, Dict[int, float]],
+    rng: np.random.Generator,
+    labels: Optional[np.ndarray] = None,
+    max_attempts_per_edge: int = 100,
+) -> Tuple[List[Tuple[int, ...]], Dict[int, List[Tuple[int, ...]]], np.ndarray, np.ndarray, Dict[str, Any]]:
+    """Generate an approximate sparse non-uniform HSBM without enumerating candidates.
+
+    This generator is intended for large-scale experiments where the exact
+    independent Bernoulli non-uniform HSBM is too expensive because it requires
+    scanning all ``C(n, m)`` candidates. It is not an exact independent-edge
+    model. Instead, for each size ``m`` it draws
+
+    ``num_target_m ~ Poisson(expected_edges_per_size[m])``
+
+    and directly samples approximately that many unique hyperedges. Each
+    requested edge is within-community with probability
+    ``within_fraction[m]`` and mixed-community otherwise. Within edges are
+    sampled by first choosing an eligible community and then drawing ``m``
+    vertices without replacement inside it. Mixed edges are sampled by drawing
+    ``m`` vertices from all vertices without replacement and accepting only if
+    at least two labels appear.
+
+    Hyperedges are stored as ``tuple(sorted(vertices))``. Duplicate hyperedges
+    are removed, so the final count can be smaller than the Poisson target.
+    All randomness comes from the caller-provided ``rng``.
+    """
+    if n <= 0:
+        raise ValueError(f"n must be positive, got {n}.")
+    if K < 1:
+        raise ValueError(f"K must be >= 1, got {K}.")
+    if max_attempts_per_edge <= 0:
+        raise ValueError(
+            f"max_attempts_per_edge must be positive, got {max_attempts_per_edge}."
+        )
+
+    sizes = _normalize_hsbm_m_values(m_values, n=n)
+    expected_by_m = _as_m_dict(expected_edges_per_size, sizes, "expected_edges_per_size")
+    frac_by_m_raw = _as_m_dict(within_fraction, sizes, "within_fraction")
+    frac_by_m = {
+        m: _clip_or_validate_prob(frac_by_m_raw[m], False, f"within_fraction[m={m}]")
+        for m in sizes
+    }
+
+    y_true = _validate_labels(labels, n, K, rng)
+    Theta_true = _one_hot(y_true, K)
+    community_nodes = [np.where(y_true == k)[0] for k in range(K)]
+
+    edges_by_size: Dict[int, List[Tuple[int, ...]]] = {}
+    per_size_stats: Dict[str, Any] = {}
+    all_edges: List[Tuple[int, ...]] = []
+
+    for m in sizes:
+        expected_edges = expected_by_m[m]
+        poisson_target = int(rng.poisson(expected_edges))
+        within_fraction_m = frac_by_m[m]
+        eligible_communities = [
+            k for k, nodes_k in enumerate(community_nodes) if int(nodes_k.size) >= m
+        ]
+
+        edge_set = set()
+        num_within_edges = 0
+        num_mixed_edges = 0
+        duplicates_removed = 0
+        failed_attempts = 0
+
+        for _ in range(poisson_target):
+            make_within = bool(rng.random() < within_fraction_m)
+            edge = None
+            edge_kind = "within" if make_within else "mixed"
+
+            if make_within:
+                if eligible_communities:
+                    k_idx = int(rng.integers(0, len(eligible_communities)))
+                    nodes_k = community_nodes[eligible_communities[k_idx]]
+                    chosen = rng.choice(nodes_k, size=m, replace=False)
+                    edge = tuple(sorted(int(v) for v in chosen))
+                else:
+                    failed_attempts += 1
+                    continue
+            else:
+                for _attempt in range(max_attempts_per_edge):
+                    chosen = rng.choice(n, size=m, replace=False)
+                    labels_chosen = y_true[chosen]
+                    if np.unique(labels_chosen).size >= 2:
+                        edge = tuple(sorted(int(v) for v in chosen))
+                        break
+                if edge is None:
+                    failed_attempts += 1
+                    continue
+
+            if edge in edge_set:
+                duplicates_removed += 1
+                continue
+            edge_set.add(edge)
+            if edge_kind == "within":
+                num_within_edges += 1
+            else:
+                num_mixed_edges += 1
+
+        edges_m = sorted(edge_set)
+        edges_by_size[m] = edges_m
+        all_edges.extend(edges_m)
+        per_size_stats[str(m)] = {
+            "expected_edges": float(expected_edges),
+            "poisson_target": int(poisson_target),
+            "num_edges": int(len(edges_m)),
+            "num_within_edges": int(num_within_edges),
+            "num_mixed_edges": int(num_mixed_edges),
+            "duplicates_removed": int(duplicates_removed),
+            "failed_attempts": int(failed_attempts),
+        }
+
+    stats = {
+        "n": int(n),
+        "K": int(K),
+        "m_values": [int(m) for m in sizes],
+        "generator": "fast_sparse_nonuniform_hsbm",
+        "num_hyperedges_total": int(len(all_edges)),
+        "per_size": per_size_stats,
+    }
+    return all_edges, edges_by_size, y_true, Theta_true, stats
+
+
+def generate_degree_corrected_nonuniform_hsbm_instance(
+    n: int,
+    K: int,
+    m_values: Sequence[int],
+    p_in: Union[float, Dict[int, float]],
+    p_out: Union[float, Dict[int, float]],
+    rng: np.random.Generator,
+    labels: Optional[np.ndarray] = None,
+    theta: Optional[np.ndarray] = None,
+    theta_distribution: str = "lognormal",
+    theta_sigma: float = 1.0,
+    normalize_theta: bool = True,
+    sampling: str = "auto",
+    max_enumeration: int = 1500000,
+) -> Tuple[List[Tuple[int, ...]], Dict[int, List[Tuple[int, ...]]], np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
+    """Generate an exact degree-corrected non-uniform planted HSBM.
+
+    Each vertex ``i`` has a positive degree propensity ``theta_i``. For a
+    candidate hyperedge ``e`` of size ``m``, the base probability is
+    ``p_in[m]`` when all labels in ``e`` are equal and ``p_out[m]`` otherwise.
+    The degree-corrected Bernoulli probability is
+
+    ``p_e = base_probability * product(theta_i for i in e)``,
+
+    clipped to ``[0, 1]`` before sampling. This function implements the exact
+    independent-edge model by enumerating every candidate combination for each
+    requested size. Because the degree correction makes each candidate have a
+    distinct probability, the function deliberately raises ``ValueError`` for
+    ``sampling='sparse'`` or when ``C(n, m)`` exceeds ``max_enumeration``. A
+    separate approximate generator should be used for large-scale
+    degree-corrected experiments.
+
+    If ``theta`` is not supplied, it is generated from ``theta_distribution``:
+    ``"lognormal"``, ``"pareto"``, or ``"uniform"``. With
+    ``normalize_theta=True``, propensities are rescaled to have mean one.
+    All randomness comes from the caller-provided ``rng``.
+    """
+    if n <= 0:
+        raise ValueError(f"n must be positive, got {n}.")
+    if K < 1:
+        raise ValueError(f"K must be >= 1, got {K}.")
+    if theta_sigma <= 0.0:
+        raise ValueError(f"theta_sigma must be positive, got {theta_sigma}.")
+    if sampling not in ("auto", "exact", "sparse"):
+        raise ValueError(f"sampling must be one of 'auto', 'exact', or 'sparse', got {sampling}.")
+    if max_enumeration <= 0:
+        raise ValueError(f"max_enumeration must be positive, got {max_enumeration}.")
+
+    sizes = _normalize_hsbm_m_values(m_values, n=n)
+    y_true = _validate_labels(labels, n, K, rng)
+    Theta_true = _one_hot(y_true, K)
+
+    if theta is None:
+        if theta_distribution == "lognormal":
+            theta_arr = rng.lognormal(mean=0.0, sigma=theta_sigma, size=n)
+        elif theta_distribution == "pareto":
+            theta_arr = rng.pareto(theta_sigma, size=n) + 1.0
+        elif theta_distribution == "uniform":
+            theta_arr = rng.uniform(0.5, 1.5, size=n)
+        else:
+            raise ValueError(
+                "theta_distribution must be one of 'lognormal', 'pareto', or 'uniform'."
+            )
+        theta_source = theta_distribution
+    else:
+        theta_arr = np.asarray(theta, dtype=float).copy()
+        theta_source = "provided"
+
+    if theta_arr.shape != (n,):
+        raise ValueError(f"theta must have shape ({n},), got {theta_arr.shape}.")
+    if np.any(~np.isfinite(theta_arr)) or np.any(theta_arr <= 0.0):
+        raise ValueError("theta must contain finite positive values.")
+
+    if normalize_theta:
+        theta_mean = float(theta_arr.mean())
+        if theta_mean <= 0.0 or not np.isfinite(theta_mean):
+            raise ValueError("theta mean must be finite and positive for normalization.")
+        theta_arr = theta_arr / theta_mean
+
+    edges_by_size: Dict[int, List[Tuple[int, ...]]] = {}
+    per_size_stats: Dict[str, Any] = {}
+    all_edges: List[Tuple[int, ...]] = []
+
+    if sampling == "sparse":
+        raise ValueError(
+            "sampling='sparse' is not supported for the exact degree-corrected "
+            "independent-edge model because candidate probabilities differ."
+        )
+
+    for m in sizes:
+        num_candidates = _comb_count(n, m)
+        if num_candidates > max_enumeration:
+            raise ValueError(
+                f"Cannot enumerate C({n}, {m})={num_candidates} candidates with "
+                f"max_enumeration={max_enumeration}. Use a smaller problem or a "
+                "separate approximate degree-corrected generator."
+            )
+
+        pin_m = _resolve_prob_for_m(p_in, m, "p_in")
+        pout_m = _resolve_prob_for_m(p_out, m, "p_out")
+        edges_m: List[Tuple[int, ...]] = []
+        num_within_edges = 0
+        num_mixed_edges = 0
+
+        for edge in itertools.combinations(range(n), m):
+            labels_e = y_true[list(edge)]
+            is_within = bool(np.all(labels_e == labels_e[0]))
+            base_prob = pin_m if is_within else pout_m
+            theta_factor = float(np.prod(theta_arr[list(edge)]))
+            prob = float(np.clip(base_prob * theta_factor, 0.0, 1.0))
+            if rng.random() < prob:
+                canonical = tuple(int(v) for v in edge)
+                edges_m.append(canonical)
+                if is_within:
+                    num_within_edges += 1
+                else:
+                    num_mixed_edges += 1
+
+        edges_by_size[m] = edges_m
+        all_edges.extend(edges_m)
+        per_size_stats[str(m)] = {
+            "num_candidates": int(num_candidates),
+            "num_edges": int(len(edges_m)),
+            "num_within_edges": int(num_within_edges),
+            "num_mixed_edges": int(num_mixed_edges),
+            "p_in": float(pin_m),
+            "p_out": float(pout_m),
+        }
+
+    stats = {
+        "n": int(n),
+        "K": int(K),
+        "m_values": [int(m) for m in sizes],
+        "generator": "degree_corrected_nonuniform_hsbm",
+        "theta_distribution": theta_source,
+        "theta_sigma": float(theta_sigma),
+        "normalize_theta": bool(normalize_theta),
+        "theta_min": float(theta_arr.min()),
+        "theta_max": float(theta_arr.max()),
+        "theta_mean": float(theta_arr.mean()),
+        "num_hyperedges_total": int(len(all_edges)),
+        "per_size": per_size_stats,
+    }
+    return all_edges, edges_by_size, y_true, Theta_true, theta_arr, stats
+
+
+def hypergraph_to_clique_graph(
+    n: int,
+    hyperedges: Sequence[Sequence[int]],
+    weights: Optional[Sequence[float]] = None,
+    weighting: str = "zhou",
+    include_self_loops: bool = False,
+) -> Tuple[sp.csr_matrix, Dict[str, Any]]:
+    """Convert a hypergraph to an undirected clique-expansion graph.
+
+    The output adjacency matrix has shape ``(n, n)``. For each hyperedge ``e``,
+    every pair ``(u, v)`` with ``u != v`` receives an additive contribution.
+    Repeated pairs from different hyperedges accumulate weight. Hyperedge
+    vertices are validated and canonicalized as sorted tuples.
+
+    Weighting modes:
+    - ``"unit"``: add hyperedge weight ``w_e`` to each pair.
+    - ``"inverse_size"``: add ``w_e / |e|`` to each pair.
+    - ``"inverse_size_minus_one"``: add ``w_e / (|e| - 1)`` to each pair.
+    - ``"zhou"``: add ``w_e / |e|``, matching the usual Zhou-style clique
+      interpretation used in hypergraph Laplacian baselines.
+
+    If ``include_self_loops=True``, each vertex in a hyperedge also receives
+    the same contribution on the diagonal. The default keeps the diagonal zero.
+    """
+    valid_weighting = {"unit", "inverse_size", "inverse_size_minus_one", "zhou"}
+    if weighting not in valid_weighting:
+        raise ValueError(f"weighting must be one of {sorted(valid_weighting)}, got {weighting}.")
+
+    canonical_edges = _validate_hyperedges(n, hyperedges, min_size=2)
+    w = _prepare_hyperedge_weights(len(canonical_edges), weights)
+
+    rows = []
+    cols = []
+    data = []
+
+    for edge_idx, edge in enumerate(canonical_edges):
+        m = len(edge)
+        if weighting == "unit":
+            scale = float(w[edge_idx])
+        elif weighting == "inverse_size_minus_one":
+            scale = float(w[edge_idx]) / float(m - 1)
+        else:
+            scale = float(w[edge_idx]) / float(m)
+
+        for u, v in itertools.combinations(edge, 2):
+            rows.extend((u, v))
+            cols.extend((v, u))
+            data.extend((scale, scale))
+        if include_self_loops:
+            for u in edge:
+                rows.append(u)
+                cols.append(u)
+                data.append(scale)
+
+    A = sp.coo_matrix((data, (rows, cols)), shape=(n, n), dtype=float).tocsr()
+    A.sum_duplicates()
+    A.eliminate_zeros()
+
+    diag_nnz = int(np.count_nonzero(A.diagonal())) if include_self_loops else 0
+    num_graph_edges = int((A.nnz - diag_nnz) // 2) if include_self_loops else int(A.nnz // 2)
+    stats = {
+        "transform": "clique_expansion",
+        "n": int(n),
+        "num_hyperedges": int(len(canonical_edges)),
+        "num_graph_edges": num_graph_edges,
+        "weighting": weighting,
+        "include_self_loops": bool(include_self_loops),
+    }
+    return A, stats
+
+
+def hypergraph_to_star_graph(
+    n: int,
+    hyperedges: Sequence[Sequence[int]],
+    weights: Optional[Sequence[float]] = None,
+    weighting: str = "unit",
+) -> Tuple[sp.csr_matrix, Dict[str, Any]]:
+    """Convert a hypergraph to a symmetric star-expansion bipartite graph.
+
+    The output adjacency matrix has shape ``(n + |E|, n + |E|)``. Original
+    vertices keep indices ``0`` through ``n - 1``. Hyperedge ``e_j`` is
+    represented by an auxiliary node with index ``n + j``. For every
+    ``v in e_j``, the matrix contains symmetric incidence edges between
+    ``v`` and ``n + j``. Original vertices are not directly connected to each
+    other, and hyperedge nodes are not directly connected to each other.
+
+    Hyperedges of size at least one are accepted, though size at least two is
+    usually preferable for spectral clustering baselines. Weighting modes:
+    - ``"unit"``: incidence edge weight is ``w_e``.
+    - ``"inverse_size"``: incidence edge weight is ``w_e / |e|``.
+    - ``"inverse_sqrt_size"``: incidence edge weight is ``w_e / sqrt(|e|)``.
+    """
+    valid_weighting = {"unit", "inverse_size", "inverse_sqrt_size"}
+    if weighting not in valid_weighting:
+        raise ValueError(f"weighting must be one of {sorted(valid_weighting)}, got {weighting}.")
+
+    canonical_edges = _validate_hyperedges(n, hyperedges, min_size=1)
+    w = _prepare_hyperedge_weights(len(canonical_edges), weights)
+    total_nodes = n + len(canonical_edges)
+
+    rows = []
+    cols = []
+    data = []
+
+    for edge_idx, edge in enumerate(canonical_edges):
+        m = len(edge)
+        if weighting == "unit":
+            scale = float(w[edge_idx])
+        elif weighting == "inverse_size":
+            scale = float(w[edge_idx]) / float(m)
+        else:
+            scale = float(w[edge_idx]) / float(np.sqrt(float(m)))
+
+        aux = n + edge_idx
+        for v in edge:
+            rows.extend((v, aux))
+            cols.extend((aux, v))
+            data.extend((scale, scale))
+
+    A = sp.coo_matrix(
+        (data, (rows, cols)),
+        shape=(total_nodes, total_nodes),
+        dtype=float,
+    ).tocsr()
+    A.sum_duplicates()
+    A.eliminate_zeros()
+
+    stats = {
+        "transform": "star_expansion",
+        "num_original_vertices": int(n),
+        "num_hyperedge_nodes": int(len(canonical_edges)),
+        "num_total_nodes": int(total_nodes),
+        "num_bipartite_edges": int(sum(len(edge) for edge in canonical_edges)),
+        "weighting": weighting,
+    }
+    return A, stats
+
+
 def hypergraph_basic_stats(
     n: int,
     hyperedges: Sequence[Edge],
@@ -621,6 +1655,320 @@ def zhou_normalized_laplacian(
     lap.sum_duplicates()
     lap.eliminate_zeros()
     return lap
+
+
+def edvw_transition_matrix_from_incidence(
+    R: sp.spmatrix,
+    hyperedge_weights: Optional[Sequence[float]] = None,
+    isolated: str = "self_loop",
+) -> sp.csr_matrix:
+    """Hayashi et al.의 EDVW random walk transition matrix를 만든다.
+
+    논문 표기에서 ``R``은 ``|E| x |V|`` edge-dependent vertex weight 행렬이다.
+    ``R[e, v]``는 vertex ``v``가 hyperedge ``e``에 속할 때의 ``gamma_e(v)``이고,
+    0이면 incidence가 없다는 뜻으로 해석한다.
+
+    반환 행렬은 논문 Eq. (3)의
+
+    ``P = D_V^{-1} W D_E^{-1} R``
+
+    이다. 여기서 ``W[v, e] = omega(e)`` if ``v in e``이고, ``D_V``와 ``D_E``는
+    각각 ``W 1``과 ``R 1``을 대각으로 둔 행렬이다.
+    """
+    if isolated not in {"raise", "self_loop", "zero"}:
+        raise ValueError("isolated must be one of {'raise', 'self_loop', 'zero'}.")
+
+    R_csr = R.tocsr().astype(float)
+    m, n = R_csr.shape
+    if m == 0 or n == 0:
+        raise ValueError(f"R must have positive shape, got {R_csr.shape}.")
+    if R_csr.nnz == 0:
+        raise ValueError("R must contain at least one nonzero incidence weight.")
+    if np.any(~np.isfinite(R_csr.data)) or np.any(R_csr.data < 0.0):
+        raise ValueError("R must contain finite nonnegative EDVW values.")
+
+    edge_weight = _prepare_hyperedge_weights(m, hyperedge_weights)
+    if np.any(edge_weight <= 0.0):
+        raise ValueError("Hayashi EDVW random walk requires positive hyperedge weights.")
+
+    incidence = R_csr.copy()
+    incidence.data = np.ones_like(incidence.data, dtype=float)
+
+    d_e = np.asarray(R_csr.sum(axis=1)).ravel()
+    if np.any(d_e <= 0.0):
+        raise ValueError("Every hyperedge row of R must have positive total EDVW weight.")
+
+    W = incidence.T @ sp.diags(edge_weight, format="csr")
+    d_v = np.asarray(W.sum(axis=1)).ravel()
+    isolated_mask = d_v <= 0.0
+    if np.any(isolated_mask) and isolated == "raise":
+        num_isolated = int(np.count_nonzero(isolated_mask))
+        raise ValueError(
+            "Hayashi EDVW random walk assumes no isolated vertices; "
+            f"found {num_isolated} isolated vertices."
+        )
+
+    d_v_inv = np.divide(1.0, d_v, out=np.zeros_like(d_v), where=(d_v > 0.0))
+    d_e_inv = np.divide(1.0, d_e, out=np.zeros_like(d_e), where=(d_e > 0.0))
+
+    P = (
+        sp.diags(d_v_inv, format="csr")
+        @ W
+        @ sp.diags(d_e_inv, format="csr")
+        @ R_csr
+    ).tocsr()
+
+    if np.any(isolated_mask) and isolated == "self_loop":
+        isolated_diag = isolated_mask.astype(float)
+        P = P + sp.diags(isolated_diag, format="csr")
+
+    P.sum_duplicates()
+    P.eliminate_zeros()
+    return P
+
+
+def edvw_transition_matrix(
+    n: int,
+    hyperedges: Sequence[Sequence[int]],
+    vertex_weights: Optional[Sequence[Sequence[float]]] = None,
+    hyperedge_weights: Optional[Sequence[float]] = None,
+    isolated: str = "self_loop",
+) -> sp.csr_matrix:
+    """Hyperedge list에서 Hayashi et al. EDVW transition matrix를 만든다.
+
+    ``vertex_weights``가 없으면 모든 incidence의 ``gamma_e(v)``를 1로 둔다.
+    이 경우 Eq. (3)은 simple hypergraph random walk가 된다. ``vertex_weights``를
+    주는 경우에는 ``hyperedges[j]``와 같은 길이의 양수 weight 목록을 각
+    hyperedge마다 제공해야 한다.
+    """
+    canonical_edges = _validate_hyperedges(n, hyperedges, min_size=1)
+
+    if vertex_weights is None:
+        weights_by_edge = [np.ones(len(edge), dtype=float) for edge in canonical_edges]
+    else:
+        if len(vertex_weights) != len(canonical_edges):
+            raise ValueError(
+                "vertex_weights length mismatch: expected "
+                f"{len(canonical_edges)}, got {len(vertex_weights)}."
+            )
+        weights_by_edge = []
+        for edge, raw_weights in zip(canonical_edges, vertex_weights):
+            w = np.asarray(list(raw_weights), dtype=float)
+            if w.shape != (len(edge),):
+                raise ValueError(
+                    "Each vertex_weights entry must match its hyperedge size; "
+                    f"expected {len(edge)}, got {w.shape[0]}."
+                )
+            if np.any(~np.isfinite(w)) or np.any(w <= 0.0):
+                raise ValueError("EDVW vertex weights must be finite and positive.")
+            weights_by_edge.append(w)
+
+    rows: List[int] = []
+    cols: List[int] = []
+    data: List[float] = []
+    for edge_idx, (edge, weights_e) in enumerate(zip(canonical_edges, weights_by_edge)):
+        for vertex, weight in zip(edge, weights_e):
+            rows.append(edge_idx)
+            cols.append(int(vertex))
+            data.append(float(weight))
+
+    R = sp.coo_matrix(
+        (data, (rows, cols)),
+        shape=(len(canonical_edges), n),
+        dtype=float,
+    ).tocsr()
+    R.sum_duplicates()
+    return edvw_transition_matrix_from_incidence(
+        R,
+        hyperedge_weights=hyperedge_weights,
+        isolated=isolated,
+    )
+
+
+def stationary_distribution_power(
+    P: sp.spmatrix,
+    tol: float = 1e-12,
+    max_iter: int = 10000,
+    initial: Optional[np.ndarray] = None,
+    return_info: bool = False,
+):
+    """Row-stochastic matrix ``P``의 stationary distribution을 power iteration으로 구한다."""
+    P_csr = P.tocsr().astype(float)
+    n, m = P_csr.shape
+    if n != m:
+        raise ValueError(f"P must be square, got shape {P_csr.shape}.")
+    if n == 0:
+        raise ValueError("P must be nonempty.")
+
+    if initial is None:
+        pi = np.full(n, 1.0 / n, dtype=float)
+    else:
+        pi = np.asarray(initial, dtype=float).copy()
+        if pi.shape != (n,):
+            raise ValueError(f"initial must have shape ({n},), got {pi.shape}.")
+        if np.any(~np.isfinite(pi)) or np.any(pi < 0.0) or pi.sum() <= 0.0:
+            raise ValueError("initial must be finite, nonnegative, and have positive sum.")
+        pi = pi / pi.sum()
+
+    converged = False
+    diff = math.inf
+    for iteration in range(1, max_iter + 1):
+        next_pi = P_csr.T @ pi
+        total = float(next_pi.sum())
+        if not np.isfinite(total) or total <= 0.0:
+            raise ValueError("Power iteration produced an invalid stationary vector.")
+        next_pi = np.asarray(next_pi, dtype=float).ravel() / total
+        diff = float(np.linalg.norm(next_pi - pi, ord=1))
+        pi = next_pi
+        if diff <= tol:
+            converged = True
+            break
+
+    if return_info:
+        return pi, {
+            "converged": bool(converged),
+            "iterations": int(iteration),
+            "l1_diff": float(diff),
+        }
+    return pi
+
+
+def chung_directed_laplacian(
+    P: sp.spmatrix,
+    stationary: Optional[np.ndarray] = None,
+    kind: str = "normalized",
+    tol: float = 1e-12,
+    max_iter: int = 10000,
+) -> sp.csr_matrix:
+    """Chung directed Laplacian을 만든다.
+
+    ``kind='combinatorial'``이면 논문 Eq. (5)의
+    ``L = Phi - (Phi P + P.T Phi) / 2``를 반환한다.
+
+    ``kind='normalized'``이면 논문 Eq. (6)의
+    ``L = I - (Phi^{1/2} P Phi^{-1/2} + Phi^{-1/2} P.T Phi^{1/2}) / 2``를 반환한다.
+    """
+    if kind not in {"combinatorial", "normalized"}:
+        raise ValueError("kind must be one of {'combinatorial', 'normalized'}.")
+
+    P_csr = P.tocsr().astype(float)
+    n, m = P_csr.shape
+    if n != m:
+        raise ValueError(f"P must be square, got shape {P_csr.shape}.")
+
+    if stationary is None:
+        pi = stationary_distribution_power(P_csr, tol=tol, max_iter=max_iter)
+    else:
+        pi = np.asarray(stationary, dtype=float)
+        if pi.shape != (n,):
+            raise ValueError(f"stationary must have shape ({n},), got {pi.shape}.")
+        if np.any(~np.isfinite(pi)) or np.any(pi < 0.0) or pi.sum() <= 0.0:
+            raise ValueError("stationary must be finite, nonnegative, and have positive sum.")
+        pi = pi / pi.sum()
+
+    if kind == "combinatorial":
+        Phi = sp.diags(pi, format="csr")
+        lap = Phi - 0.5 * (Phi @ P_csr + P_csr.T @ Phi)
+    else:
+        if np.any(pi <= 0.0):
+            raise ValueError("normalized Chung Laplacian requires positive stationary entries.")
+        sqrt_pi = np.sqrt(pi)
+        inv_sqrt_pi = 1.0 / sqrt_pi
+        T = 0.5 * (
+            sp.diags(sqrt_pi, format="csr") @ P_csr @ sp.diags(inv_sqrt_pi, format="csr")
+            + sp.diags(inv_sqrt_pi, format="csr") @ P_csr.T @ sp.diags(sqrt_pi, format="csr")
+        )
+        lap = sp.eye(n, format="csr", dtype=float) - T
+
+    lap = lap.tocsr()
+    lap.sum_duplicates()
+    lap.eliminate_zeros()
+    return lap
+
+
+def chung_directed_similarity(
+    P: sp.spmatrix,
+    stationary: Optional[np.ndarray] = None,
+    tol: float = 1e-12,
+    max_iter: int = 10000,
+) -> sp.csr_matrix:
+    """RDC-Spec Algorithm 1에서 쓰는 ``T = I - L`` 행렬을 만든다."""
+    P_csr = P.tocsr().astype(float)
+    n, m = P_csr.shape
+    if n != m:
+        raise ValueError(f"P must be square, got shape {P_csr.shape}.")
+
+    if stationary is None:
+        pi = stationary_distribution_power(P_csr, tol=tol, max_iter=max_iter)
+    else:
+        pi = np.asarray(stationary, dtype=float)
+        if pi.shape != (n,):
+            raise ValueError(f"stationary must have shape ({n},), got {pi.shape}.")
+        if np.any(~np.isfinite(pi)) or np.any(pi <= 0.0) or pi.sum() <= 0.0:
+            raise ValueError("stationary must be finite, positive, and have positive sum.")
+        pi = pi / pi.sum()
+
+    if np.any(pi <= 0.0):
+        raise ValueError("RDC similarity matrix requires positive stationary entries.")
+
+    sqrt_pi = np.sqrt(pi)
+    inv_sqrt_pi = 1.0 / sqrt_pi
+    T = 0.5 * (
+        sp.diags(sqrt_pi, format="csr") @ P_csr @ sp.diags(inv_sqrt_pi, format="csr")
+        + sp.diags(inv_sqrt_pi, format="csr") @ P_csr.T @ sp.diags(sqrt_pi, format="csr")
+    )
+    T = T.tocsr()
+    T.sum_duplicates()
+    T.eliminate_zeros()
+    return T
+
+
+def hayashi_edvw_laplacian(
+    n: int,
+    hyperedges: Sequence[Sequence[int]],
+    vertex_weights: Optional[Sequence[Sequence[float]]] = None,
+    hyperedge_weights: Optional[Sequence[float]] = None,
+    kind: str = "normalized",
+    isolated: str = "self_loop",
+    return_transition: bool = False,
+):
+    """Hayashi et al. EDVW random walk 기반 hypergraph Laplacian wrapper."""
+    P = edvw_transition_matrix(
+        n,
+        hyperedges,
+        vertex_weights=vertex_weights,
+        hyperedge_weights=hyperedge_weights,
+        isolated=isolated,
+    )
+    pi = stationary_distribution_power(P)
+    lap = chung_directed_laplacian(P, stationary=pi, kind=kind)
+    if return_transition:
+        return lap, P, pi
+    return lap
+
+
+def hayashi_edvw_similarity_matrix(
+    n: int,
+    hyperedges: Sequence[Sequence[int]],
+    vertex_weights: Optional[Sequence[Sequence[float]]] = None,
+    hyperedge_weights: Optional[Sequence[float]] = None,
+    isolated: str = "self_loop",
+    return_transition: bool = False,
+):
+    """논문 Algorithm 1/2에서 사용하는 ``T = I - L`` 행렬을 만든다."""
+    P = edvw_transition_matrix(
+        n,
+        hyperedges,
+        vertex_weights=vertex_weights,
+        hyperedge_weights=hyperedge_weights,
+        isolated=isolated,
+    )
+    pi = stationary_distribution_power(P)
+    T = chung_directed_similarity(P, stationary=pi)
+    if return_transition:
+        return T, P, pi
+    return T
+
 
 def build_B(alpha_n: float, lam: float, K: int) -> np.ndarray:
     within = alpha_n
@@ -2759,3 +4107,42 @@ def render_all_section7_visualizations(
         show_plot=show_plots,
     )
     return breakdown, composition
+
+
+if __name__ == "__main__":
+    rng = np.random.default_rng(42)
+    n, K = 100, 3
+    m_values = [2, 3, 4]
+
+    p_in, p_out = make_sparse_hsbm_probs(
+        n=n,
+        m_values=m_values,
+        a_in={2: 6.0, 3: 12.0, 4: 20.0},
+        b_out={2: 2.0, 3: 3.0, 4: 5.0},
+    )
+    assert set(p_in) == set(m_values)
+    assert set(p_out) == set(m_values)
+
+    edges, edges_by_size, y, Y, stats = generate_fast_sparse_nonuniform_hsbm_instance(
+        n=n,
+        K=K,
+        m_values=m_values,
+        expected_edges_per_size={2: 2 * n, 3: n, 4: n // 2},
+        within_fraction={2: 0.7, 3: 0.75, 4: 0.8},
+        rng=rng,
+    )
+
+    A_clique, stats_clique = hypergraph_to_clique_graph(n, edges)
+    A_star, stats_star = hypergraph_to_star_graph(n, edges)
+
+    assert A_clique.shape == (n, n)
+    assert A_star.shape == (n + len(edges), n + len(edges))
+    assert (A_clique - A_clique.T).nnz == 0
+    assert (A_star - A_star.T).nnz == 0
+    assert Y.shape == (n, K)
+    assert stats["num_hyperedges_total"] == len(edges)
+    assert sum(len(v) for v in edges_by_size.values()) == len(edges)
+    assert stats_clique["transform"] == "clique_expansion"
+    assert stats_star["transform"] == "star_expansion"
+
+    print("HSBM utility smoke test passed.")
