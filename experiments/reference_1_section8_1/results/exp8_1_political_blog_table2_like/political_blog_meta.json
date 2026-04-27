@@ -1,0 +1,44 @@
+{
+  "config": {
+    "dataset": "political_blog",
+    "reps": 20,
+    "seed": 2026,
+    "q": 2,
+    "r": 10,
+    "p_values": [
+      0.7,
+      0.8
+    ],
+    "data_dir": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/data/reference_1_section8_1/processed",
+    "outdir": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section8_1/results/exp8_1_political_blog_table2_like"
+  },
+  "dataset_meta": {
+    "name": "political_blog",
+    "num_nodes": 1222,
+    "num_edges": 16714,
+    "target_rank": 2,
+    "has_ground_truth": true,
+    "num_classes": 2,
+    "class_counts": {
+      "0": 586,
+      "1": 636
+    },
+    "source_file": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/data/reference_1_section8_1/raw/polblogs/polblogs.gml",
+    "raw_nodes": 1490,
+    "raw_directed_edges": 19090,
+    "raw_unique_directed_edges": 19025,
+    "raw_self_loops": 3,
+    "component_sizes_top10": [
+      1222,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  }
+}

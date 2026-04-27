@@ -1,0 +1,33 @@
+{
+  "base_config": {
+    "K": 3,
+    "m": 3,
+    "a_in": 36.0,
+    "b_out": 4.0,
+    "rho_n": 1.0,
+    "reps": 5,
+    "seed": 20260426,
+    "sampling": "sparse",
+    "max_enumeration": 1500000,
+    "normalize_embedding_rows": true,
+    "eigsh_tol": 1e-06
+  },
+  "n_values": [
+    1000,
+    2000,
+    3000,
+    4000,
+    5000,
+    6000,
+    7000,
+    8000,
+    9000,
+    10000
+  ],
+  "schedules": [
+    "rho_1",
+    "rho_log_n",
+    "rho_2log_n"
+  ],
+  "elapsed_sec": 317.3327387920581
+}

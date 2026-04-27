@@ -1,0 +1,25 @@
+{
+  "CONFIG": {
+    "n": 10000,
+    "m": 3,
+    "a_in": 36.0,
+    "b_out": 4.0,
+    "rho_n": 4.0,
+    "reps": 10,
+    "seed": 20260427,
+    "sampling": "sparse",
+    "max_enumeration": 1500000,
+    "normalize_embedding_rows": true,
+    "eigsh_tol": 1e-06
+  },
+  "K_VALUES": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    10,
+    12
+  ]
+}

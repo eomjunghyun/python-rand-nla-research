@@ -1,0 +1,39 @@
+{
+  "config": {
+    "dataset": "statisticians_citation",
+    "reps": 20,
+    "seed": 2026,
+    "q": 2,
+    "r": 10,
+    "p_values": [
+      0.7,
+      0.8
+    ],
+    "data_dir": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/data/reference_1_section8_1/processed",
+    "outdir": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section8_1/results/exp8_1_statisticians_citation_table2_like"
+  },
+  "dataset_meta": {
+    "name": "statisticians_citation",
+    "num_nodes": 2654,
+    "num_edges": 20049,
+    "target_rank": 3,
+    "has_ground_truth": false,
+    "source_file": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/data/reference_1_section8_1/raw/scc2016/SCC2016-with-abs/SCC2016/Data/paperCitAdj.txt",
+    "raw_authors": 3607,
+    "raw_directed_arcs": 21603,
+    "raw_undirected_edges": 20083,
+    "component_sizes_top10": [
+      2654,
+      5,
+      5,
+      4,
+      4,
+      4,
+      3,
+      3,
+      3,
+      2
+    ],
+    "ground_truth_reference": "No true labels; Section 8.1 evaluates randomized labels relative to non-random spectral clustering."
+  }
+}

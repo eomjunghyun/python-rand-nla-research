@@ -4,7 +4,7 @@
     "m": 3,
     "a_in": 36.0,
     "b_out": 4.0,
-    "rho_n": 1.0,
+    "rho_n": 4.0,
     "reps": 10,
     "seed": 20260426,
     "sampling": "sparse",

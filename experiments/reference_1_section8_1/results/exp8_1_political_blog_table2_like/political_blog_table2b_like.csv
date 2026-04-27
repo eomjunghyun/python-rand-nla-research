@@ -1,0 +1,5 @@
+Dataset,Methods,F 1,NMI,ARI
+political_blog,Random Projection,0.576(0.000),0.178(0.000),0.080(0.000)
+political_blog,Random Sampling (p= 0.7),0.572(0.009),0.178(0.007),0.077(0.006)
+political_blog,Random Sampling (p= 0.8),0.572(0.004),0.178(0.005),0.077(0.003)
+political_blog,Non-Random,0.576(0.000),0.178(0.000),0.080(0.000)
