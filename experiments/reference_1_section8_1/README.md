@@ -98,6 +98,9 @@ python experiments/reference_1_section8_1/exp8_1_remaining_real_networks_live.py
 
 ## 출력 파일
 
+종합 보고서:
+- `section8_1_experiment_report.md`
+
 European Email 기본 rank 결과:
 - `results/exp8_1_email_eu_core_table2_like/email_eu_raw_per_rep.csv`
 - `results/exp8_1_email_eu_core_table2_like/email_eu_summary_mean_std.csv`
