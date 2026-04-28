@@ -106,7 +106,7 @@ def get_randomized_specs() -> dict[tuple[str, str], SweepSpec]:
             x_col="K",
             x_values=K_VALUES,
             n=5000,
-            rho_n=4.0,
+            rho_n=8.0,
             seed=20260427,
             rp_oversampling=160,
             rp_power_iter=4,
@@ -121,7 +121,7 @@ def get_randomized_specs() -> dict[tuple[str, str], SweepSpec]:
             x_col="K",
             x_values=K_VALUES,
             n=5000,
-            rho_n=4.0,
+            rho_n=8.0,
             seed=20260427,
         ),
         SweepSpec(
@@ -799,7 +799,7 @@ def translate_existing_notebook_markdown():
             0: [
                 "# 균일 HSBM K 변화 - Zhou theta 비랜덤 실험\n",
                 "\n",
-                "이 노트북은 `n=5000`, `rho_n=4`를 고정하고 군집 수 `K`만 바꾸는 실험을 실행한다.\n",
+                "이 노트북은 `n=5000`, `rho_n=8`을 고정하고 군집 수 `K`만 바꾸는 실험을 실행한다.\n",
                 "\n",
                 "균일 HSBM은 `p_in = a_in * rho_n / n ** (m - 1)`, "
                 "`p_out = b_out * rho_n / n ** (m - 1)`를 사용한다.\n",
@@ -810,7 +810,7 @@ def translate_existing_notebook_markdown():
                 "`a_in`, `b_out`, `m`, `n`, `rho_n`을 고정한 채 `K`를 바꾸면 within-community 후보 비율도 함께 변한다. "
                 "그래서 이 노트북은 경험적 degree와 기대 degree 진단값을 함께 저장한다.\n",
             ],
-            2: ["## 설정\n", "\n", "`K`만 바꾼다. `n=5000`, `rho_n=4.0`은 고정한다.\n"],
+            2: ["## 설정\n", "\n", "`K`만 바꾼다. `n=5000`, `rho_n=8.0`은 고정한다.\n"],
             4: ["## 보조 함수\n"],
             6: ["## K 변화 실험 실행\n"],
             8: ["## 결과 저장\n"],
@@ -927,18 +927,67 @@ def _format_value(v: Any) -> str:
     return str(v)
 
 
-def dataframe_to_markdown(df: pd.DataFrame) -> str:
+def dataframe_to_markdown(df: pd.DataFrame, bold_rows: np.ndarray | list[bool] | None = None) -> str:
     if df.empty:
         return "_결과가 없습니다._"
     headers = list(df.columns)
     rows = [[_format_value(v) for v in row] for row in df.to_numpy()]
+    if bold_rows is None:
+        bold_rows = [False] * len(rows)
     lines = [
         "| " + " | ".join(headers) + " |",
         "| " + " | ".join(["---"] * len(headers)) + " |",
     ]
-    for row in rows:
+    for row, is_bold in zip(rows, bold_rows):
+        if bool(is_bold):
+            row = [f"**{cell}**" if cell else cell for cell in row]
         lines.append("| " + " | ".join(row) + " |")
     return "\n".join(lines)
+
+
+def grouped_comparison_markdown(
+    part: pd.DataFrame,
+    sweep: str,
+    sweep_label: str,
+    metric_label: str = "오분류율",
+) -> str:
+    sections: list[str] = []
+    for x_value, group in part.groupby("x", sort=True):
+        group = group.sort_values("method")
+        best_rows = np.isclose(
+            group["misclassification"].to_numpy(dtype=float),
+            group["misclassification"].min(),
+        )
+        display = group[
+            [
+                "method",
+                "misclassification",
+                "ARI",
+                "NMI",
+                "algorithm_sec",
+                "spectral_sec",
+                "hyperedges",
+                "degree",
+            ]
+        ].rename(
+            columns={
+                "method": "방법",
+                "misclassification": metric_label,
+                "algorithm_sec": "주요시간초",
+                "spectral_sec": "spectral초",
+                "hyperedges": "하이퍼엣지수",
+                "degree": "평균degree",
+            }
+        )
+        sections.extend(
+            [
+                f"### {sweep_label} = {_format_value(x_value)}\n",
+                "\n",
+                dataframe_to_markdown(display, bold_rows=best_rows),
+                "\n\n",
+            ]
+        )
+    return "".join(sections)
 
 
 def load_report_rows():
@@ -1013,11 +1062,12 @@ def write_combined_report(path: Path | None = None):
         "## 실험 구성\n",
         "\n",
         "- `n변화`: `K=3`, `rho_n=4.0`을 고정하고 `n`을 1000부터 10000까지 바꿉니다.\n",
-        "- `K변화`: `n=5000`, `rho_n=4.0`을 고정하고 `K`를 바꿉니다.\n",
+        "- `K변화`: `n=5000`, `rho_n=8.0`을 고정하고 `K`를 바꿉니다.\n",
         "- `rho_n변화`: `n=5000`, `K=3`을 고정하고 `rho_n`을 바꿉니다.\n",
         "- `Non-random`: `Theta`에 대해 `eigsh`로 top-`K` 고유벡터를 직접 계산합니다.\n",
         "- `Gaussian random projection`: Gaussian test matrix와 power iteration으로 작은 core matrix를 만든 뒤 고유벡터를 lift합니다.\n",
         "- `Random sampling`: `Theta`의 sparse nonzero entry를 확률 `p=0.7`로 샘플링하고 `1/p`로 rescale한 뒤 `eigsh`를 적용합니다.\n",
+        "- 세부 표는 같은 `n`, `K`, `rho_n` 값끼리 작은 표로 묶었습니다. 볼드 처리된 행은 해당 묶음 안에서 오분류율이 가장 낮은 결과입니다. 동률이면 여러 행을 함께 표시합니다.\n",
         "\n",
     ]
 
@@ -1043,42 +1093,34 @@ def write_combined_report(path: Path | None = None):
         )
         .sort_values(["sweep", "method"])
     )
-    lines.extend(["## 전체 요약\n", "\n", dataframe_to_markdown(overview), "\n\n"])
+    overview_best = np.isclose(
+        overview["평균_오분류율"].to_numpy(dtype=float),
+        overview.groupby("sweep")["평균_오분류율"].transform("min").to_numpy(dtype=float),
+    )
+    lines.extend(["## 전체 요약\n", "\n", dataframe_to_markdown(overview, bold_rows=overview_best), "\n\n"])
 
     sweep_titles = {
         "n": "n 변화 실험",
         "K": "K 변화 실험",
         "rho_n": "rho_n 변화 실험",
     }
+    sweep_labels = {
+        "n": "n",
+        "K": "K",
+        "rho_n": "rho_n",
+    }
     for sweep in ["n", "K", "rho_n"]:
         part = df[df["sweep"] == sweep].copy()
         if part.empty:
             continue
         part = part.sort_values(["x", "method"])
-        display = part[
+        lines.extend(
             [
-                "x",
-                "method",
-                "misclassification",
-                "ARI",
-                "NMI",
-                "algorithm_sec",
-                "spectral_sec",
-                "hyperedges",
-                "degree",
+                f"## {sweep_titles[sweep]}\n",
+                "\n",
+                grouped_comparison_markdown(part, sweep=sweep, sweep_label=sweep_labels[sweep]),
             ]
-        ].rename(
-            columns={
-                "x": sweep,
-                "method": "방법",
-                "misclassification": "오분류율",
-                "algorithm_sec": "주요시간초",
-                "spectral_sec": "spectral초",
-                "hyperedges": "하이퍼엣지수",
-                "degree": "평균degree",
-            }
         )
-        lines.extend([f"## {sweep_titles[sweep]}\n", "\n", dataframe_to_markdown(display), "\n\n"])
 
         plots = []
         for _, row in part.drop_duplicates("plot").iterrows():

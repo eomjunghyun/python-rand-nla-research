@@ -701,7 +701,7 @@ n = 5000
 m = 3
 a_in = 36.0
 b_out = 4.0
-rho_n = 4.0
+rho_n = 8.0
 reps = 10
 seed = 20260427
 kmeans_n_init = 20
@@ -716,8 +716,8 @@ K in {2, 3, 4, 5, 6, 8, 10, 12}.
 이때 확률 자체는 `K`에 의존하지 않는다.
 
 ```text
-p_in  = 36 * 4 / 5000^2 = 144 / 5000^2,
-p_out = 4  * 4 / 5000^2 = 16  / 5000^2.
+p_in  = 36 * 8 / 5000^2 = 288 / 5000^2,
+p_out = 4  * 8 / 5000^2 = 32  / 5000^2.
 ```
 
 하지만 `K`가 커지면 balanced community size `n_k`가 작아지고, 따라서
@@ -745,7 +745,7 @@ experiments/균일 HSBM 실험/results/{EXPERIMENT_ID}_{EXPERIMENT_SLUG}/
 - `EXP-20260427-001_uniform_hsbm_rho_n_sweep_zhou_theta/`
   - `n=5000`에서 다른 하이퍼파라미터를 고정하고 `rho_n`만 변화시킨 정식 sweep 결과다.
 - `EXP-20260427-002_uniform_hsbm_K_sweep_zhou_theta/`
-  - `n=5000`, `rho_n=4.0`에서 다른 하이퍼파라미터를 고정하고 `K`만 변화시킨 정식 sweep 결과다.
+  - `n=5000`, `rho_n=8.0`에서 다른 하이퍼파라미터를 고정하고 `K`만 변화시킨 정식 sweep 결과다.
 - `EXP-20260428-001_uniform_hsbm_K_sweep_gaussian_random_projection/`
   - `K` 변화 실험의 가우시안 랜덤 프로젝션 결과다.
 - `EXP-20260428-002_uniform_hsbm_K_sweep_random_sampling/`

@@ -21,7 +21,7 @@
   "m": 3,
   "a_in": 36.0,
   "b_out": 4.0,
-  "rho_n": 4.0,
+  "rho_n": 8.0,
   "reps": 10,
   "seed": 20260427,
   "sampling": "sparse",
