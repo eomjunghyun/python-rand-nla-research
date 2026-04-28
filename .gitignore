@@ -231,3 +231,6 @@ experiments/reference_1_section8_2/results/**/*.md
 
 # Section 7 generated image artifacts
 experiments/reference_1_section7_1/results/**/*.png
+
+# Local Matplotlib cache
+.matplotlib-cache/
