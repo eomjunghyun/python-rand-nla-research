@@ -1,6 +1,6 @@
 # 균일 HSBM 실험
 
-이 폴더는 모든 하이퍼엣지의 크기가 같은 `m`-균일 하이퍼그래프 stochastic block model 실험을 담는다. 모든 노트북은 같은 생성 모델과 같은 Zhou 정규화 하이퍼그래프 라플라시안 기반 spectral clustering을 사용한다. 실험 축은 `K`, `n`, `rho_n` 세 가지이고, 각 축마다 비랜덤 `eigsh`, 가우시안 랜덤 프로젝션, 랜덤 샘플링 버전을 둔다.
+이 폴더는 모든 하이퍼엣지의 크기가 같은 `m`-균일 하이퍼그래프 stochastic block model 실험을 담는다. 모든 노트북은 같은 생성 모델과 같은 정규화 하이퍼그래프 라플라시안 기반 spectral clustering을 사용한다. 실험 축은 `K`, `n`, `rho_n` 세 가지이고, 각 축마다 비랜덤 `eigsh`, 가우시안 랜덤 프로젝션, 랜덤 샘플링 버전을 둔다.
 
 - [K변화.ipynb](./K변화.ipynb): 군집 수 `K`를 변화시킨다.
 - [K변화_gaussian_random_projection.ipynb](./K변화_gaussian_random_projection.ipynb): `K` 변화 실험의 가우시안 랜덤 프로젝션 버전이다.
@@ -21,7 +21,7 @@
 1. balanced community label `z`를 만든다.
 2. planted uniform HSBM 확률식으로 하이퍼엣지 집합 `E`를 생성한다.
 3. 하이퍼그래프 incidence matrix `H`를 만든다.
-4. Zhou normalized operator `Theta`와 Laplacian `Delta = I - Theta`를 만든다.
+4. normalized hypergraph operator `Theta`와 Laplacian `Delta = I - Theta`를 만든다.
 5. `Theta`의 가장 큰 고유값에 대응하는 `K`개 고유벡터를 계산한다.
 6. 각 노드의 spectral embedding row를 L2 정규화한다.
 7. 정규화된 embedding에 `K`-means를 수행해 예측 라벨 `\hat z`를 얻는다.
@@ -80,7 +80,7 @@ true membership matrix는
 Theta_true[i, k] = 1{z_i = k}
 ```
 
-로 저장된다. 여기서 `Theta_true`는 모델 생성용 true label을 one-hot 형태로 표현한 것이며, 아래 Zhou operator `Theta`와는 다른 객체다.
+로 저장된다. 여기서 `Theta_true`는 모델 생성용 true label을 one-hot 형태로 표현한 것이며, 아래 normalized hypergraph operator `Theta`와는 다른 객체다.
 
 ### 후보 하이퍼엣지
 
@@ -237,7 +237,7 @@ isolated_fraction = (1/n) sum_i 1{d_i^{H} = 0}
 
 이다.
 
-## Zhou 정규화 하이퍼그래프 라플라시안
+## 정규화 하이퍼그래프 라플라시안
 
 ### Incidence matrix
 
@@ -290,7 +290,7 @@ W = diag(w(e_1), ..., w(e_M)) = I_M.
 
 ### Vertex degree
 
-Zhou operator에서 사용하는 vertex degree는 weighted incidence degree다.
+normalized hypergraph operator에서 사용하는 vertex degree는 weighted incidence degree다.
 
 ```text
 d_v(i) = sum_{e in E} w(e) H_{i,e}.
@@ -311,11 +311,11 @@ D_v = diag(d_v(0), ..., d_v(n-1)),
 D_e = diag(delta(e_1), ..., delta(e_M)).
 ```
 
-고립 노드처럼 `d_v(i)=0`인 경우 코드에서는 `1/sqrt(d_v(i))`를 0으로 둔다. 즉 해당 노드는 Zhou operator에서 연결 기여가 없고, Laplacian diagonal 쪽에 남는다.
+고립 노드처럼 `d_v(i)=0`인 경우 코드에서는 `1/sqrt(d_v(i))`를 0으로 둔다. 즉 해당 노드는 normalized hypergraph operator에서 연결 기여가 없고, Laplacian diagonal 쪽에 남는다.
 
-### Zhou operator
+### normalized hypergraph operator
 
-Zhou normalized operator는
+normalized hypergraph operator는
 
 ```text
 Theta = D_v^{-1/2} H W D_e^{-1} H^T D_v^{-1/2}.
@@ -338,15 +338,15 @@ Theta <- (Theta + Theta^T) / 2
 
 를 한 번 수행한다.
 
-### Zhou normalized Laplacian
+### Normalized hypergraph Laplacian
 
-Zhou normalized hypergraph Laplacian은
+normalized hypergraph Laplacian은
 
 ```text
 Delta = I - Theta.
 ```
 
-`n변화.ipynb`에서는 함수 이름상 `zhou_normalized_laplacian`으로 `Delta`를 만든 뒤
+`n변화.ipynb`에서는 함수 이름상 `hypergraph_laplacian`으로 `Delta`를 만든 뒤
 
 ```text
 Theta = I - Delta
@@ -583,13 +583,13 @@ candidate_within_fraction = N_within / N_total.
 각 반복은 다음 시간을 기록한다.
 
 - `generation_wall_sec`: HSBM 하이퍼엣지 생성 시간
-- `zhou_laplacian_wall_sec` 또는 `zhou_theta_build_wall_sec`: Zhou Laplacian/Theta 구성 시간
+- `hypergraph_laplacian_build_wall_sec`: hypergraph Laplacian/Theta 구성 시간
 - `eigen_decomposition_wall_sec`: `scipy.sparse.linalg.eigsh`로 top-`K` 고유벡터를 계산하고 정렬하는 시간
 - `embedding_normalize_wall_sec`: row normalization 시간
 - `kmeans_wall_sec`: k-means 시간
 - `spectral_clustering_wall_sec`: eigensolver, normalization, k-means를 포함한 spectral clustering 시간
 - `metric_wall_sec`: misclassification, ARI, NMI 계산 시간
-- `algorithm_total_wall_sec`: 생성, Zhou 구성, eigen, normalization, k-means 주요 단계 시간의 합
+- `algorithm_total_wall_sec`: 생성, hypergraph operator 구성, eigen, normalization, k-means 주요 단계 시간의 합
 - `wall_clock_sec`: `measure_call`로 감싼 전체 반복의 wall-clock 시간
 - `cpu_time_sec`: 전체 반복의 process CPU time
 

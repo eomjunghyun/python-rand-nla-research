@@ -31,9 +31,9 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.common import (  # noqa: E402
     LiveProgress,
     generate_uniform_hsbm_instance,
+    hypergraph_laplacian,
     make_uniform_hsbm_probs,
     normalize_rows_l2,
-    zhou_normalized_laplacian,
 )
 
 
@@ -481,10 +481,10 @@ def run_one_rep(spec: SweepSpec, x_value: int | float, rep: int):
     timings["generation_wall_sec"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
-    L = zhou_normalized_laplacian(n=n, hyperedges=hyperedges)
+    L = hypergraph_laplacian(n=n, hyperedges=hyperedges)
     theta = (sp.eye(n, format="csr", dtype=float) - L).tocsr()
     theta.eliminate_zeros()
-    timings["zhou_theta_build_wall_sec"] = time.perf_counter() - t0
+    timings["hypergraph_laplacian_build_wall_sec"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
     y_pred, spectral_stats = spectral_cluster_from_theta(theta=theta, K=K, rng=rng, spec=spec)
@@ -516,7 +516,7 @@ def run_one_rep(spec: SweepSpec, x_value: int | float, rep: int):
     }
     record["algorithm_total_wall_sec"] = float(
         record["generation_wall_sec"]
-        + record["zhou_theta_build_wall_sec"]
+        + record["hypergraph_laplacian_build_wall_sec"]
         + record["eigen_decomposition_wall_sec"]
         + record["embedding_normalize_wall_sec"]
         + record["kmeans_wall_sec"]
@@ -545,7 +545,7 @@ def summarize_raw(df_raw: pd.DataFrame, x_col: str) -> pd.DataFrame:
         "ARI",
         "NMI",
         "generation_wall_sec",
-        "zhou_theta_build_wall_sec",
+        "hypergraph_laplacian_build_wall_sec",
         "eigen_decomposition_wall_sec",
         "embedding_normalize_wall_sec",
         "kmeans_wall_sec",
@@ -797,14 +797,14 @@ def translate_existing_notebook_markdown():
     replacements = {
         "K변화.ipynb": {
             0: [
-                "# 균일 HSBM K 변화 - Zhou theta 비랜덤 실험\n",
+                "# 균일 HSBM K 변화 - hypergraph theta 비랜덤 실험\n",
                 "\n",
                 "이 노트북은 `n=5000`, `rho_n=8`을 고정하고 군집 수 `K`만 바꾸는 실험을 실행한다.\n",
                 "\n",
                 "균일 HSBM은 `p_in = a_in * rho_n / n ** (m - 1)`, "
                 "`p_out = b_out * rho_n / n ** (m - 1)`를 사용한다.\n",
                 "\n",
-                "Spectral clustering은 Zhou operator `Theta = I - Delta`의 가장 큰 고유값에 대응하는 고유벡터를 사용한다. "
+                "Spectral clustering은 normalized hypergraph operator `Theta = I - Delta`의 가장 큰 고유값에 대응하는 고유벡터를 사용한다. "
                 "이는 `Delta = I - Theta`의 가장 작은 고유값 고유벡터를 쓰는 것과 같은 eigenspace를 사용한다.\n",
                 "\n",
                 "`a_in`, `b_out`, `m`, `n`, `rho_n`을 고정한 채 `K`를 바꾸면 within-community 후보 비율도 함께 변한다. "
@@ -818,9 +818,9 @@ def translate_existing_notebook_markdown():
         },
         "n변화.ipynb": {
             0: [
-                "# 균일 HSBM n 변화 - Zhou theta 비랜덤 실험\n",
+                "# 균일 HSBM n 변화 - hypergraph theta 비랜덤 실험\n",
                 "\n",
-                "이 노트북은 균일 HSBM 하이퍼그래프를 생성하고, Zhou normalized hypergraph Laplacian에서 만든 "
+                "이 노트북은 균일 HSBM 하이퍼그래프를 생성하고, normalized hypergraph Laplacian에서 만든 "
                 "`Theta = I - Delta`로 spectral clustering을 수행한다.\n",
                 "\n",
                 "`n`이 커질 때 오분류율, ARI, NMI, CPU 시간, wall-clock 시간, 메모리, 알고리즘 단계별 시간을 기록한다.\n",
@@ -847,14 +847,14 @@ def translate_existing_notebook_markdown():
         },
         "rho_n변화.ipynb": {
             0: [
-                "# 균일 HSBM rho_n 변화 - Zhou theta 비랜덤 실험\n",
+                "# 균일 HSBM rho_n 변화 - hypergraph theta 비랜덤 실험\n",
                 "\n",
                 "이 노트북은 균일 HSBM의 다른 하이퍼파라미터를 고정하고 `rho_n`만 바꾸는 실험을 실행한다.\n",
                 "\n",
                 "각 `rho_n`에서 `p_in = a_in * rho_n / n ** (m - 1)`, "
                 "`p_out = b_out * rho_n / n ** (m - 1)`를 사용한다.\n",
                 "\n",
-                "Spectral clustering은 Zhou operator `Theta = I - Delta`의 가장 큰 고유값에 대응하는 고유벡터를 사용한다.\n",
+                "Spectral clustering은 normalized hypergraph operator `Theta = I - Delta`의 가장 큰 고유값에 대응하는 고유벡터를 사용한다.\n",
             ],
             2: ["## 설정\n", "\n", "`rho_n`만 바꾸고 나머지 모델 및 알고리즘 파라미터는 고정한다.\n"],
             4: ["## 보조 함수\n"],
@@ -1056,7 +1056,7 @@ def write_combined_report(path: Path | None = None):
         "# 균일 HSBM 실험 결과보고서\n",
         "\n",
         "이 보고서는 `균일 HSBM 실험` 폴더의 비랜덤 spectral clustering, 가우시안 랜덤 프로젝션, "
-        "랜덤 샘플링 실험을 한곳에 모아 정리한 것입니다. 모든 실험은 Zhou operator "
+        "랜덤 샘플링 실험을 한곳에 모아 정리한 것입니다. 모든 실험은 normalized hypergraph operator "
         "`Theta = I - Delta`에서 spectral embedding을 만든 뒤 k-means를 수행합니다.\n",
         "\n",
         "## 실험 구성\n",
@@ -1152,7 +1152,7 @@ def write_combined_report(path: Path | None = None):
             "- 오분류율은 Hungarian matching으로 예측 label을 true label에 맞춘 뒤 계산했습니다.\n",
             "- ARI와 NMI는 label permutation에 불변이므로 원 label을 그대로 사용했습니다.\n",
             "- 랜덤화 방법은 반복마다 같은 HSBM 생성 규칙을 사용하지만, spectral 단계에서 추가 난수를 사용합니다.\n",
-            "- `algorithm_sec`는 생성, Zhou operator 구성, spectral embedding, row normalization, k-means 주요 단계의 합입니다.\n",
+            "- `algorithm_sec`는 생성, hypergraph Laplacian/operator 구성, spectral embedding, row normalization, k-means 주요 단계의 합입니다.\n",
             "- 큰 `n`에서는 하이퍼그래프 생성 시간이 전체 시간을 지배할 수 있으므로, spectral 단계 시간도 함께 보시는 것이 좋습니다.\n",
         ]
     )

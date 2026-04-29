@@ -1,6 +1,8 @@
 # 메인 실험
 
-이 폴더는 비균일 HSBM(non-uniform HSBM)을 대상으로 한 주요 실험 노트북을 모아둔다. 공통적으로 `generate_nonuniform_hsbm_instance`로 하이퍼그래프를 생성하고, Zhou normalized hypergraph Laplacian 기반 spectral clustering을 수행한다.
+이 폴더는 과거 비균일 HSBM(non-uniform HSBM)을 대상으로 작성했던 실험 노트북 기록을 모아둔다.
+
+현재 [src/common.py](/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/src/common.py)는 균일 HSBM API만 유지하도록 정리되었기 때문에, 이 폴더의 노트북은 최신 공용 API 기준의 실행 대상이 아니라 legacy 기록이다. 새 하이퍼그래프 실험은 [균일 HSBM 실험](/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/균일 HSBM 실험/README.md)을 기준으로 관리한다.
 
 ## 파일 목록
 
