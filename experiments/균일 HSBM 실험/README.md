@@ -1,18 +1,21 @@
 # 균일 HSBM 실험
 
-이 폴더는 모든 하이퍼엣지의 크기가 같은 `m`-균일 하이퍼그래프 stochastic block model 실험을 담는다. 모든 노트북은 같은 생성 모델과 같은 정규화 하이퍼그래프 라플라시안 기반 spectral clustering을 사용한다. 실험 축은 `K`, `n`, `rho_n` 세 가지이고, 각 축마다 비랜덤 `eigsh`, 가우시안 랜덤 프로젝션, 랜덤 샘플링 버전을 둔다.
+이 폴더는 모든 하이퍼엣지의 크기가 같은 `m`-균일 하이퍼그래프 stochastic block model 실험을 담는다. 모든 노트북은 같은 생성 모델과 같은 정규화 하이퍼그래프 라플라시안 기반 spectral clustering을 사용한다. 실험 축은 `K`, `n`, `rho_n` 세 가지이고, 각 축마다 비랜덤 `eigsh`, 가우시안 랜덤 프로젝션, 랜덤 샘플링, CountSketch 랜덤 프로젝션 버전을 둔다. 최신 비교 보고서는 네 방법을 같은 로컬 실행 환경과 같은 생성 인스턴스에서 다시 돌린 결과를 사용한다.
 
 - [K변화.ipynb](./K변화.ipynb): 군집 수 `K`를 변화시킨다.
 - [K변화_gaussian_random_projection.ipynb](./K변화_gaussian_random_projection.ipynb): `K` 변화 실험의 가우시안 랜덤 프로젝션 버전이다.
 - [K변화_random_sampling.ipynb](./K변화_random_sampling.ipynb): `K` 변화 실험의 랜덤 샘플링 버전이다.
+- [K변화_countsketch_random_projection.ipynb](./K변화_countsketch_random_projection.ipynb): `K` 변화 실험의 CountSketch 랜덤 프로젝션 버전이다.
 - [n변화.ipynb](./n변화.ipynb): 노드 수 `n`을 변화시킨다.
 - [n변화_gaussian_random_projection.ipynb](./n변화_gaussian_random_projection.ipynb): `n` 변화 실험의 가우시안 랜덤 프로젝션 버전이다.
 - [n변화_random_sampling.ipynb](./n변화_random_sampling.ipynb): `n` 변화 실험의 랜덤 샘플링 버전이다.
+- [n변화_countsketch_random_projection.ipynb](./n변화_countsketch_random_projection.ipynb): `n` 변화 실험의 CountSketch 랜덤 프로젝션 버전이다.
 - [rho_n변화.ipynb](./rho_n변화.ipynb): 밀도 파라미터 `rho_n`을 변화시킨다.
 - [rho_n변화_gaussian_random_projection.ipynb](./rho_n변화_gaussian_random_projection.ipynb): `rho_n` 변화 실험의 가우시안 랜덤 프로젝션 버전이다.
 - [rho_n변화_random_sampling.ipynb](./rho_n변화_random_sampling.ipynb): `rho_n` 변화 실험의 랜덤 샘플링 버전이다.
+- [rho_n변화_countsketch_random_projection.ipynb](./rho_n변화_countsketch_random_projection.ipynb): `rho_n` 변화 실험의 CountSketch 랜덤 프로젝션 버전이다.
 
-전체 결과 요약은 [결과보고서.md](./결과보고서.md)에 모았다. 랜덤화 노트북이 공통으로 사용하는 실행 코드는 [uniform_hsbm_randomized.py](./uniform_hsbm_randomized.py)에 있다.
+전체 결과 요약은 [결과보고서.md](./결과보고서.md)에 모았다. 랜덤화 노트북이 공통으로 사용하는 실행 코드는 [uniform_hsbm_randomized.py](./uniform_hsbm_randomized.py)에 있다. 네 방법을 같은 생성 인스턴스에서 한 번에 비교하는 실행기는 [uniform_hsbm_method_comparison.py](./uniform_hsbm_method_comparison.py)이고, 전체 비교 실행은 [run_method_comparison.py](./run_method_comparison.py)로 수행한다.
 
 ## 전체 실험 흐름
 
@@ -43,6 +46,7 @@ z -> E -> H -> Theta = D_v^{-1/2} H W D_e^{-1} H^T D_v^{-1/2}
 
 - 가우시안 랜덤 프로젝션: `Theta`에 Gaussian test matrix를 곱해 낮은 차원의 부분공간 `Q`를 만들고, `Q^T Theta Q`의 고유벡터를 원래 공간으로 lift한다.
 - 랜덤 샘플링: `Theta`의 sparse nonzero entry를 확률 `p=0.7`로 샘플링하고 `1/p`로 rescale한 sampled operator에 `eigsh`를 적용한다.
+- CountSketch 랜덤 프로젝션: 각 노드를 하나의 sketch bucket과 부호에 매핑하는 sparse test matrix를 만들고, Gaussian random projection과 같은 subspace iteration 및 작은 core matrix 고유분해를 적용한다.
 
 ## 하이퍼그래프 생성 모델
 
@@ -758,6 +762,12 @@ experiments/균일 HSBM 실험/results/{EXPERIMENT_ID}_{EXPERIMENT_SLUG}/
   - `rho_n` 변화 실험의 가우시안 랜덤 프로젝션 결과다.
 - `EXP-20260428-006_uniform_hsbm_rho_n_sweep_random_sampling/`
   - `rho_n` 변화 실험의 랜덤 샘플링 결과다.
+- `EXP-20260506-004_uniform_hsbm_K_sweep_method_comparison/`
+  - 현재 로컬 환경에서 `K` 변화 실험을 네 방법으로 같은 인스턴스에 대해 다시 실행한 비교 결과다.
+- `EXP-20260506-005_uniform_hsbm_n_scaling_method_comparison/`
+  - 현재 로컬 환경에서 `n` 변화 실험을 네 방법으로 같은 인스턴스에 대해 다시 실행한 비교 결과다.
+- `EXP-20260506-006_uniform_hsbm_rho_n_sweep_method_comparison/`
+  - 현재 로컬 환경에서 `rho_n` 변화 실험을 네 방법으로 같은 인스턴스에 대해 다시 실행한 비교 결과다.
 
 ## 해석상 주의점
 
@@ -766,6 +776,7 @@ experiments/균일 HSBM 실험/results/{EXPERIMENT_ID}_{EXPERIMENT_SLUG}/
 - ARI와 NMI는 label permutation에 불변이므로 정렬하지 않은 `y_true`, `y_pred`를 그대로 넣는다.
 - `rho_n`은 평균 incidence degree를 직접 키우는 sparsity/density 파라미터다.
 - `K` sweep에서 `a_in`, `b_out`, `rho_n`을 고정하면 `K` 증가에 따라 within-community 후보 비율과 평균 degree도 함께 변한다. 따라서 `K` sweep 결과는 순수한 군집 수 효과와 밀도 변화 효과가 섞여 있다.
+- 최신 method comparison 결과의 plot은 macOS 기본 폰트 환경에서 한글 glyph 경고가 나지 않도록 그림 안의 제목, 축, legend를 영어로 작성한다. 보고서 본문과 표 설명은 한글을 유지한다.
 - 중요한 하이퍼파라미터를 바꿔 같은 결과 폴더에 다시 저장하면 이전 결과 해석이 어려워진다. 설정을 바꿔 새 실험을 만들 때는 새 `EXPERIMENT_ID`와 새 결과 폴더를 사용한다.
 
 ## 작성 규칙

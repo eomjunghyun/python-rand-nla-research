@@ -507,21 +507,28 @@ def write_comparison_report(out_path: Path | None = None) -> Path:
     overall_rows = []
     for sweep in ["K", "n", "rho_n"]:
         summary = summaries[sweep]
+        method_means = (
+            summary.groupby("method", observed=True)["misclassification_mean"]
+            .mean()
+            .dropna()
+        )
+        best_mis = float(method_means.min()) if not method_means.empty else float("nan")
         for method in METHOD_ORDER:
             dm = summary[summary["method"] == method]
             if dm.empty:
                 continue
-            overall_rows.append(
-                [
-                    sweep,
-                    method,
-                    _fmt_float(dm["misclassification_mean"].mean()),
-                    _fmt_float(dm["ARI_mean"].mean()),
-                    _fmt_float(dm["NMI_mean"].mean()),
-                    _fmt_float(dm["algorithm_total_wall_sec_mean"].mean()),
-                    _fmt_float(dm["spectral_clustering_wall_sec_mean"].mean()),
-                ]
-            )
+            values = [
+                sweep,
+                method,
+                _fmt_float(dm["misclassification_mean"].mean()),
+                _fmt_float(dm["ARI_mean"].mean()),
+                _fmt_float(dm["NMI_mean"].mean()),
+                _fmt_float(dm["algorithm_total_wall_sec_mean"].mean()),
+                _fmt_float(dm["spectral_clustering_wall_sec_mean"].mean()),
+            ]
+            if np.isclose(float(dm["misclassification_mean"].mean()), best_mis):
+                values = [f"**{value}**" for value in values]
+            overall_rows.append(values)
     lines.append(
         _markdown_table(
             ["sweep", "method", "평균_오분류율", "평균_ARI", "평균_NMI", "평균_주요시간초", "평균_spectral초"],
