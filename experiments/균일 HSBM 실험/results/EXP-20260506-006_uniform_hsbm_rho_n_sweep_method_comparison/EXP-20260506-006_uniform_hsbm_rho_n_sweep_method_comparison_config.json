@@ -1,0 +1,39 @@
+{
+  "sweep": "rho_n",
+  "experiment_id": "EXP-20260506-006",
+  "experiment_slug": "uniform_hsbm_rho_n_sweep_method_comparison",
+  "title_ko": "균일 HSBM rho_n 변화 - 동일 환경 method 비교",
+  "x_col": "rho_n",
+  "x_values": [
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0
+  ],
+  "n": 5000,
+  "K": 3,
+  "m": 3,
+  "a_in": 36.0,
+  "b_out": 4.0,
+  "rho_n": null,
+  "reps": 10,
+  "seed": 20260506,
+  "sampling": "sparse",
+  "max_enumeration": 1500000,
+  "normalize_embedding_rows": true,
+  "eigsh_tol": 1e-06,
+  "rp_oversampling": 160,
+  "rp_power_iter": 4,
+  "random_sampling_p": 0.7,
+  "kmeans_n_init": 20,
+  "methods": [
+    "Non-random",
+    "Gaussian random projection",
+    "Random sampling",
+    "CountSketch random projection"
+  ],
+  "method_note": "All methods are evaluated on the same generated HSBM instance for each x_value and rep."
+}

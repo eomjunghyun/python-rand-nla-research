@@ -15,6 +15,8 @@ EXPERIMENT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = EXPERIMENT_DIR.parents[1]
 RESULTS_ROOT = EXPERIMENT_DIR / "results"
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/python-rand-nla-matplotlib-cache")
+os.environ.setdefault("XDG_CACHE_HOME", "/tmp/python-rand-nla-cache")
+os.environ["LOKY_MAX_CPU_COUNT"] = str(os.cpu_count() or 1)
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -41,12 +43,14 @@ METHOD_LABELS = {
     "non_random": "Non-random",
     "gaussian_random_projection": "Gaussian random projection",
     "random_sampling": "Random sampling",
+    "countsketch_random_projection": "CountSketch random projection",
 }
 
 METHOD_KOREAN = {
     "Non-random": "비랜덤 eigsh",
     "Gaussian random projection": "가우시안 랜덤 프로젝션",
     "Random sampling": "랜덤 샘플링",
+    "CountSketch random projection": "CountSketch 랜덤 프로젝션",
 }
 
 
@@ -125,6 +129,21 @@ def get_randomized_specs() -> dict[tuple[str, str], SweepSpec]:
             seed=20260427,
         ),
         SweepSpec(
+            sweep="K",
+            method="countsketch_random_projection",
+            experiment_id="EXP-20260506-001",
+            experiment_slug="uniform_hsbm_K_sweep_countsketch_random_projection",
+            notebook_name="K변화_countsketch_random_projection.ipynb",
+            title_ko="균일 HSBM K 변화 - CountSketch 랜덤 프로젝션",
+            x_col="K",
+            x_values=K_VALUES,
+            n=5000,
+            rho_n=8.0,
+            seed=20260427,
+            rp_oversampling=160,
+            rp_power_iter=4,
+        ),
+        SweepSpec(
             sweep="n",
             method="gaussian_random_projection",
             experiment_id="EXP-20260428-003",
@@ -153,6 +172,21 @@ def get_randomized_specs() -> dict[tuple[str, str], SweepSpec]:
             seed=20260426,
         ),
         SweepSpec(
+            sweep="n",
+            method="countsketch_random_projection",
+            experiment_id="EXP-20260506-002",
+            experiment_slug="uniform_hsbm_n_scaling_countsketch_random_projection",
+            notebook_name="n변화_countsketch_random_projection.ipynb",
+            title_ko="균일 HSBM n 변화 - CountSketch 랜덤 프로젝션",
+            x_col="n",
+            x_values=N_VALUES,
+            K=3,
+            rho_n=4.0,
+            seed=20260426,
+            rp_oversampling=160,
+            rp_power_iter=4,
+        ),
+        SweepSpec(
             sweep="rho_n",
             method="gaussian_random_projection",
             experiment_id="EXP-20260428-005",
@@ -179,6 +213,21 @@ def get_randomized_specs() -> dict[tuple[str, str], SweepSpec]:
             n=5000,
             K=3,
             seed=20260427,
+        ),
+        SweepSpec(
+            sweep="rho_n",
+            method="countsketch_random_projection",
+            experiment_id="EXP-20260506-003",
+            experiment_slug="uniform_hsbm_rho_n_sweep_countsketch_random_projection",
+            notebook_name="rho_n변화_countsketch_random_projection.ipynb",
+            title_ko="균일 HSBM rho_n 변화 - CountSketch 랜덤 프로젝션",
+            x_col="rho_n",
+            x_values=RHO_VALUES,
+            n=5000,
+            K=3,
+            seed=20260427,
+            rp_oversampling=160,
+            rp_power_iter=4,
         ),
     ]
     return {(spec.sweep, spec.method): spec for spec in specs}
@@ -332,6 +381,67 @@ def gaussian_random_projection_embedding(
     return top_vals, U, timings
 
 
+def countsketch_test_matrix(n: int, ell: int, rng: np.random.Generator):
+    rows = np.arange(n, dtype=np.int64)
+    cols = rng.integers(0, ell, size=n, dtype=np.int64)
+    signs = rng.choice(np.array([-1.0, 1.0]), size=n)
+    omega = sp.csr_matrix((signs, (rows, cols)), shape=(n, ell), dtype=float)
+    bucket_counts = np.bincount(cols, minlength=ell)
+    return omega, {
+        "cs_embedding_dim": int(ell),
+        "cs_bucket_min_load": int(bucket_counts.min()) if ell else 0,
+        "cs_bucket_max_load": int(bucket_counts.max()) if ell else 0,
+        "cs_empty_buckets": int(np.sum(bucket_counts == 0)),
+    }
+
+
+def countsketch_random_projection_embedding(
+    theta: sp.csr_matrix,
+    K: int,
+    r: int,
+    q: int,
+    rng: np.random.Generator,
+):
+    timings: dict[str, Any] = {}
+    n = int(theta.shape[0])
+    ell = int(K + r)
+
+    t0 = time.perf_counter()
+    omega, sketch_stats = countsketch_test_matrix(n=n, ell=ell, rng=rng)
+    timings["cs_draw_hash_sec"] = time.perf_counter() - t0
+    timings.update(sketch_stats)
+
+    t0 = time.perf_counter()
+    Y = (theta @ omega).toarray()
+    timings["cs_initial_multiply_sec"] = time.perf_counter() - t0
+
+    t0 = time.perf_counter()
+    for _ in range(2 * int(q)):
+        Y = theta @ Y
+    timings["cs_power_iter_sec"] = time.perf_counter() - t0
+
+    t0 = time.perf_counter()
+    Q, _ = np.linalg.qr(Y, mode="reduced")
+    timings["cs_qr_sec"] = time.perf_counter() - t0
+
+    t0 = time.perf_counter()
+    B = Q.T @ (theta @ Q)
+    B = 0.5 * (B + B.T)
+    timings["cs_build_core_sec"] = time.perf_counter() - t0
+
+    t0 = time.perf_counter()
+    vals, vecs = np.linalg.eigh(B)
+    order = np.argsort(vals)[-K:][::-1]
+    top_vals = vals[order]
+    core_vecs = vecs[:, order]
+    timings["cs_small_eig_sec"] = time.perf_counter() - t0
+
+    t0 = time.perf_counter()
+    U = Q @ core_vecs
+    timings["cs_lift_sec"] = time.perf_counter() - t0
+    return top_vals, U, timings
+
+
 def sample_rescaled_symmetric_sparse_matrix(
     A: sp.csr_matrix,
     p: float,
@@ -398,6 +508,15 @@ def spectral_cluster_from_theta(theta: sp.csr_matrix, K: int, rng: np.random.Gen
     t0 = time.perf_counter()
     if spec.method == "gaussian_random_projection":
         vals, U, extra = gaussian_random_projection_embedding(
+            theta=theta,
+            K=K,
+            r=spec.rp_oversampling,
+            q=spec.rp_power_iter,
+            rng=rng,
+        )
+        timings.update(extra)
+    elif spec.method == "countsketch_random_projection":
+        vals, U, extra = countsketch_random_projection_embedding(
             theta=theta,
             K=K,
             r=spec.rp_oversampling,
@@ -567,6 +686,17 @@ def summarize_raw(df_raw: pd.DataFrame, x_col: str) -> pd.DataFrame:
         "rs_original_upper_nnz",
         "rs_sampled_upper_nnz",
         "rs_sampled_theta_nnz",
+        "cs_draw_hash_sec",
+        "cs_initial_multiply_sec",
+        "cs_power_iter_sec",
+        "cs_qr_sec",
+        "cs_build_core_sec",
+        "cs_small_eig_sec",
+        "cs_lift_sec",
+        "cs_embedding_dim",
+        "cs_bucket_min_load",
+        "cs_bucket_max_load",
+        "cs_empty_buckets",
         "top_eigenvalue_max",
         "top_eigenvalue_min",
     ]
@@ -672,6 +802,10 @@ def notebook_source(spec: SweepSpec) -> dict[str, Any]:
         "random_sampling": (
             "랜덤 샘플링은 `Theta`의 sparse nonzero entry를 확률 `p=0.7`로 뽑고 "
             "`1/p`로 rescale한 sampled operator에 `eigsh`를 적용한다."
+        ),
+        "countsketch_random_projection": (
+            "CountSketch 랜덤 프로젝션은 각 노드를 하나의 sketch bucket과 부호에 매핑하는 sparse test matrix를 만들고, "
+            "Gaussian random projection과 같은 subspace iteration 및 작은 core matrix 고유분해를 적용한다."
         ),
     }[spec.method]
     cells = [

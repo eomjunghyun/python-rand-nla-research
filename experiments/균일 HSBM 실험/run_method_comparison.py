@@ -1,4 +1,4 @@
-from uniform_hsbm_countsketch import run_all
+from uniform_hsbm_method_comparison import run_all
 
 
 if __name__ == "__main__":
