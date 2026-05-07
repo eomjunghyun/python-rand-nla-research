@@ -14,10 +14,15 @@ from typing import Any
 EXPERIMENT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = EXPERIMENT_DIR.parents[1]
 RESULTS_ROOT = EXPERIMENT_DIR / "results"
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/python-rand-nla-matplotlib-cache")
-os.environ.setdefault("XDG_CACHE_HOME", "/tmp/python-rand-nla-cache")
+LOCAL_CACHE_DIR = EXPERIMENT_DIR / ".cache"
+(LOCAL_CACHE_DIR / "matplotlib").mkdir(parents=True, exist_ok=True)
+(LOCAL_CACHE_DIR / "xdg").mkdir(parents=True, exist_ok=True)
+os.environ.setdefault("MPLCONFIGDIR", str(LOCAL_CACHE_DIR / "matplotlib"))
+os.environ.setdefault("XDG_CACHE_HOME", str(LOCAL_CACHE_DIR / "xdg"))
 os.environ["LOKY_MAX_CPU_COUNT"] = str(os.cpu_count() or 1)
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -344,6 +349,7 @@ def gaussian_random_projection_embedding(
     r: int,
     q: int,
     rng: np.random.Generator,
+    eigsh_tol: float = 1e-6,
 ):
     timings: dict[str, float] = {}
     n = int(theta.shape[0])
@@ -369,11 +375,14 @@ def gaussian_random_projection_embedding(
     timings["rp_build_core_sec"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
-    vals, vecs = np.linalg.eigh(B)
-    order = np.argsort(vals)[-K:][::-1]
-    top_vals = vals[order]
-    core_vecs = vecs[:, order]
+    top_vals, core_vecs = top_eigsh_embedding(
+        sp.csr_matrix(B),
+        K=K,
+        rng=rng,
+        eigsh_tol=eigsh_tol,
+    )
     timings["rp_small_eig_sec"] = time.perf_counter() - t0
+    timings["rp_core_eigensolver"] = "eigsh"
 
     t0 = time.perf_counter()
     U = Q @ core_vecs
@@ -401,6 +410,7 @@ def countsketch_random_projection_embedding(
     r: int,
     q: int,
     rng: np.random.Generator,
+    eigsh_tol: float = 1e-6,
 ):
     timings: dict[str, Any] = {}
     n = int(theta.shape[0])
@@ -430,11 +440,14 @@ def countsketch_random_projection_embedding(
     timings["cs_build_core_sec"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
-    vals, vecs = np.linalg.eigh(B)
-    order = np.argsort(vals)[-K:][::-1]
-    top_vals = vals[order]
-    core_vecs = vecs[:, order]
+    top_vals, core_vecs = top_eigsh_embedding(
+        sp.csr_matrix(B),
+        K=K,
+        rng=rng,
+        eigsh_tol=eigsh_tol,
+    )
     timings["cs_small_eig_sec"] = time.perf_counter() - t0
+    timings["cs_core_eigensolver"] = "eigsh"
 
     t0 = time.perf_counter()
     U = Q @ core_vecs
@@ -493,6 +506,7 @@ def randomized_sampling_embedding(
 
     t0 = time.perf_counter()
     vals, U = top_eigsh_embedding(sampled_theta, K=K, rng=rng, eigsh_tol=eigsh_tol)
+    timings["rs_eigensolver"] = "eigsh"
     timings["rs_eig_wall_sec"] = time.perf_counter() - t0
     timings.update(sample_stats)
     timings["rs_sampled_theta_nnz"] = int(sampled_theta.nnz)

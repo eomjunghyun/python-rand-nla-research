@@ -9,21 +9,26 @@ import sys
 import time
 from typing import Any
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/python-rand-nla-matplotlib-cache")
-os.environ.setdefault("XDG_CACHE_HOME", "/tmp/python-rand-nla-cache")
+EXPERIMENT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = EXPERIMENT_DIR.parents[1]
+RESULTS_ROOT = EXPERIMENT_DIR / "results"
+REPORT_PATH = EXPERIMENT_DIR / "결과보고서.md"
+LOCAL_CACHE_DIR = EXPERIMENT_DIR / ".cache"
+
+(LOCAL_CACHE_DIR / "matplotlib").mkdir(parents=True, exist_ok=True)
+(LOCAL_CACHE_DIR / "xdg").mkdir(parents=True, exist_ok=True)
+os.environ.setdefault("MPLCONFIGDIR", str(LOCAL_CACHE_DIR / "matplotlib"))
+os.environ.setdefault("XDG_CACHE_HOME", str(LOCAL_CACHE_DIR / "xdg"))
 os.environ["LOKY_MAX_CPU_COUNT"] = str(os.cpu_count() or 1)
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
-
-EXPERIMENT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = EXPERIMENT_DIR.parents[1]
-RESULTS_ROOT = EXPERIMENT_DIR / "results"
-REPORT_PATH = EXPERIMENT_DIR / "결과보고서.md"
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -84,6 +89,7 @@ class ComparisonSpec:
     max_enumeration: int = 1_500_000
     normalize_embedding_rows: bool = True
     eigsh_tol: float = 1e-6
+    eigensolver: str = "eigsh"
     rp_oversampling: int = 160
     rp_power_iter: int = 4
     random_sampling_p: float = 0.7
@@ -99,35 +105,35 @@ class ComparisonSpec:
 
 
 def get_comparison_specs() -> dict[str, ComparisonSpec]:
-    K_VALUES = (2, 3, 4, 5, 6, 8, 10, 12)
-    N_VALUES = tuple(range(1000, 10001, 1000))
-    RHO_VALUES = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0)
+    K_VALUES = (2, 4, 6, 8, 10, 12)
+    N_VALUES = tuple(range(2000, 10001, 2000))
+    RHO_VALUES = (2.0, 4.0, 8.0, 16.0, 32.0, 64.0)
     return {
         "K": ComparisonSpec(
             sweep="K",
-            experiment_id="EXP-20260506-004",
-            experiment_slug="uniform_hsbm_K_sweep_method_comparison",
-            title_ko="균일 HSBM K 변화 - 동일 환경 method 비교",
+            experiment_id="EXP-20260506-008",
+            experiment_slug="uniform_hsbm_K_rho16_eigsh_methods",
+            title_ko="균일 HSBM K 변화 - rho_n=16, eigsh method 비교",
             x_col="K",
             x_values=K_VALUES,
             n=5000,
-            rho_n=8.0,
+            rho_n=16.0,
         ),
         "n": ComparisonSpec(
             sweep="n",
-            experiment_id="EXP-20260506-005",
-            experiment_slug="uniform_hsbm_n_scaling_method_comparison",
-            title_ko="균일 HSBM n 변화 - 동일 환경 method 비교",
+            experiment_id="EXP-20260506-007",
+            experiment_slug="uniform_hsbm_n_rho16_eigsh_methods",
+            title_ko="균일 HSBM n 변화 - rho_n=16, eigsh method 비교",
             x_col="n",
             x_values=N_VALUES,
             K=3,
-            rho_n=4.0,
+            rho_n=16.0,
         ),
         "rho_n": ComparisonSpec(
             sweep="rho_n",
-            experiment_id="EXP-20260506-006",
-            experiment_slug="uniform_hsbm_rho_n_sweep_method_comparison",
-            title_ko="균일 HSBM rho_n 변화 - 동일 환경 method 비교",
+            experiment_id="EXP-20260506-009",
+            experiment_slug="uniform_hsbm_rho_eigsh_methods",
+            title_ko="균일 HSBM rho_n 변화 - eigsh method 비교",
             x_col="rho_n",
             x_values=RHO_VALUES,
             n=5000,
@@ -172,6 +178,7 @@ def spectral_cluster_from_theta(
     t0 = time.perf_counter()
     if method == "non_random":
         vals, U = top_eigsh_embedding(theta=theta, K=K, rng=rng, eigsh_tol=spec.eigsh_tol)
+        timings["non_random_eigensolver"] = spec.eigensolver
     elif method == "gaussian_random_projection":
         vals, U, extra = gaussian_random_projection_embedding(
             theta=theta,
@@ -179,6 +186,7 @@ def spectral_cluster_from_theta(
             r=spec.rp_oversampling,
             q=spec.rp_power_iter,
             rng=rng,
+            eigsh_tol=spec.eigsh_tol,
         )
         timings.update(extra)
     elif method == "random_sampling":
@@ -197,6 +205,7 @@ def spectral_cluster_from_theta(
             r=spec.rp_oversampling,
             q=spec.rp_power_iter,
             rng=rng,
+            eigsh_tol=spec.eigsh_tol,
         )
         timings.update(extra)
     else:
@@ -396,26 +405,63 @@ def plot_summary(summary: pd.DataFrame, spec: ComparisonSpec, out_png: Path):
     plt.close(fig)
 
 
+def _completed_run_keys(raw_path: Path, x_col: str) -> set[tuple[int, int]]:
+    if not raw_path.exists() or raw_path.stat().st_size == 0:
+        return set()
+    df = pd.read_csv(raw_path, usecols=[x_col, "rep", "method"])
+    complete = set()
+    for (x_value, rep), group in df.groupby([x_col, "rep"], sort=False):
+        if group["method"].nunique() >= len(METHOD_ORDER):
+            complete.add((value_to_seed_component(x_value), int(rep)))
+    return complete
+
+
+def _append_raw_rows(raw_path: Path, rows: list[dict[str, Any]]):
+    df = pd.DataFrame(rows)
+    if raw_path.exists() and raw_path.stat().st_size > 0:
+        existing_columns = list(pd.read_csv(raw_path, nrows=0).columns)
+        for col in existing_columns:
+            if col not in df.columns:
+                df[col] = np.nan
+        extra_columns = [col for col in df.columns if col not in existing_columns]
+        if extra_columns:
+            existing = pd.read_csv(raw_path)
+            for col in extra_columns:
+                existing[col] = np.nan
+            df = df[existing_columns + extra_columns]
+            tmp_path = raw_path.with_suffix(".tmp.csv")
+            pd.concat([existing, df], ignore_index=True).to_csv(tmp_path, index=False)
+            tmp_path.replace(raw_path)
+        else:
+            df = df[existing_columns]
+            df.to_csv(raw_path, mode="a", header=False, index=False)
+    else:
+        df.to_csv(raw_path, index=False)
+
+
 def run_spec(spec: ComparisonSpec, show_progress: bool = True):
     spec.outdir.mkdir(parents=True, exist_ok=True)
+    raw_path = spec.outdir / f"{spec.file_prefix}_raw.csv"
+    summary_path = spec.outdir / f"{spec.file_prefix}_summary.csv"
+    config_path = spec.outdir / f"{spec.file_prefix}_config.json"
+    plot_path = spec.outdir / f"{spec.file_prefix}_summary.png"
+    completed = _completed_run_keys(raw_path, spec.x_col)
     total = len(spec.x_values) * spec.reps
     progress = LiveProgress(total) if show_progress else None
-    rows = []
     for x_value in spec.x_values:
         for rep in range(1, spec.reps + 1):
-            rows.extend(run_one_instance(spec=spec, x_value=x_value, rep=rep))
+            key = (value_to_seed_component(x_value), int(rep))
+            if key not in completed:
+                rows = run_one_instance(spec=spec, x_value=x_value, rep=rep)
+                _append_raw_rows(raw_path, rows)
+                completed.add(key)
             if progress is not None:
                 progress.update(spec.x_col, x_value, rep, spec.reps, "all methods")
     if progress is not None:
         progress.close()
 
-    df_raw = pd.DataFrame(rows)
+    df_raw = pd.read_csv(raw_path)
     summary = summarize_raw(df_raw, spec.x_col)
-    raw_path = spec.outdir / f"{spec.file_prefix}_raw.csv"
-    summary_path = spec.outdir / f"{spec.file_prefix}_summary.csv"
-    config_path = spec.outdir / f"{spec.file_prefix}_config.json"
-    plot_path = spec.outdir / f"{spec.file_prefix}_summary.png"
-    df_raw.to_csv(raw_path, index=False)
     summary.to_csv(summary_path, index=False)
     config = asdict(spec)
     config["methods"] = METHOD_ORDER
@@ -478,6 +524,32 @@ def _bold_best_rows(df: pd.DataFrame):
     return rows
 
 
+def _n_for_summary_row(spec: ComparisonSpec, row: pd.Series) -> int:
+    if spec.sweep == "n":
+        return int(row[spec.x_col])
+    return int(spec.n)
+
+
+def _laplacian_sparsity_rows(summary: pd.DataFrame, spec: ComparisonSpec):
+    rows = []
+    non_random = summary[summary["method"] == "Non-random"].sort_values(spec.x_col)
+    for _, row in non_random.iterrows():
+        n = _n_for_summary_row(spec, row)
+        isolated_mean = float(row.get("isolated_fraction_mean", 0.0)) * n
+        laplacian_nnz_mean = float(row["theta_nnz_mean"]) + isolated_mean
+        nnz_ratio = laplacian_nnz_mean / float(n * n)
+        rows.append(
+            [
+                f"{float(row[spec.x_col]):.4f}" if spec.sweep == "rho_n" else f"{int(row[spec.x_col])}",
+                f"{n}",
+                f"{laplacian_nnz_mean:.1f}",
+                f"{nnz_ratio:.8f}",
+                f"{100.0 * nnz_ratio:.4f}%",
+            ]
+        )
+    return rows
+
+
 def write_comparison_report(out_path: Path | None = None) -> Path:
     specs = get_comparison_specs()
     out_path = out_path or REPORT_PATH
@@ -494,11 +566,13 @@ def write_comparison_report(out_path: Path | None = None) -> Path:
     lines.append("")
     lines.append("## 실험 구성")
     lines.append("")
-    lines.append("- `n변화`: `K=3`, `rho_n=4.0`을 고정하고 `n`을 1000부터 10000까지 바꿉니다.")
-    lines.append("- `K변화`: `n=5000`, `rho_n=8.0`을 고정하고 `K`를 바꿉니다.")
-    lines.append("- `rho_n변화`: `n=5000`, `K=3`을 고정하고 `rho_n`을 `{0.25, 0.5, 1, 2, 4, 8, 16}`으로 바꿉니다.")
+    lines.append("- `n변화`: `K=3`, `rho_n=16.0`을 고정하고 `n`을 `{2000, 4000, 6000, 8000, 10000}`으로 바꿉니다.")
+    lines.append("- `K변화`: `n=5000`, `rho_n=16.0`을 고정하고 `K`를 `{2, 4, 6, 8, 10, 12}`로 바꿉니다.")
+    lines.append("- `rho_n변화`: `n=5000`, `K=3`을 고정하고 `rho_n`을 `{2, 4, 8, 16, 32, 64}`로 바꿉니다.")
+    lines.append("- 모든 method의 eigensolver 단계는 공정한 비교를 위해 `scipy.sparse.linalg.eigsh`로 통일했습니다.")
     lines.append("- Gaussian RP와 CountSketch RP는 모두 `ell = K + 160`, power iteration `q=4`를 사용했습니다.")
-    lines.append("- Random sampling은 기존과 같이 `Theta`의 sparse nonzero entry를 확률 `p=0.7`로 샘플링하고 `1/p`로 rescale했습니다.")
+    lines.append("- Random sampling은 기존과 같이 `Theta`의 sparse nonzero entry를 확률 `p=0.7`로 샘플링하고 `1/p`로 rescale한 뒤 `eigsh`를 적용했습니다.")
+    lines.append("- Laplacian sparsity는 모든 sweep 값마다 `L.nnz`와 `L.nnz / n^2`를 따로 표로 기록했습니다.")
     lines.append("- 볼드 처리된 행은 같은 `x` 값 안에서 평균 오분류율이 가장 낮은 방법입니다.")
     lines.append("")
     lines.append("## 전체 요약")
@@ -558,6 +632,28 @@ def write_comparison_report(out_path: Path | None = None) -> Path:
         lines.append(f"![{title} method 비교]({_plot_relpath(spec)})")
         lines.append("")
 
+    lines.append("## Laplacian nnz 비율")
+    lines.append("")
+    lines.append(
+        "`L = I - Theta`로 만든 normalized hypergraph Laplacian의 nonzero 개수와 전체 행렬 원소 대비 비율입니다. "
+        "네 method는 같은 생성 인스턴스를 공유하므로 `Non-random` 행의 그래프 통계만 사용했습니다. "
+        "고립 노드가 있는 경우 `L.nnz = Theta.nnz + 고립 노드 수`로 계산했습니다."
+    )
+    lines.append("")
+
+    for sweep, title in [("n", "n 변화"), ("K", "K 변화"), ("rho_n", "rho_n 변화")]:
+        spec = specs[sweep]
+        summary = summaries[sweep]
+        lines.append(f"### {title}")
+        lines.append("")
+        lines.append(
+            _markdown_table(
+                [spec.x_col, "행렬 크기 n", "Laplacian nnz 평균", "nnz 비율", "nnz 퍼센트"],
+                _laplacian_sparsity_rows(summary, spec),
+            )
+        )
+        lines.append("")
+
     tagged = []
     for sweep, summary in summaries.items():
         tmp = summary.copy()
@@ -589,7 +685,7 @@ def write_comparison_report(out_path: Path | None = None) -> Path:
         f"- CountSketch의 spectral 단계 시간은 Gaussian RP 대비 평균 `{_fmt_float(time_ratio.mean())}`배입니다. CountSketch test matrix는 sparse하지만, 현재 설정에서는 반복적인 `Theta @ Y`와 QR 비용이 여전히 큽니다."
     )
     lines.append(
-        "- `rho_n`이 충분히 큰 구간에서는 CountSketch, Gaussian RP, Non-random이 모두 거의 완전 복원에 접근합니다. 반대로 매우 희소한 `rho_n<=1` 구간은 네 방법 모두 어렵습니다."
+        "- `rho_n`이 충분히 큰 구간에서는 CountSketch, Gaussian RP, Non-random이 모두 거의 완전 복원에 접근합니다. 이번 sweep에서 가장 희소한 `rho_n=2` 구간은 상대적으로 더 어려운 구간입니다."
     )
     lines.append(
         "- `K` 변화 후반부는 `rho_n`을 고정한 상태에서 `K`가 커지며 effective signal이 약해지는 구간이라, CountSketch를 추가해도 큰 `K`의 난도는 그대로 남습니다."
@@ -600,7 +696,7 @@ def write_comparison_report(out_path: Path | None = None) -> Path:
     lines.append("- 오분류율은 Hungarian matching으로 예측 label을 true label에 맞춘 뒤 계산했습니다.")
     lines.append("- ARI와 NMI는 label permutation에 불변이므로 원 label을 그대로 사용했습니다.")
     lines.append("- `algorithm_sec`는 생성, hypergraph Laplacian/operator 구성, spectral embedding, row normalization, k-means 주요 단계의 합입니다.")
-    lines.append("- 이번 보고서는 기존 저장 CSV를 섞지 않고 현재 실행 환경에서 새로 계산한 `EXP-20260506-004`부터 `006`까지의 비교 결과만 사용했습니다.")
+    lines.append("- 이번 보고서는 기존 저장 CSV를 섞지 않고 현재 실행 환경에서 새로 계산한 `EXP-20260506-007`부터 `009`까지의 비교 결과만 사용했습니다.")
 
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return out_path
