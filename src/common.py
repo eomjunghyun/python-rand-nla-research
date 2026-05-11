@@ -245,6 +245,140 @@ class LiveProgress:
         print()
 
 
+def generate_hash_and_signs(n: int, m: int, seed: int = 0):
+    rng = np.random.default_rng(seed)
+    h = rng.integers(0, m, size=n)
+    signs = rng.choice(np.array([-1.0, 1.0]), size=n)
+    return h, signs
+
+
+def dense_explicit_countsketch(A, h, signs, m):
+    n, _ = A.shape
+    S = np.zeros((m, n), dtype=A.dtype)
+    S[h, np.arange(n)] = signs
+    return S @ A
+
+
+def sparse_explicit_countsketch(A, h, signs, m):
+    n, _ = A.shape
+    rows = h
+    cols = np.arange(n)
+    data = signs
+    S = sp.csr_matrix((data, (rows, cols)), shape=(m, n))
+    return S @ A
+
+
+def generate_index_sets(h, signs, m):
+    plus_sets = []
+    minus_sets = []
+    for j in range(m):
+        bucket = np.where(h == j)[0]
+        plus_sets.append(bucket[signs[bucket] > 0])
+        minus_sets.append(bucket[signs[bucket] < 0])
+    return plus_sets, minus_sets
+
+
+def index_set_countsketch(A, plus_sets, minus_sets):
+    m = len(plus_sets)
+    _, d = A.shape
+    SA = np.zeros((m, d), dtype=A.dtype)
+
+    for j in range(m):
+        if plus_sets[j].size > 0:
+            SA[j, :] += A[plus_sets[j], :].sum(axis=0)
+        if minus_sets[j].size > 0:
+            SA[j, :] -= A[minus_sets[j], :].sum(axis=0)
+    return SA
+
+
+def time_function(func, repeat=5):
+    times = []
+    result = None
+    for _ in range(repeat):
+        t0 = perf_counter()
+        result = func()
+        t1 = perf_counter()
+        times.append(t1 - t0)
+    return np.min(times), result
+
+
+def norm_preservation_test(A, plus_sets, minus_sets, num_tests=100, seed=0):
+    """
+    Empirically test norm preservation on random vectors in range(A).
+
+    For random y, compare
+        ||S A y||_2^2 / ||A y||_2^2.
+    """
+    rng = np.random.default_rng(seed)
+    _, d = A.shape
+    SA = index_set_countsketch(A, plus_sets, minus_sets)
+    ratios = []
+
+    for _ in range(num_tests):
+        y = rng.standard_normal(d)
+        x = A @ y
+        Sx = SA @ y
+        ratio = np.linalg.norm(Sx) ** 2 / np.linalg.norm(x) ** 2
+        ratios.append(ratio)
+
+    ratios = np.array(ratios)
+
+    print("Norm preservation test on range(A)")
+    print("----------------------------------")
+    print(f"min ratio  = {ratios.min():.6f}")
+    print(f"max ratio  = {ratios.max():.6f}")
+    print(f"mean ratio = {ratios.mean():.6f}")
+    print(f"std ratio  = {ratios.std():.6f}")
+
+    return ratios
+
+
+def benchmark(n=10000, d=100, m=1000, repeat=5, seed=0):
+    rng = np.random.default_rng(seed)
+    A = rng.standard_normal((n, d))
+    h, signs = generate_hash_and_signs(n, m, seed=seed + 1)
+    plus_sets, minus_sets = generate_index_sets(h, signs, m)
+
+    print(f"n = {n}, d = {d}, m = {m}")
+    print(f"A shape = {A.shape}")
+    print()
+
+    dense_time, SA_dense = time_function(
+        lambda: dense_explicit_countsketch(A, h, signs, m),
+        repeat=repeat,
+    )
+    sparse_time, SA_sparse = time_function(
+        lambda: sparse_explicit_countsketch(A, h, signs, m),
+        repeat=repeat,
+    )
+    index_time, SA_index = time_function(
+        lambda: index_set_countsketch(A, plus_sets, minus_sets),
+        repeat=repeat,
+    )
+
+    err_sparse = np.linalg.norm(SA_sparse - SA_dense) / np.linalg.norm(SA_dense)
+    err_index = np.linalg.norm(SA_index - SA_dense) / np.linalg.norm(SA_dense)
+
+    print("Timing results")
+    print("--------------")
+    print(f"Dense explicit S @ A   : {dense_time:.6f} seconds")
+    print(f"Sparse explicit S @ A  : {sparse_time:.6f} seconds")
+    print(f"Index-set CountSketch  : {index_time:.6f} seconds")
+    print()
+
+    print("Relative consistency errors")
+    print("---------------------------")
+    print(f"||SA_sparse - SA_dense|| / ||SA_dense|| = {err_sparse:.3e}")
+    print(f"||SA_index  - SA_dense|| / ||SA_dense|| = {err_index:.3e}")
+    return norm_preservation_test(
+        A,
+        plus_sets,
+        minus_sets,
+        num_tests=200,
+        seed=10,
+    )
+
+
 def make_balanced_labels(n: int, K: int, rng: np.random.Generator) -> np.ndarray:
     sizes = np.full(K, n // K, dtype=int)
     sizes[: (n % K)] += 1

@@ -1,6 +1,6 @@
 # 균일 HSBM 실험
 
-이 폴더는 모든 하이퍼엣지의 크기가 같은 `m`-균일 하이퍼그래프 stochastic block model 실험을 담는다. 모든 노트북은 같은 생성 모델과 같은 정규화 하이퍼그래프 라플라시안 기반 spectral clustering을 사용한다. 실험 축은 `K`, `n`, `rho_n` 세 가지이고, 각 축마다 비랜덤 `eigsh`, 가우시안 랜덤 프로젝션, 랜덤 샘플링, CountSketch 랜덤 프로젝션 버전을 둔다. 최신 비교 보고서는 네 방법을 같은 로컬 실행 환경과 같은 생성 인스턴스에서 다시 돌린 결과를 사용한다.
+이 폴더는 모든 하이퍼엣지의 크기가 같은 `m`-균일 하이퍼그래프 stochastic block model 실험을 담는다. 모든 노트북은 같은 생성 모델과 같은 정규화 하이퍼그래프 라플라시안 기반 spectral clustering을 사용한다. 실험 축은 `K`, `n`, `rho_n` 세 가지이고, 각 축마다 비랜덤 `eigsh`, 가우시안 랜덤 프로젝션, 랜덤 샘플링, CountSketch 랜덤 프로젝션 버전을 둔다. 최신 비교 보고서는 네 방법을 같은 로컬 실행 환경과 같은 생성 인스턴스에서 비교한 결과를 사용한다.
 
 - [K변화.ipynb](./K변화.ipynb): 군집 수 `K`를 변화시킨다.
 - [K변화_gaussian_random_projection.ipynb](./K변화_gaussian_random_projection.ipynb): `K` 변화 실험의 가우시안 랜덤 프로젝션 버전이다.
@@ -15,7 +15,14 @@
 - [rho_n변화_random_sampling.ipynb](./rho_n변화_random_sampling.ipynb): `rho_n` 변화 실험의 랜덤 샘플링 버전이다.
 - [rho_n변화_countsketch_random_projection.ipynb](./rho_n변화_countsketch_random_projection.ipynb): `rho_n` 변화 실험의 CountSketch 랜덤 프로젝션 버전이다.
 
-전체 결과 요약은 [결과보고서.md](./결과보고서.md)에 모았다. 랜덤화 노트북이 공통으로 사용하는 실행 코드는 [uniform_hsbm_randomized.py](./uniform_hsbm_randomized.py)에 있다. 네 방법을 같은 생성 인스턴스에서 한 번에 비교하는 실행기는 [uniform_hsbm_method_comparison.py](./uniform_hsbm_method_comparison.py)이고, 전체 비교 실행은 [run_method_comparison.py](./run_method_comparison.py)로 수행한다.
+전체 결과 요약은 [결과보고서.md](./결과보고서.md)에 모았다. 랜덤화 노트북이 공통으로 사용하는 실행 코드는 [uniform_hsbm_randomized.py](./uniform_hsbm_randomized.py)에 있다. 네 방법을 같은 생성 인스턴스에서 한 번에 비교하는 실행기는 [uniform_hsbm_method_comparison.py](./uniform_hsbm_method_comparison.py)이고, 전체 비교 실행은 [run_method_comparison.py](./run_method_comparison.py)로 수행한다. 현재 비교 보고서(`EXP-20260506-007`부터 `009`)의 CountSketch 행은 [src/common.py](../../src/common.py)의 `generate_hash_and_signs`와 `sparse_explicit_countsketch`를 사용하도록 다시 계산했다.
+
+CountSketch 구현만 바꿔서 기존 method comparison raw CSV를 갱신해야 할 때는 아래처럼 실행한다.
+
+```bash
+cd "experiments/균일 HSBM 실험"
+python uniform_hsbm_method_comparison.py all --refresh-method countsketch_random_projection
+```
 
 ## 전체 실험 흐름
 
@@ -46,7 +53,7 @@ z -> E -> H -> Theta = D_v^{-1/2} H W D_e^{-1} H^T D_v^{-1/2}
 
 - 가우시안 랜덤 프로젝션: `Theta`에 Gaussian test matrix를 곱해 낮은 차원의 부분공간 `Q`를 만들고, `Q^T Theta Q`의 고유벡터를 원래 공간으로 lift한다.
 - 랜덤 샘플링: `Theta`의 sparse nonzero entry를 확률 `p=0.7`로 샘플링하고 `1/p`로 rescale한 sampled operator에 `eigsh`를 적용한다.
-- CountSketch 랜덤 프로젝션: 각 노드를 하나의 sketch bucket과 부호에 매핑하는 sparse test matrix를 만들고, Gaussian random projection과 같은 subspace iteration 및 작은 core matrix 고유분해를 적용한다.
+- CountSketch 랜덤 프로젝션: [src/common.py](../../src/common.py)의 `generate_hash_and_signs`와 `sparse_explicit_countsketch`로 `S @ Theta`를 계산하고, `Theta`의 대칭성으로 `Theta @ S.T`를 얻은 뒤 Gaussian random projection과 같은 subspace iteration 및 작은 core matrix 고유분해를 적용한다.
 
 ## 하이퍼그래프 생성 모델
 

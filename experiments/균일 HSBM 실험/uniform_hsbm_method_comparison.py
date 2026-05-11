@@ -230,7 +230,7 @@ def spectral_cluster_from_theta(
     return labels, timings
 
 
-def run_one_instance(spec: ComparisonSpec, x_value: int | float, rep: int):
+def build_shared_problem(spec: ComparisonSpec, x_value: int | float, rep: int):
     n, K, rho_n = concrete_params(spec, x_value)
     seed = int(spec.seed + value_to_seed_component(x_value) * 100_000 + rep)
     rng = np.random.default_rng(seed)
@@ -281,43 +281,88 @@ def run_one_instance(spec: ComparisonSpec, x_value: int | float, rep: int):
         "p_out": float(p_out),
         "sampling_mode": gen_stats.get("sampling_mode", ""),
     }
+    return theta, y_true, K, shared
 
+
+def record_one_method(
+    theta: sp.csr_matrix,
+    y_true: np.ndarray,
+    K: int,
+    spec: ComparisonSpec,
+    method: str,
+    method_rng: np.random.Generator,
+    shared: dict[str, Any],
+):
+    y_pred, spectral_stats = spectral_cluster_from_theta(
+        theta=theta,
+        K=K,
+        rng=method_rng,
+        spec=spec,
+        method=method,
+    )
+    t0_metric = time.perf_counter()
+    mis, _, _ = aligned_misclassification_rate(y_true, y_pred, K)
+    ari = adjusted_rand_score(y_true, y_pred)
+    nmi = normalized_mutual_info_score(y_true, y_pred)
+    record = {
+        **shared,
+        "method": METHOD_LABELS[method],
+        "method_key": method,
+        "misclassification_rate": float(mis),
+        "ARI": float(ari),
+        "NMI": float(nmi),
+        "metric_wall_sec": float(time.perf_counter() - t0_metric),
+        **spectral_stats,
+    }
+    record["algorithm_total_wall_sec"] = float(
+        record["generation_wall_sec"]
+        + record["hypergraph_laplacian_build_wall_sec"]
+        + record["eigen_decomposition_wall_sec"]
+        + record["embedding_normalize_wall_sec"]
+        + record["kmeans_wall_sec"]
+    )
+    return record
+
+
+def run_one_method_instance(
+    spec: ComparisonSpec,
+    x_value: int | float,
+    rep: int,
+    method: str,
+):
+    theta, y_true, K, shared = build_shared_problem(spec=spec, x_value=x_value, rep=rep)
+    method_rng = np.random.default_rng(method_seed(int(shared["seed"]), method))
+    record, measurement = measure_call(
+        lambda: record_one_method(
+            theta=theta,
+            y_true=y_true,
+            K=K,
+            spec=spec,
+            method=method,
+            method_rng=method_rng,
+            shared=shared,
+        )
+    )
+    record.update(measurement)
+    return record
+
+
+def run_one_instance(spec: ComparisonSpec, x_value: int | float, rep: int):
+    theta, y_true, K, shared = build_shared_problem(spec=spec, x_value=x_value, rep=rep)
     rows = []
     for method in METHODS:
-        method_rng = np.random.default_rng(method_seed(seed, method))
-
-        def _run_method():
-            y_pred, spectral_stats = spectral_cluster_from_theta(
+        method_rng = np.random.default_rng(method_seed(int(shared["seed"]), method))
+        record, measurement = measure_call(
+            lambda method=method, method_rng=method_rng: record_one_method(
                 theta=theta,
+                y_true=y_true,
                 K=K,
-                rng=method_rng,
                 spec=spec,
                 method=method,
+                method_rng=method_rng,
+                shared=shared,
             )
-            t0_metric = time.perf_counter()
-            mis, _, _ = aligned_misclassification_rate(y_true, y_pred, K)
-            ari = adjusted_rand_score(y_true, y_pred)
-            nmi = normalized_mutual_info_score(y_true, y_pred)
-            record = {
-                **shared,
-                "method": METHOD_LABELS[method],
-                "method_key": method,
-                "misclassification_rate": float(mis),
-                "ARI": float(ari),
-                "NMI": float(nmi),
-                "metric_wall_sec": float(time.perf_counter() - t0_metric),
-                **spectral_stats,
-            }
-            record["algorithm_total_wall_sec"] = float(
-                record["generation_wall_sec"]
-                + record["hypergraph_laplacian_build_wall_sec"]
-                + record["eigen_decomposition_wall_sec"]
-                + record["embedding_normalize_wall_sec"]
-                + record["kmeans_wall_sec"]
-            )
-            return record
-
-        record, measurement = measure_call(_run_method)
+        )
         record.update(measurement)
         rows.append(record)
     return rows
@@ -351,6 +396,7 @@ def summarize_raw(df_raw: pd.DataFrame, x_col: str) -> pd.DataFrame:
         "rp_power_iter_sec",
         "rs_sample_matrix_wall_sec",
         "rs_eig_wall_sec",
+        "cs_sparse_explicit_sketch_sec",
         "cs_power_iter_sec",
         "cs_qr_sec",
         "cs_build_core_sec",
@@ -439,12 +485,33 @@ def _append_raw_rows(raw_path: Path, rows: list[dict[str, Any]]):
         df.to_csv(raw_path, index=False)
 
 
-def run_spec(spec: ComparisonSpec, show_progress: bool = True):
+def write_spec_outputs(spec: ComparisonSpec, df_raw: pd.DataFrame):
     spec.outdir.mkdir(parents=True, exist_ok=True)
     raw_path = spec.outdir / f"{spec.file_prefix}_raw.csv"
     summary_path = spec.outdir / f"{spec.file_prefix}_summary.csv"
     config_path = spec.outdir / f"{spec.file_prefix}_config.json"
     plot_path = spec.outdir / f"{spec.file_prefix}_summary.png"
+
+    df_raw = df_raw.copy()
+    if "method" in df_raw.columns:
+        df_raw["method"] = pd.Categorical(df_raw["method"], categories=METHOD_ORDER, ordered=True)
+        df_raw = df_raw.sort_values([spec.x_col, "rep", "method"]).reset_index(drop=True)
+        df_raw["method"] = df_raw["method"].astype(str)
+
+    summary = summarize_raw(df_raw, spec.x_col)
+    df_raw.to_csv(raw_path, index=False)
+    summary.to_csv(summary_path, index=False)
+    config = asdict(spec)
+    config["methods"] = METHOD_ORDER
+    config["method_note"] = "All methods are evaluated on the same generated HSBM instance for each x_value and rep."
+    config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
+    plot_summary(summary, spec, plot_path)
+    return {"spec": spec, "raw": df_raw, "summary": summary}
+
+
+def run_spec(spec: ComparisonSpec, show_progress: bool = True):
+    spec.outdir.mkdir(parents=True, exist_ok=True)
+    raw_path = spec.outdir / f"{spec.file_prefix}_raw.csv"
     completed = _completed_run_keys(raw_path, spec.x_col)
     total = len(spec.x_values) * spec.reps
     progress = LiveProgress(total) if show_progress else None
@@ -461,18 +528,55 @@ def run_spec(spec: ComparisonSpec, show_progress: bool = True):
         progress.close()
 
     df_raw = pd.read_csv(raw_path)
-    summary = summarize_raw(df_raw, spec.x_col)
-    summary.to_csv(summary_path, index=False)
-    config = asdict(spec)
-    config["methods"] = METHOD_ORDER
-    config["method_note"] = "All methods are evaluated on the same generated HSBM instance for each x_value and rep."
-    config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
-    plot_summary(summary, spec, plot_path)
-    return {"spec": spec, "raw": df_raw, "summary": summary}
+    return write_spec_outputs(spec, df_raw)
+
+
+def refresh_method_rows(
+    spec: ComparisonSpec,
+    method: str = "countsketch_random_projection",
+    show_progress: bool = True,
+):
+    if method not in METHODS:
+        raise ValueError(f"unknown method: {method}")
+
+    spec.outdir.mkdir(parents=True, exist_ok=True)
+    raw_path = spec.outdir / f"{spec.file_prefix}_raw.csv"
+    existing = pd.read_csv(raw_path) if raw_path.exists() and raw_path.stat().st_size > 0 else pd.DataFrame()
+
+    total = len(spec.x_values) * spec.reps
+    progress = LiveProgress(total) if show_progress else None
+    rows = []
+    for x_value in spec.x_values:
+        for rep in range(1, spec.reps + 1):
+            rows.append(run_one_method_instance(spec=spec, x_value=x_value, rep=rep, method=method))
+            if progress is not None:
+                progress.update(spec.x_col, x_value, rep, spec.reps, METHOD_LABELS[method])
+    if progress is not None:
+        progress.close()
+
+    refreshed = pd.DataFrame(rows)
+    if existing.empty:
+        df_raw = refreshed
+    else:
+        if "method_key" in existing.columns:
+            keep = existing["method_key"] != method
+        else:
+            keep = existing["method"] != METHOD_LABELS[method]
+        df_raw = pd.concat([existing[keep], refreshed], ignore_index=True, sort=False)
+
+    return write_spec_outputs(spec, df_raw)
 
 
 def run_named_experiment(sweep: str, show_progress: bool = True):
     return run_spec(resolve_spec(sweep), show_progress=show_progress)
+
+
+def refresh_named_method(
+    sweep: str,
+    method: str = "countsketch_random_projection",
+    show_progress: bool = True,
+):
+    return refresh_method_rows(resolve_spec(sweep), method=method, show_progress=show_progress)
 
 
 def _fmt_float(value: float, digits: int = 4) -> str:
@@ -559,9 +663,9 @@ def write_comparison_report(out_path: Path | None = None) -> Path:
     lines.append("# 균일 HSBM 실험 결과보고서")
     lines.append("")
     lines.append(
-        "이 보고서는 같은 로컬 실행 환경에서 `Non-random`, `Gaussian random projection`, `Random sampling`, "
-        "`CountSketch random projection`을 모두 다시 실행해 비교한 결과입니다. 각 `(sweep 값, 반복 번호)`마다 "
-        "하나의 균일 HSBM 인스턴스를 생성하고 네 방법을 같은 `Theta = I - Delta`에 적용했습니다."
+        "이 보고서는 같은 로컬 실행 환경의 `EXP-20260506-007`부터 `009`까지 method comparison 결과를 사용하고, "
+        "`CountSketch random projection` 행은 `src/common.py`의 CountSketch 구현으로 다시 계산해 교체한 결과입니다. "
+        "각 `(sweep 값, 반복 번호)`마다 하나의 균일 HSBM 인스턴스를 생성하고 네 방법을 같은 `Theta = I - Delta`에 적용했습니다."
     )
     lines.append("")
     lines.append("## 실험 구성")
@@ -571,6 +675,8 @@ def write_comparison_report(out_path: Path | None = None) -> Path:
     lines.append("- `rho_n변화`: `n=5000`, `K=3`을 고정하고 `rho_n`을 `{2, 4, 8, 16, 32, 64}`로 바꿉니다.")
     lines.append("- 모든 method의 eigensolver 단계는 공정한 비교를 위해 `scipy.sparse.linalg.eigsh`로 통일했습니다.")
     lines.append("- Gaussian RP와 CountSketch RP는 모두 `ell = K + 160`, power iteration `q=4`를 사용했습니다.")
+    lines.append("- CountSketch RP는 `src/common.py`의 `generate_hash_and_signs`와 `sparse_explicit_countsketch`를 사용해 `S @ Theta`를 계산하고, `Theta`의 대칭성으로 `Theta @ S.T`를 얻습니다.")
+    lines.append("- `python uniform_hsbm_method_comparison.py all --refresh-method countsketch_random_projection` 실행 경로로 기존 raw CSV의 CountSketch 행만 같은 seed와 같은 생성 인스턴스 조건에서 재계산할 수 있게 했습니다.")
     lines.append("- Random sampling은 기존과 같이 `Theta`의 sparse nonzero entry를 확률 `p=0.7`로 샘플링하고 `1/p`로 rescale한 뒤 `eigsh`를 적용했습니다.")
     lines.append("- Laplacian sparsity는 모든 sweep 값마다 `L.nnz`와 `L.nnz / n^2`를 따로 표로 기록했습니다.")
     lines.append("- 볼드 처리된 행은 같은 `x` 값 안에서 평균 오분류율이 가장 낮은 방법입니다.")
@@ -696,7 +802,8 @@ def write_comparison_report(out_path: Path | None = None) -> Path:
     lines.append("- 오분류율은 Hungarian matching으로 예측 label을 true label에 맞춘 뒤 계산했습니다.")
     lines.append("- ARI와 NMI는 label permutation에 불변이므로 원 label을 그대로 사용했습니다.")
     lines.append("- `algorithm_sec`는 생성, hypergraph Laplacian/operator 구성, spectral embedding, row normalization, k-means 주요 단계의 합입니다.")
-    lines.append("- 이번 보고서는 기존 저장 CSV를 섞지 않고 현재 실행 환경에서 새로 계산한 `EXP-20260506-007`부터 `009`까지의 비교 결과만 사용했습니다.")
+    lines.append("- 이번 보고서는 기존 별도 CountSketch 폴더 결과를 섞지 않고 `EXP-20260506-007`부터 `009`까지의 비교 결과만 사용했습니다.")
+    lines.append("- CountSketch 행은 `src/common.py`의 sparse explicit CountSketch 경로로 재계산했으며, raw CSV의 `cs_sparse_explicit_sketch_sec` 컬럼으로 확인할 수 있습니다.")
 
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return out_path
@@ -710,17 +817,46 @@ def run_all(show_progress: bool = True):
     return outputs, report_path
 
 
+def refresh_all_method(
+    method: str = "countsketch_random_projection",
+    show_progress: bool = True,
+):
+    outputs = {}
+    for sweep in ["K", "n", "rho_n"]:
+        outputs[sweep] = refresh_named_method(
+            sweep=sweep,
+            method=method,
+            show_progress=show_progress,
+        )
+    report_path = write_comparison_report()
+    return outputs, report_path
+
+
 def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(description="Run uniform HSBM method comparison.")
     parser.add_argument("sweep", choices=["K", "n", "rho_n", "all", "report"])
+    parser.add_argument("--refresh-method", choices=METHODS)
     parser.add_argument("--no-progress", action="store_true")
     args = parser.parse_args(argv)
     if args.sweep == "all":
-        run_all(show_progress=not args.no_progress)
+        if args.refresh_method:
+            refresh_all_method(method=args.refresh_method, show_progress=not args.no_progress)
+        else:
+            run_all(show_progress=not args.no_progress)
     elif args.sweep == "report":
+        if args.refresh_method:
+            parser.error("--refresh-method cannot be used with report")
         print(write_comparison_report())
     else:
-        run_named_experiment(args.sweep, show_progress=not args.no_progress)
+        if args.refresh_method:
+            refresh_named_method(
+                sweep=args.sweep,
+                method=args.refresh_method,
+                show_progress=not args.no_progress,
+            )
+            write_comparison_report()
+        else:
+            run_named_experiment(args.sweep, show_progress=not args.no_progress)
 
 
 if __name__ == "__main__":

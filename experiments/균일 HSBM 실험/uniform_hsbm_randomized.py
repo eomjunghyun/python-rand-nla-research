@@ -37,10 +37,12 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.common import (  # noqa: E402
     LiveProgress,
+    generate_hash_and_signs,
     generate_uniform_hsbm_instance,
     hypergraph_laplacian,
     make_uniform_hsbm_probs,
     normalize_rows_l2,
+    sparse_explicit_countsketch,
 )
 
 
@@ -391,12 +393,11 @@ def gaussian_random_projection_embedding(
 
 
 def countsketch_test_matrix(n: int, ell: int, rng: np.random.Generator):
-    rows = np.arange(n, dtype=np.int64)
-    cols = rng.integers(0, ell, size=n, dtype=np.int64)
-    signs = rng.choice(np.array([-1.0, 1.0]), size=n)
-    omega = sp.csr_matrix((signs, (rows, cols)), shape=(n, ell), dtype=float)
-    bucket_counts = np.bincount(cols, minlength=ell)
-    return omega, {
+    seed = int(rng.integers(0, 2**32 - 1))
+    h, signs = generate_hash_and_signs(n=n, m=ell, seed=seed)
+    bucket_counts = np.bincount(h, minlength=ell)
+    return h, signs, {
+        "cs_hash_seed": int(seed),
         "cs_embedding_dim": int(ell),
         "cs_bucket_min_load": int(bucket_counts.min()) if ell else 0,
         "cs_bucket_max_load": int(bucket_counts.max()) if ell else 0,
@@ -417,13 +418,17 @@ def countsketch_random_projection_embedding(
     ell = int(K + r)
 
     t0 = time.perf_counter()
-    omega, sketch_stats = countsketch_test_matrix(n=n, ell=ell, rng=rng)
+    h, signs, sketch_stats = countsketch_test_matrix(n=n, ell=ell, rng=rng)
     timings["cs_draw_hash_sec"] = time.perf_counter() - t0
     timings.update(sketch_stats)
 
     t0 = time.perf_counter()
-    Y = (theta @ omega).toarray()
+    # src.common implements S @ A. Since theta is symmetric,
+    # theta @ S.T = (S @ theta.T).T.
+    sketched = sparse_explicit_countsketch(theta.T, h=h, signs=signs, m=ell)
+    Y = sketched.T.toarray() if sp.issparse(sketched) else np.asarray(sketched).T
     timings["cs_initial_multiply_sec"] = time.perf_counter() - t0
+    timings["cs_sparse_explicit_sketch_sec"] = timings["cs_initial_multiply_sec"]
 
     t0 = time.perf_counter()
     for _ in range(2 * int(q)):
@@ -702,6 +707,7 @@ def summarize_raw(df_raw: pd.DataFrame, x_col: str) -> pd.DataFrame:
         "rs_sampled_theta_nnz",
         "cs_draw_hash_sec",
         "cs_initial_multiply_sec",
+        "cs_sparse_explicit_sketch_sec",
         "cs_power_iter_sec",
         "cs_qr_sec",
         "cs_build_core_sec",
@@ -818,8 +824,9 @@ def notebook_source(spec: SweepSpec) -> dict[str, Any]:
             "`1/p`로 rescale한 sampled operator에 `eigsh`를 적용한다."
         ),
         "countsketch_random_projection": (
-            "CountSketch 랜덤 프로젝션은 각 노드를 하나의 sketch bucket과 부호에 매핑하는 sparse test matrix를 만들고, "
-            "Gaussian random projection과 같은 subspace iteration 및 작은 core matrix 고유분해를 적용한다."
+            "CountSketch 랜덤 프로젝션은 `src/common.py`의 sparse explicit CountSketch로 "
+            "`S @ Theta`를 계산한 뒤, 대칭성으로 `Theta @ S.T`를 얻어 Gaussian random projection과 "
+            "같은 subspace iteration 및 작은 core matrix 고유분해를 적용한다."
         ),
     }[spec.method]
     cells = [
