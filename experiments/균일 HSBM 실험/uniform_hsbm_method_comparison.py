@@ -463,6 +463,7 @@ def _completed_run_keys(raw_path: Path, x_col: str) -> set[tuple[int, int]]:
 
 
 def _append_raw_rows(raw_path: Path, rows: list[dict[str, Any]]):
+    raw_path.parent.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(rows)
     if raw_path.exists() and raw_path.stat().st_size > 0:
         existing_columns = list(pd.read_csv(raw_path, nrows=0).columns)

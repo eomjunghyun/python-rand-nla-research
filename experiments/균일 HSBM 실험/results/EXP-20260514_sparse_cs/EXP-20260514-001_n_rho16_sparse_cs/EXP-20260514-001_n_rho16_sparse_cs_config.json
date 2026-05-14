@@ -1,0 +1,38 @@
+{
+  "sweep": "n",
+  "experiment_id": "EXP-20260514-001",
+  "experiment_slug": "n_rho16_sparse_cs",
+  "title_ko": "균일 HSBM n 변화 - rho_n=16, eigsh method 비교",
+  "x_col": "n",
+  "x_values": [
+    2000,
+    4000,
+    6000,
+    8000,
+    10000
+  ],
+  "n": null,
+  "K": 3,
+  "m": 3,
+  "a_in": 36.0,
+  "b_out": 4.0,
+  "rho_n": 16.0,
+  "reps": 10,
+  "seed": 20260506,
+  "sampling": "sparse",
+  "max_enumeration": 1500000,
+  "normalize_embedding_rows": true,
+  "eigsh_tol": 1e-06,
+  "eigensolver": "eigsh",
+  "rp_oversampling": 160,
+  "rp_power_iter": 4,
+  "random_sampling_p": 0.7,
+  "kmeans_n_init": 20,
+  "methods": [
+    "Non-random",
+    "Gaussian random projection",
+    "Random sampling",
+    "CountSketch random projection"
+  ],
+  "method_note": "All methods are evaluated on the same generated HSBM instance for each x_value and rep."
+}
