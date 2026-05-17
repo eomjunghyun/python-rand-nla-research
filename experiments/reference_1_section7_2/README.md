@@ -1,6 +1,6 @@
 # Reference 1 Section 7.2 모델 1~6 실험
 
-이 폴더는 Reference 1 논문의 Section 7.2에 제시된 Model 1~6 실험을 재현하는 스크립트를 담고 있다. 실행 중 진행 상황, 단계별 시간, 논문과 맞춘 metric을 기록한다.
+이 폴더는 Reference 1 논문의 Section 7.2에 제시된 Model 1~6 실험을 재현하는 스크립트를 담고 있다. 실행 중 진행 상황, 단계별 시간, 논문과 맞춘 metric을 기록한다. 기존 세 방법에 더해 `CountSketch` random projection 방법을 추가했다.
 
 ## 실행 파일
 
@@ -27,6 +27,15 @@ python experiments/reference_1_section7_2/sec72_models456_live.py \
 - `experiments/reference_1_section7_2/results/exp72_models456_paper_aligned_live/`
 
 주요 출력 파일은 raw per-rep CSV, mean/std summary CSV, metric figure, runtime figure다.
+
+현재 summary에는 네 방법이 포함된다.
+
+- `Non-random`
+- `Random Projection`
+- `Random Sampling`
+- `CountSketch`
+
+실험 보고서는 `section7_2_python_experiment_report.md`에 있다.
 
 ## 작성 규칙
 

@@ -23,12 +23,18 @@ from src.common import (  # noqa: E402
     attach_timing_breakdown,
     evaluate_metrics,
     extract_timing_breakdown,
+    run_countsketch_projection,
     run_non_random,
     run_random_projection,
     run_random_sampling,
     summarize_metrics,
     summarize_timing_breakdown,
 )
+
+
+SECTION72_METHODS = METHODS + ["CountSketch"]
+SECTION72_METHOD_COLORS = {**METHOD_COLORS, "CountSketch": "#9467bd"}
+SUMMARY_METHOD_ORDER = ["Non-random", "Random Projection", "Random Sampling", "CountSketch"]
 
 
 @dataclass
@@ -135,7 +141,7 @@ def run_experiment72_models123(
     master_rng = np.random.default_rng(cfg.seed)
     records = []
 
-    total_steps = len(cfg.model_ids) * len(cfg.n_values) * cfg.reps * 3
+    total_steps = len(cfg.model_ids) * len(cfg.n_values) * cfg.reps * len(SECTION72_METHODS)
     progress = LiveProgress(total_steps) if show_progress else None
 
     for model_id in cfg.model_ids:
@@ -276,6 +282,49 @@ def run_experiment72_models123(
                 if progress is not None:
                     progress.update("model/n", f"{model_id}/{n}", rep, cfg.reps, "Non-random")
 
+                if detailed_timing:
+                    Ahat_cs, y_cs, timing_cs = run_countsketch_projection(
+                        A,
+                        cfg.K,
+                        K_prime,
+                        cfg.r,
+                        cfg.q,
+                        rng,
+                        return_timing=True,
+                    )
+                    t_cs = timing_cs["algo_total_sec"]
+                else:
+                    t0 = perf_counter()
+                    Ahat_cs, y_cs = run_countsketch_projection(A, cfg.K, K_prime, cfg.r, cfg.q, rng)
+                    t_cs = perf_counter() - t0
+                    timing_cs = None
+
+                t0 = perf_counter()
+                eP_cs, eT_cs, eB_cs = evaluate_metrics(
+                    Ahat_cs, y_cs, P, B_true, Theta_true, y_true, cfg.K, theta_mode=theta_mode
+                )
+                t_eval_cs = perf_counter() - t0
+                record_cs = {
+                    "model": model_id,
+                    "n": n,
+                    "rep": rep,
+                    "method": "CountSketch",
+                    "error_P": eP_cs,
+                    "error_Theta": eT_cs,
+                    "error_B": eB_cs,
+                    "time_sec": t_cs,
+                }
+                if detailed_timing:
+                    record_cs = attach_timing_breakdown(
+                        record_cs,
+                        algo_timing=timing_cs,
+                        instance_sec=t_instance,
+                        metric_sec=t_eval_cs,
+                    )
+                records.append(record_cs)
+                if progress is not None:
+                    progress.update("model/n", f"{model_id}/{n}", rep, cfg.reps, "CountSketch")
+
     if progress is not None:
         progress.close()
 
@@ -283,7 +332,11 @@ def run_experiment72_models123(
 
 
 def summarize(df_raw: pd.DataFrame) -> pd.DataFrame:
-    return summarize_metrics(df_raw, group_cols=["model", "n"])
+    summary = summarize_metrics(df_raw, group_cols=["model", "n"])
+    order = {method: idx for idx, method in enumerate(SUMMARY_METHOD_ORDER)}
+    summary["_method_order"] = summary["method"].map(order).fillna(len(order)).astype(int)
+    summary = summary.sort_values(["model", "n", "_method_order"]).drop(columns="_method_order")
+    return summary.reset_index(drop=True)
 
 
 def plot_models123_metrics(summary: pd.DataFrame, out_png: Path):
@@ -298,12 +351,12 @@ def plot_models123_metrics(summary: pd.DataFrame, out_png: Path):
     for i, (ycol, ylabel) in enumerate(ycols):
         for j, model_id in enumerate(models):
             ax = axes[i, j]
-            for m in METHODS:
+            for m in SECTION72_METHODS:
                 d = summary[(summary["model"] == model_id) & (summary["method"] == m)].sort_values("n")
                 ax.plot(
                     d["n"].values,
                     d[ycol].values,
-                    color=METHOD_COLORS[m],
+                    color=SECTION72_METHOD_COLORS[m],
                     linewidth=2.0,
                     marker="o",
                     label=m,
@@ -317,7 +370,7 @@ def plot_models123_metrics(summary: pd.DataFrame, out_png: Path):
             ax.grid(alpha=0.3)
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.5, 0.995))
+    fig.legend(handles, labels, loc="upper center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 0.995))
     fig.tight_layout(rect=[0, 0, 1, 0.97])
     fig.savefig(out_png, dpi=180, bbox_inches="tight")
     plt.close(fig)
@@ -328,12 +381,12 @@ def plot_models123_runtime(summary: pd.DataFrame, out_png: Path):
 
     fig, axes = plt.subplots(1, 3, figsize=(14.5, 4.2), sharey=True)
     for ax, model_id in zip(axes, models):
-        for m in METHODS:
+        for m in SECTION72_METHODS:
             d = summary[(summary["model"] == model_id) & (summary["method"] == m)].sort_values("n")
             ax.plot(
                 d["n"].values,
                 d["time_mean"].values,
-                color=METHOD_COLORS[m],
+                color=SECTION72_METHOD_COLORS[m],
                 linewidth=2.0,
                 marker="o",
                 label=m,
@@ -343,7 +396,7 @@ def plot_models123_runtime(summary: pd.DataFrame, out_png: Path):
         ax.grid(alpha=0.3)
     axes[0].set_ylabel("Runtime (sec)")
     handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.5, 1.05))
+    fig.legend(handles, labels, loc="upper center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 1.05))
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(out_png, dpi=180, bbox_inches="tight")
     plt.close(fig)

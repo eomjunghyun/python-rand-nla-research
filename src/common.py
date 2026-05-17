@@ -1429,6 +1429,73 @@ def run_random_projection(
     return A_hat, labels
 
 
+def run_countsketch_projection(
+    A: np.ndarray,
+    K: int,
+    K_prime: int,
+    r: int,
+    q: int,
+    rng: np.random.Generator,
+    normalize_rows: bool = False,
+    return_timing: bool = False,
+):
+    total_start = perf_counter()
+    timings = {}
+    n = A.shape[0]
+    ell = int(K_prime + r)
+
+    t0 = perf_counter()
+    h = rng.integers(0, ell, size=n)
+    signs = rng.choice(np.array([-1.0, 1.0]), size=n)
+    bucket_counts = np.bincount(h, minlength=ell)
+    timings["cs_draw_hash_sec"] = perf_counter() - t0
+    timings["cs_embedding_dim"] = int(ell)
+    timings["cs_bucket_min_load"] = int(bucket_counts.min()) if ell > 0 else 0
+    timings["cs_bucket_max_load"] = int(bucket_counts.max()) if ell > 0 else 0
+    timings["cs_empty_buckets"] = int(np.sum(bucket_counts == 0))
+
+    t0 = perf_counter()
+    S = sp.csr_matrix((signs, (h, np.arange(n))), shape=(ell, n))
+    # Since A is symmetric, A @ S.T = (S @ A.T).T.
+    Y = np.asarray(S @ A.T).T
+    timings["cs_initial_multiply_sec"] = perf_counter() - t0
+    timings["cs_sparse_explicit_sketch_sec"] = timings["cs_initial_multiply_sec"]
+
+    t0 = perf_counter()
+    for _ in range(2 * q):
+        Y = A @ Y
+    timings["cs_power_iter_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    Q, _ = np.linalg.qr(Y, mode="reduced")
+    timings["cs_qr_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    C = Q.T @ A @ Q
+    C = 0.5 * (C + C.T)
+    timings["cs_build_core_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    A_hat = Q @ C @ Q.T
+    timings["cs_reconstruct_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    Uc = top_eigvecs_symmetric(C, K_prime)
+    timings["cs_small_eig_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    U_cs = Q @ Uc
+    timings["cs_lift_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    labels = kmeans_on_rows(U_cs, K, rng, normalize_rows=normalize_rows)
+    timings["cs_kmeans_sec"] = perf_counter() - t0
+
+    if return_timing:
+        return A_hat, labels, _finalize_algorithm_timing(timings, total_start)
+    return A_hat, labels
+
+
 def run_random_sampling(
     A: np.ndarray,
     K: int,

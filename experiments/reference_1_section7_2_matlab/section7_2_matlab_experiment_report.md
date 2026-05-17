@@ -167,7 +167,21 @@ degree-corrected 구조가 들어간 Model 4-6에서는 Model 1-3보다 `error_T
 
 따라서 이 보고서의 수치는 Python 결과의 byte-for-byte 재현이 아니라, 같은 실험 정의를 MATLAB로 재구현했을 때의 MATLAB 실행 결과로 읽어야 한다.
 
-## 8. 결론
+## 8. MATLAB 실행이 Python보다 가볍게 보인 이유
+
+이번 실행에서 MATLAB 쪽이 Python 쪽보다 훨씬 빠르고, CPU/메모리 사용도 덜 부담스럽게 보인 가장 큰 이유는 언어 자체의 차이라기보다 구현 세부가 다르기 때문이다.
+
+가장 중요한 차이는 eigen computation 방식이다. Python `src/common.py`의 `top_eigvecs_symmetric()`는 `np.linalg.eigh()`를 사용해 dense matrix의 전체 고유값/고유벡터를 모두 구한다. 또한 `spectral_norm_sym()`도 `np.linalg.eigvalsh()`로 `A_hat - P`의 전체 고유값을 모두 계산한다. 이 metric 평가는 모든 `model`, `n`, `rep`, `method` 조합마다 반복되므로 누적 비용이 크다.
+
+반면 MATLAB 구현은 `topEigpairsSymmetric()`와 `spectralNormSym()`에서 주로 `eigs()`를 사용한다. 즉 전체 spectrum을 다 구하지 않고 필요한 leading eigenvectors 또는 가장 큰 절댓값 고유값만 부분적으로 계산한다. Section 7.2에서는 `K_prime`이 2 또는 3이고, spectral norm도 가장 큰 고유값 하나만 필요하므로 partial eigensolver가 훨씬 가볍다.
+
+두 번째 차이는 dense matrix 복사와 임시 배열이다. Python 구현은 `A`, `P`, `A_hat`, `A_hat - P`를 모두 dense NumPy array로 다루며, 특히 `A_hat = Q @ C @ Q.T`와 metric 계산 과정에서 큰 임시 행렬이 반복적으로 생긴다. `n=1200`이면 행렬 하나만 해도 약 11MB이고, 여러 개가 동시에 생기면 메모리 사용량이 쉽게 커진다. MATLAB 구현도 dense matrix를 쓰지만, partial eigensolver 사용 때문에 전체 고유분해에 필요한 작업 배열과 시간이 훨씬 줄어든다.
+
+세 번째 차이는 thread와 backend 표시 방식이다. Python 실행에서는 NumPy/SciPy BLAS, scikit-learn KMeans, joblib/loky 등이 내부적으로 thread나 worker 정보를 잡으면서 Activity Monitor에서 더 큰 프로세스 사용처럼 보일 수 있다. 실제 실행 중에도 joblib이 physical core count를 확인하지 못했다는 warning이 출력되었다. 이 warning 자체가 결과를 망가뜨린 것은 아니지만, Python 쪽이 여러 native backend를 함께 쓰고 있다는 신호다.
+
+따라서 이번 비교에서 "Python이 본질적으로 느리다"라고 해석하면 안 된다. 현재 Python 구현이 full dense eigen decomposition과 full eigenvalue metric evaluation을 반복하는 구조라 무겁고, MATLAB 구현은 partial eigensolver를 적극적으로 사용해서 가볍게 돈 것이다. Python도 `top_eigvecs_symmetric()`와 `spectral_norm_sym()`를 `scipy.sparse.linalg.eigsh()` 기반 partial eigensolver로 바꾸면 MATLAB에 가까운 실행 시간으로 줄어들 가능성이 크다.
+
+## 9. 결론
 
 MATLAB 재구현 결과에서도 Section 7.2의 큰 결론은 분명하다. Random Projection과 CountSketch는 대부분의 모델과 `n` 값에서 `error_P`가 가장 낮고, 실행 시간도 가장 짧거나 매우 짧다. Non-random은 `B` 추정과 일부 `Theta` 복원에서 안정적이지만, `P` error와 runtime 측면에서는 randomized projection 계열이 우세하다. Random Sampling은 네 방법 중 가장 불안정하고 느린 편으로 나타났다.
 
