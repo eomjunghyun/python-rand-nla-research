@@ -3,17 +3,19 @@ classdef Common
 
     methods (Static)
         function methods = methodNames()
-            methods = {'Random Projection', 'Random Sampling', 'Non-random'};
+            methods = {'Random Projection', 'Random Sampling', 'Non-random', 'CountSketch'};
         end
 
         function methods = summaryMethodNames()
-            methods = {'Non-random', 'Random Projection', 'Random Sampling'};
+            methods = {'Non-random', 'Random Projection', 'Random Sampling', 'CountSketch'};
         end
 
         function c = methodColor(methodName)
             switch char(methodName)
                 case 'Random Projection'
                     c = [31, 119, 180] ./ 255;
+                case 'CountSketch'
+                    c = [148, 103, 189] ./ 255;
                 case 'Random Sampling'
                     c = [255, 127, 14] ./ 255;
                 case 'Non-random'
@@ -46,7 +48,7 @@ classdef Common
 
             master = RandStream('mt19937ar', 'Seed', cfg.seed);
             records = struct([]);
-            totalSteps = numel(cfg.model_ids) * numel(cfg.n_values) * cfg.reps * 3;
+            totalSteps = numel(cfg.model_ids) * numel(cfg.n_values) * cfg.reps * numel(sec72.Common.methodNames());
             doneSteps = 0;
             tGlobal = tic;
 
@@ -107,7 +109,7 @@ classdef Common
 
             master = RandStream('mt19937ar', 'Seed', cfg.seed);
             records = struct([]);
-            totalSteps = numel(cfg.model_ids) * numel(cfg.n_values) * cfg.reps * 3;
+            totalSteps = numel(cfg.model_ids) * numel(cfg.n_values) * cfg.reps * numel(sec72.Common.methodNames());
             doneSteps = 0;
             tGlobal = tic;
 
@@ -178,6 +180,8 @@ classdef Common
             switch char(methodName)
                 case 'Random Projection'
                     [AHat, yPred, timing] = sec72.Common.runRandomProjection(A, K, KPrime, r, q, rs, normalizeRows);
+                case 'CountSketch'
+                    [AHat, yPred, timing] = sec72.Common.runCountSketch(A, K, KPrime, r, q, rs, normalizeRows);
                 case 'Random Sampling'
                     [AHat, yPred, timing] = sec72.Common.runRandomSampling(A, K, KPrime, p, rs, normalizeRows);
                 case 'Non-random'
@@ -409,6 +413,61 @@ classdef Common
             timing = sec72.Common.finalizeTiming(timing, totalStart);
         end
 
+        function [AHat, labels, timing] = runCountSketch(A, K, KPrime, r, q, rs, normalizeRows)
+            totalStart = tic;
+            n = size(A, 1);
+            ell = KPrime + r;
+
+            t0 = tic;
+            h = randi(rs, ell, n, 1);
+            signs = 2 * double(rand(rs, n, 1) >= 0.5) - 1;
+            bucketCounts = accumarray(h, 1, [ell, 1], @sum, 0);
+            timing.cs_draw_hash_sec = toc(t0);
+            timing.cs_embedding_dim = ell;
+            timing.cs_bucket_min_load = min(bucketCounts);
+            timing.cs_bucket_max_load = max(bucketCounts);
+            timing.cs_empty_buckets = sum(bucketCounts == 0);
+
+            t0 = tic;
+            STranspose = sparse((1:n)', h, signs, n, ell);
+            Y = A * STranspose;
+            Y = full(Y);
+            timing.cs_initial_multiply_sec = toc(t0);
+            timing.cs_sparse_explicit_sketch_sec = timing.cs_initial_multiply_sec;
+
+            t0 = tic;
+            for iter = 1:(2 * q)
+                Y = A * Y;
+            end
+            timing.cs_power_iter_sec = toc(t0);
+
+            t0 = tic;
+            [Q, ~] = qr(Y, 0);
+            timing.cs_qr_sec = toc(t0);
+
+            t0 = tic;
+            C = Q' * A * Q;
+            C = 0.5 * (C + C');
+            timing.cs_build_core_sec = toc(t0);
+
+            t0 = tic;
+            AHat = Q * C * Q';
+            timing.cs_reconstruct_sec = toc(t0);
+
+            t0 = tic;
+            Uc = sec72.Common.topEigvecsSymmetric(C, KPrime);
+            timing.cs_small_eig_sec = toc(t0);
+
+            t0 = tic;
+            Ucs = Q * Uc;
+            timing.cs_lift_sec = toc(t0);
+
+            t0 = tic;
+            labels = sec72.Common.kmeansOnRows(Ucs, K, rs, normalizeRows);
+            timing.cs_kmeans_sec = toc(t0);
+            timing = sec72.Common.finalizeTiming(timing, totalStart);
+        end
+
         function [AHat, labels, timing] = runRandomSampling(A, K, KPrime, p, rs, normalizeRows)
             totalStart = tic;
             n = size(A, 1);
@@ -576,7 +635,6 @@ classdef Common
 
         function val = spectralNormSym(M)
             M = 0.5 * (M + M');
-            n = size(M, 1);
             opts.tol = 1e-8;
             opts.maxit = 1000;
             try
@@ -650,7 +708,11 @@ classdef Common
                 'rs_reconstruct_sec', 'rs_symmetrize_sec', 'rs_kmeans_sec', ...
                 'rp_draw_omega_sec', 'rp_power_iter_sec', 'rp_qr_sec', ...
                 'rp_build_core_sec', 'rp_reconstruct_sec', 'rp_small_eig_sec', ...
-                'rp_lift_sec', 'rp_kmeans_sec'
+                'rp_lift_sec', 'rp_kmeans_sec', ...
+                'cs_draw_hash_sec', 'cs_initial_multiply_sec', 'cs_sparse_explicit_sketch_sec', ...
+                'cs_power_iter_sec', 'cs_qr_sec', 'cs_build_core_sec', ...
+                'cs_reconstruct_sec', 'cs_small_eig_sec', 'cs_lift_sec', 'cs_kmeans_sec', ...
+                'cs_embedding_dim', 'cs_bucket_min_load', 'cs_bucket_max_load', 'cs_empty_buckets'
             };
         end
 
