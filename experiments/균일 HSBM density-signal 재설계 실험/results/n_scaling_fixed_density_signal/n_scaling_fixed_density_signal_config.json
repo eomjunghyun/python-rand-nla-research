@@ -1,0 +1,35 @@
+{
+  "name": "n_scaling_fixed_density_signal",
+  "title": "Weak-gap diagnostic: n scaling at fixed density-signal regime",
+  "x_col": "n",
+  "x_values": [
+    3000,
+    6000,
+    9000,
+    12000,
+    15000
+  ],
+  "n": null,
+  "K": 6,
+  "rho_n": 32.0,
+  "m": 3,
+  "center": 10.0,
+  "base_gap": 4.0,
+  "reps": 5,
+  "seed": 2026050703,
+  "sampling": "sparse",
+  "max_enumeration": 1500000,
+  "normalize_embedding_rows": true,
+  "eigsh_tol": 1e-06,
+  "rp_oversampling": 30,
+  "rp_power_iter": 1,
+  "random_sampling_p": 0.3,
+  "kmeans_n_init": 20,
+  "methods": [
+    "Non-random eigsh",
+    "Gaussian RP",
+    "Random sampling",
+    "CountSketch RP"
+  ],
+  "design_note": "Density and signal are separated: rho_n increases edge density while the signal gap is reduced for rho/n sweeps, and rho_n is compensated by K^2 in the K sweep."
+}
