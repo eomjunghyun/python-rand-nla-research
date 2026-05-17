@@ -7,4 +7,5 @@ addpath(thisDir);
 outputs = struct();
 outputs.models123 = run_sec72_models123_matlab(varargin{:});
 outputs.models456 = run_sec72_models456_matlab(varargin{:});
+outputs.report_md = sec72.Common.writeReport(thisDir);
 end
