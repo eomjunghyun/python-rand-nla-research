@@ -1,0 +1,46 @@
+{
+  "dataset": "political_blog",
+  "display_name": "Political blog network",
+  "nodes": 1222,
+  "edges": 16714,
+  "target_rank": 2,
+  "embedding_rank": 2,
+  "cluster_count": 2,
+  "reps": 20,
+  "seed": 2026,
+  "q": 2,
+  "r": 10,
+  "p_values": [
+    0.7,
+    0.8
+  ],
+  "sign_k": 2,
+  "table_id": "table2b",
+  "source_meta": {
+    "raw_nodes": 1490,
+    "raw_directed_edges": 19090,
+    "raw_self_loops": 3,
+    "lcc_nodes": 1222,
+    "lcc_edges": 16714,
+    "num_classes": 2,
+    "component_sizes_top10": [
+      1222,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "node_names_preview": [
+      "100monkeystyping.com",
+      "12thharmonic.com/wordpress",
+      "750volts.blogspot.com",
+      "95theses.blogspot.com",
+      "abbadabbaduo.blogspot.com"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+table2d: The clustering performance on the Statisticians citation network (No true labels).
+
+| Methods | F 1 | NMI | ARI |
+|---|---:|---:|---:|
+| Random Projection | 0.987(0.005) | 0.945(0.023) | 0.977(0.012) |
+| Random Sampling (p= 0.7) | 0.935(0.015) | 0.792(0.036) | 0.897(0.022) |
+| Random Sampling (p= 0.8) | 0.947(0.013) | 0.829(0.023) | 0.915(0.015) |
+| CountSketch | 0.987(0.005) | 0.946(0.019) | 0.977(0.009) |
+| SIGN Bidirectional | 0.717(0.139) | 0.485(0.125) | 0.629(0.121) |
+
+Note: Values are mean(std) over 20 MATLAB replications.
+For this dataset, scores are relative to non-random spectral clustering.

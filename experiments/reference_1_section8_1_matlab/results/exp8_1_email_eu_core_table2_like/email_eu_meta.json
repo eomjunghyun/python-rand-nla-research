@@ -1,0 +1,38 @@
+{
+  "dataset": "email_eu",
+  "display_name": "European email network",
+  "nodes": 986,
+  "edges": 16064,
+  "target_rank": 42,
+  "embedding_rank": 42,
+  "cluster_count": 42,
+  "reps": 20,
+  "seed": 2026,
+  "q": 2,
+  "r": 10,
+  "p_values": [
+    0.7,
+    0.8
+  ],
+  "sign_k": 2,
+  "table_id": "table2a",
+  "source_meta": {
+    "directed_nodes": 1005,
+    "directed_edges": 25571,
+    "lcc_nodes": 986,
+    "lcc_edges": 16064,
+    "num_classes": 42,
+    "component_sizes_top10": [
+      986,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  }
+}

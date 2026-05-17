@@ -1,0 +1,301 @@
+dataset,rep,method_i,method_j,ari
+political_blog,1,Non-random,Random Projection,-0.0372732403421259
+political_blog,1,Non-random,Random Sampling (p=0.7),0.903955686508676
+political_blog,1,Non-random,Random Sampling (p=0.8),0.907040902283918
+political_blog,1,Non-random,CountSketch,-0.0175753259483527
+political_blog,1,Non-random,SIGN Bidirectional,-0.0155208871164586
+political_blog,1,Random Projection,Random Sampling (p=0.7),-0.0299760591857352
+political_blog,1,Random Projection,Random Sampling (p=0.8),-0.0353843884403943
+political_blog,1,Random Projection,CountSketch,0.928623828672418
+political_blog,1,Random Projection,SIGN Bidirectional,0.93481334893092
+political_blog,1,Random Sampling (p=0.7),Random Sampling (p=0.8),0.851437942381367
+political_blog,1,Random Sampling (p=0.7),CountSketch,-0.00117819404087725
+political_blog,1,Random Sampling (p=0.7),SIGN Bidirectional,-0.00858196909770262
+political_blog,1,Random Sampling (p=0.8),CountSketch,-0.0151582748057447
+political_blog,1,Random Sampling (p=0.8),SIGN Bidirectional,-0.0131026251046379
+political_blog,1,CountSketch,SIGN Bidirectional,0.92045879097818
+political_blog,2,Non-random,Random Projection,-0.0320616397589324
+political_blog,2,Non-random,Random Sampling (p=0.7),0.927656213405441
+political_blog,2,Non-random,Random Sampling (p=0.8),0.929334090029388
+political_blog,2,Non-random,CountSketch,-0.00838975797077623
+political_blog,2,Non-random,SIGN Bidirectional,0.708683007978307
+political_blog,2,Random Projection,Random Sampling (p=0.7),-0.0316117812726558
+political_blog,2,Random Projection,Random Sampling (p=0.8),-0.0241352624523849
+political_blog,2,Random Projection,CountSketch,0.911231144203233
+political_blog,2,Random Projection,SIGN Bidirectional,-0.0329074988964547
+political_blog,2,Random Sampling (p=0.7),Random Sampling (p=0.8),0.922679042868606
+political_blog,2,Random Sampling (p=0.7),CountSketch,-0.00773292164121083
+political_blog,2,Random Sampling (p=0.7),SIGN Bidirectional,0.712960440375027
+political_blog,2,Random Sampling (p=0.8),CountSketch,-0.00196690710988514
+political_blog,2,Random Sampling (p=0.8),SIGN Bidirectional,0.737550251643195
+political_blog,2,CountSketch,SIGN Bidirectional,-0.0109730546167105
+political_blog,3,Non-random,Random Projection,-0.00765875577299777
+political_blog,3,Non-random,Random Sampling (p=0.7),0.90778677878037
+political_blog,3,Non-random,Random Sampling (p=0.8),0.929872024347975
+political_blog,3,Non-random,CountSketch,-0.00838975797077623
+political_blog,3,Non-random,SIGN Bidirectional,0.811572142008397
+political_blog,3,Random Projection,Random Sampling (p=0.7),-0.0163829632450293
+political_blog,3,Random Projection,Random Sampling (p=0.8),-0.0120307239724643
+political_blog,3,Random Projection,CountSketch,0.950140353485851
+political_blog,3,Random Projection,SIGN Bidirectional,-0.000794684274388719
+political_blog,3,Random Sampling (p=0.7),Random Sampling (p=0.8),0.878759732878519
+political_blog,3,Random Sampling (p=0.7),CountSketch,-0.0170500761630975
+political_blog,3,Random Sampling (p=0.7),SIGN Bidirectional,0.788136941178086
+political_blog,3,Random Sampling (p=0.8),CountSketch,-0.0127577718635606
+political_blog,3,Random Sampling (p=0.8),SIGN Bidirectional,0.799254999262848
+political_blog,3,CountSketch,SIGN Bidirectional,-0.00979587546767659
+political_blog,4,Non-random,Random Projection,-0.032673464798363
+political_blog,4,Non-random,Random Sampling (p=0.7),0.876846543200541
+political_blog,4,Non-random,Random Sampling (p=0.8),0.915316844707657
+political_blog,4,Non-random,CountSketch,-0.0350372646025137
+political_blog,4,Non-random,SIGN Bidirectional,0.804242852264569
+political_blog,4,Random Projection,Random Sampling (p=0.7),-0.0228307946367364
+political_blog,4,Random Projection,Random Sampling (p=0.8),-0.0331180277615558
+political_blog,4,Random Projection,CountSketch,0.969616446333394
+political_blog,4,Random Projection,SIGN Bidirectional,0.00637009208125434
+political_blog,4,Random Sampling (p=0.7),Random Sampling (p=0.8),0.858312607330652
+political_blog,4,Random Sampling (p=0.7),CountSketch,-0.0254676688273589
+political_blog,4,Random Sampling (p=0.7),SIGN Bidirectional,0.759454659244682
+political_blog,4,Random Sampling (p=0.8),CountSketch,-0.0354872059235293
+political_blog,4,Random Sampling (p=0.8),SIGN Bidirectional,0.77243518353502
+political_blog,4,CountSketch,SIGN Bidirectional,0.00313530340610964
+political_blog,5,Non-random,Random Projection,-0.0338718165882164
+political_blog,5,Non-random,Random Sampling (p=0.7),0.899558095939901
+political_blog,5,Non-random,Random Sampling (p=0.8),0.87578977198514
+political_blog,5,Non-random,CountSketch,-0.00911150812020203
+political_blog,5,Non-random,SIGN Bidirectional,0.782696372745996
+political_blog,5,Random Projection,Random Sampling (p=0.7),-0.0380633599655001
+political_blog,5,Random Projection,Random Sampling (p=0.8),-0.0388307542429468
+political_blog,5,Random Projection,CountSketch,0.912902992284723
+political_blog,5,Random Projection,SIGN Bidirectional,-0.0392809981436917
+political_blog,5,Random Sampling (p=0.7),Random Sampling (p=0.8),0.833217712810301
+political_blog,5,Random Sampling (p=0.7),CountSketch,-0.015229861395711
+political_blog,5,Random Sampling (p=0.7),SIGN Bidirectional,0.809865424658547
+political_blog,5,Random Sampling (p=0.8),CountSketch,-0.025430346311226
+political_blog,5,Random Sampling (p=0.8),SIGN Bidirectional,0.810923632975592
+political_blog,5,CountSketch,SIGN Bidirectional,-0.0136355617447147
+political_blog,6,Non-random,Random Projection,-0.00765875577299777
+political_blog,6,Non-random,Random Sampling (p=0.7),0.856986281930846
+political_blog,6,Non-random,Random Sampling (p=0.8),0.918188296053322
+political_blog,6,Non-random,CountSketch,-0.01621468278176
+political_blog,6,Non-random,SIGN Bidirectional,0.863016414243022
+political_blog,6,Random Projection,Random Sampling (p=0.7),-0.0143577860190409
+political_blog,6,Random Projection,Random Sampling (p=0.8),-0.000679788117387252
+political_blog,6,Random Projection,CountSketch,0.985497911217066
+political_blog,6,Random Projection,SIGN Bidirectional,0.00529691873123038
+political_blog,6,Random Sampling (p=0.7),Random Sampling (p=0.8),0.838899821428504
+political_blog,6,Random Sampling (p=0.7),CountSketch,-0.0222331223410841
+political_blog,6,Random Sampling (p=0.7),SIGN Bidirectional,0.862154177669975
+political_blog,6,Random Sampling (p=0.8),CountSketch,-0.00991595327711921
+political_blog,6,Random Sampling (p=0.8),SIGN Bidirectional,0.798345786252589
+political_blog,6,CountSketch,SIGN Bidirectional,-0.0104806702039367
+political_blog,7,Non-random,Random Projection,-0.0361707662414421
+political_blog,7,Non-random,Random Sampling (p=0.7),0.895622205673304
+political_blog,7,Non-random,Random Sampling (p=0.8),0.939748851901834
+political_blog,7,Non-random,CountSketch,-0.035607950410681
+political_blog,7,Non-random,SIGN Bidirectional,0.702750367071031
+political_blog,7,Random Projection,Random Sampling (p=0.7),-0.0262154535360426
+political_blog,7,Random Projection,Random Sampling (p=0.8),-0.0338065341203805
+political_blog,7,Random Projection,CountSketch,0.93419616143919
+political_blog,7,Random Projection,SIGN Bidirectional,-0.0303287011577727
+political_blog,7,Random Sampling (p=0.7),Random Sampling (p=0.8),0.873851745710379
+political_blog,7,Random Sampling (p=0.7),CountSketch,-0.035607950410681
+political_blog,7,Random Sampling (p=0.7),SIGN Bidirectional,0.712874772603285
+political_blog,7,Random Sampling (p=0.8),CountSketch,-0.0332506353419701
+political_blog,7,Random Sampling (p=0.8),SIGN Bidirectional,0.693522471469948
+political_blog,7,CountSketch,SIGN Bidirectional,-0.0443888753923936
+political_blog,8,Non-random,Random Projection,-0.0061684539785943
+political_blog,8,Non-random,Random Sampling (p=0.7),0.934439320727635
+political_blog,8,Non-random,Random Sampling (p=0.8),0.960218326512629
+political_blog,8,Non-random,CountSketch,-0.0350372646025137
+political_blog,8,Non-random,SIGN Bidirectional,0.809050459940404
+political_blog,8,Random Projection,Random Sampling (p=0.7),-0.0061684539785943
+political_blog,8,Random Projection,Random Sampling (p=0.8),-0.00484161694326925
+political_blog,8,Random Projection,CountSketch,0.970493480434657
+political_blog,8,Random Projection,SIGN Bidirectional,-0.00516647668551814
+political_blog,8,Random Sampling (p=0.7),Random Sampling (p=0.8),0.90778677878037
+political_blog,8,Random Sampling (p=0.7),CountSketch,-0.0350372646025137
+political_blog,8,Random Sampling (p=0.7),SIGN Bidirectional,0.797818420323269
+political_blog,8,Random Sampling (p=0.8),CountSketch,-0.0341175374017922
+political_blog,8,Random Sampling (p=0.8),SIGN Bidirectional,0.774035795600147
+political_blog,8,CountSketch,SIGN Bidirectional,-0.0289663586035032
+political_blog,9,Non-random,Random Projection,-0.035607950410681
+political_blog,9,Non-random,Random Sampling (p=0.7),0.915976613794228
+political_blog,9,Non-random,Random Sampling (p=0.8),0.924977848969394
+political_blog,9,Non-random,CountSketch,-0.0262154535360426
+political_blog,9,Non-random,SIGN Bidirectional,0.729772513975589
+political_blog,9,Random Projection,Random Sampling (p=0.7),-0.0369425687156781
+political_blog,9,Random Projection,Random Sampling (p=0.8),-0.0313514172689708
+political_blog,9,Random Projection,CountSketch,0.992640241194216
+political_blog,9,Random Projection,SIGN Bidirectional,0.0062135110597757
+political_blog,9,Random Sampling (p=0.7),Random Sampling (p=0.8),0.907452889792928
+political_blog,9,Random Sampling (p=0.7),CountSketch,-0.0277495258787123
+political_blog,9,Random Sampling (p=0.7),SIGN Bidirectional,0.739119761067068
+political_blog,9,Random Sampling (p=0.8),CountSketch,-0.0227378496256199
+political_blog,9,Random Sampling (p=0.8),SIGN Bidirectional,0.730244766967213
+political_blog,9,CountSketch,SIGN Bidirectional,0.0156569319237279
+political_blog,10,Non-random,Random Projection,0.000722579666572913
+political_blog,10,Non-random,Random Sampling (p=0.7),0.887855408579197
+political_blog,10,Non-random,Random Sampling (p=0.8),0.933380779072912
+political_blog,10,Non-random,CountSketch,-0.00911150812020203
+political_blog,10,Non-random,SIGN Bidirectional,0.754679680161212
+political_blog,10,Random Projection,Random Sampling (p=0.7),0.012984697538685
+political_blog,10,Random Projection,Random Sampling (p=0.8),-0.0164839642250461
+political_blog,10,Random Projection,CountSketch,0.971819722355902
+political_blog,10,Random Projection,SIGN Bidirectional,0.0424749419661333
+political_blog,10,Random Sampling (p=0.7),Random Sampling (p=0.8),0.886000755166521
+political_blog,10,Random Sampling (p=0.7),CountSketch,0.00291109163070564
+political_blog,10,Random Sampling (p=0.7),SIGN Bidirectional,0.783439879233532
+political_blog,10,Random Sampling (p=0.8),CountSketch,-0.0264873850315552
+political_blog,10,Random Sampling (p=0.8),SIGN Bidirectional,0.750654947366359
+political_blog,10,CountSketch,SIGN Bidirectional,0.032331668046283
+political_blog,11,Non-random,Random Projection,0.000722579666572913
+political_blog,11,Non-random,Random Sampling (p=0.7),0.883191862991085
+political_blog,11,Non-random,Random Sampling (p=0.8),0.934439320727635
+political_blog,11,Non-random,CountSketch,-0.00765875577299777
+political_blog,11,Non-random,SIGN Bidirectional,0.73910777741232
+political_blog,11,Random Projection,Random Sampling (p=0.7),0.00894276602369735
+political_blog,11,Random Projection,Random Sampling (p=0.8),-0.00911150812020203
+political_blog,11,Random Projection,CountSketch,0.985760273715926
+political_blog,11,Random Projection,SIGN Bidirectional,0.0395388025112202
+political_blog,11,Random Sampling (p=0.7),Random Sampling (p=0.8),0.871110905914956
+political_blog,11,Random Sampling (p=0.7),CountSketch,0.00157461665637371
+political_blog,11,Random Sampling (p=0.7),SIGN Bidirectional,0.713029575219649
+political_blog,11,Random Sampling (p=0.8),CountSketch,-0.0175753259483527
+political_blog,11,Random Sampling (p=0.8),SIGN Bidirectional,0.714624717181462
+political_blog,11,CountSketch,SIGN Bidirectional,0.0315485172599995
+political_blog,12,Non-random,Random Projection,-0.00911150812020203
+political_blog,12,Non-random,Random Sampling (p=0.7),0.922676134528731
+political_blog,12,Non-random,Random Sampling (p=0.8),0.903210319573996
+political_blog,12,Non-random,CountSketch,0.0031079841094053
+political_blog,12,Non-random,SIGN Bidirectional,0.79695747914716
+political_blog,12,Random Projection,Random Sampling (p=0.7),-0.0116533030833158
+political_blog,12,Random Projection,Random Sampling (p=0.8),-0.011030054701882
+political_blog,12,Random Projection,CountSketch,0.893863224977166
+political_blog,12,Random Projection,SIGN Bidirectional,-0.027935913298496
+political_blog,12,Random Sampling (p=0.7),Random Sampling (p=0.8),0.87965938260068
+political_blog,12,Random Sampling (p=0.7),CountSketch,0.000300250020242558
+political_blog,12,Random Sampling (p=0.7),SIGN Bidirectional,0.810189822743938
+political_blog,12,Random Sampling (p=0.8),CountSketch,0.000988887194876826
+political_blog,12,Random Sampling (p=0.8),SIGN Bidirectional,0.804193423299632
+political_blog,12,CountSketch,SIGN Bidirectional,-0.0177617846409793
+political_blog,13,Non-random,Random Projection,-0.00081883729552671
+political_blog,13,Non-random,Random Sampling (p=0.7),0.883688416570592
+political_blog,13,Non-random,Random Sampling (p=0.8),0.915316844707657
+political_blog,13,Non-random,CountSketch,-0.0350372646025137
+political_blog,13,Non-random,SIGN Bidirectional,0.859411153688602
+political_blog,13,Random Projection,Random Sampling (p=0.7),-0.00222761291499316
+political_blog,13,Random Projection,Random Sampling (p=0.8),-0.0111744198820131
+political_blog,13,Random Projection,CountSketch,0.942812808828223
+political_blog,13,Random Projection,SIGN Bidirectional,0.025051511933707
+political_blog,13,Random Sampling (p=0.7),Random Sampling (p=0.8),0.865166005304011
+political_blog,13,Random Sampling (p=0.7),CountSketch,-0.0359306637397377
+political_blog,13,Random Sampling (p=0.7),SIGN Bidirectional,0.786533271008681
+political_blog,13,Random Sampling (p=0.8),CountSketch,-0.0354872059235293
+political_blog,13,Random Sampling (p=0.8),SIGN Bidirectional,0.841247607303278
+political_blog,13,CountSketch,SIGN Bidirectional,-0.0171096114405235
+political_blog,14,Non-random,Random Projection,0.00150780287665089
+political_blog,14,Non-random,Random Sampling (p=0.7),0.879670059344018
+political_blog,14,Non-random,Random Sampling (p=0.8),0.946179664740785
+political_blog,14,Non-random,CountSketch,0.00150780287665089
+political_blog,14,Non-random,SIGN Bidirectional,-0.0372732403421259
+political_blog,14,Random Projection,Random Sampling (p=0.7),-0.00329682061751503
+political_blog,14,Random Projection,Random Sampling (p=0.8),0.00597871065638636
+political_blog,14,Random Projection,CountSketch,0.971566990500669
+political_blog,14,Random Projection,SIGN Bidirectional,0.852144603793844
+political_blog,14,Random Sampling (p=0.7),Random Sampling (p=0.8),0.851462954008083
+political_blog,14,Random Sampling (p=0.7),CountSketch,-0.00329682061751503
+political_blog,14,Random Sampling (p=0.7),SIGN Bidirectional,-0.0403291745138401
+political_blog,14,Random Sampling (p=0.8),CountSketch,0.00597871065638636
+political_blog,14,Random Sampling (p=0.8),SIGN Bidirectional,-0.0343985350448066
+political_blog,14,CountSketch,SIGN Bidirectional,0.86600329919178
+political_blog,15,Non-random,Random Projection,-0.0372732403421259
+political_blog,15,Non-random,Random Sampling (p=0.7),0.927656213405441
+political_blog,15,Non-random,Random Sampling (p=0.8),0.941179232275465
+political_blog,15,Non-random,CountSketch,-0.0098241381814972
+political_blog,15,Non-random,SIGN Bidirectional,0.656990428190849
+political_blog,15,Random Projection,Random Sampling (p=0.7),-0.036811130358179
+political_blog,15,Random Projection,Random Sampling (p=0.8),-0.0377287781910483
+political_blog,15,Random Projection,CountSketch,0.936574394621233
+political_blog,15,Random Projection,SIGN Bidirectional,-0.0496589181249757
+political_blog,15,Random Sampling (p=0.7),Random Sampling (p=0.8),0.908518674163574
+political_blog,15,Random Sampling (p=0.7),CountSketch,-0.00916857618634649
+political_blog,15,Random Sampling (p=0.7),SIGN Bidirectional,0.641910049280094
+political_blog,15,Random Sampling (p=0.8),CountSketch,-0.0104713232965801
+political_blog,15,Random Sampling (p=0.8),SIGN Bidirectional,0.653097324304073
+political_blog,15,CountSketch,SIGN Bidirectional,-0.0114505631581761
+political_blog,16,Non-random,Random Projection,0.0334586312884339
+political_blog,16,Non-random,Random Sampling (p=0.7),0.903210319573996
+political_blog,16,Non-random,Random Sampling (p=0.8),0.942086949992555
+political_blog,16,Non-random,CountSketch,-0.0262154535360426
+political_blog,16,Non-random,SIGN Bidirectional,0.791853591358239
+political_blog,16,Random Projection,Random Sampling (p=0.7),0.0207858866568616
+political_blog,16,Random Projection,Random Sampling (p=0.8),0.0290001855635191
+political_blog,16,Random Projection,CountSketch,0.877679557084727
+political_blog,16,Random Projection,SIGN Bidirectional,0.0991043160143457
+political_blog,16,Random Sampling (p=0.7),Random Sampling (p=0.8),0.886327255832325
+political_blog,16,Random Sampling (p=0.7),CountSketch,-0.0277495258787123
+political_blog,16,Random Sampling (p=0.7),SIGN Bidirectional,0.80026494564853
+political_blog,16,Random Sampling (p=0.8),CountSketch,-0.0287374544924491
+political_blog,16,Random Sampling (p=0.8),SIGN Bidirectional,0.741977335118226
+political_blog,16,CountSketch,SIGN Bidirectional,0.0200951076162942
+political_blog,17,Non-random,Random Projection,-0.00463949244608107
+political_blog,17,Non-random,Random Sampling (p=0.7),0.90851796964899
+political_blog,17,Non-random,Random Sampling (p=0.8),0.947464907830593
+political_blog,17,Non-random,CountSketch,-0.00540887684448071
+political_blog,17,Non-random,SIGN Bidirectional,0.801789108314318
+political_blog,17,Random Projection,Random Sampling (p=0.7),-0.00463949244608107
+political_blog,17,Random Projection,Random Sampling (p=0.8),-0.00463949244608107
+political_blog,17,Random Projection,CountSketch,0.962969823988734
+political_blog,17,Random Projection,SIGN Bidirectional,0.00159090437738964
+political_blog,17,Random Sampling (p=0.7),Random Sampling (p=0.8),0.895622205673304
+political_blog,17,Random Sampling (p=0.7),CountSketch,-0.00540887684448071
+political_blog,17,Random Sampling (p=0.7),SIGN Bidirectional,0.790815825106301
+political_blog,17,Random Sampling (p=0.8),CountSketch,-0.00540887684448071
+political_blog,17,Random Sampling (p=0.8),SIGN Bidirectional,0.790815825106301
+political_blog,17,CountSketch,SIGN Bidirectional,0.000696297829792141
+political_blog,18,Non-random,Random Projection,0.00230288972133605
+political_blog,18,Non-random,Random Sampling (p=0.7),0.941179232275465
+political_blog,18,Non-random,Random Sampling (p=0.8),0.980449607218012
+political_blog,18,Non-random,CountSketch,-0.0338718165882164
+political_blog,18,Non-random,SIGN Bidirectional,0.786911406455169
+political_blog,18,Random Projection,Random Sampling (p=0.7),0.00158894828457068
+political_blog,18,Random Projection,Random Sampling (p=0.8),0.000187910757193057
+political_blog,18,Random Projection,CountSketch,0.89758249530964
+political_blog,18,Random Projection,SIGN Bidirectional,0.0333791016569
+political_blog,18,Random Sampling (p=0.7),Random Sampling (p=0.8),0.935455482055557
+political_blog,18,Random Sampling (p=0.7),CountSketch,-0.0343190369355219
+political_blog,18,Random Sampling (p=0.7),SIGN Bidirectional,0.781509359437977
+political_blog,18,Random Sampling (p=0.8),CountSketch,-0.0351941123345304
+political_blog,18,Random Sampling (p=0.8),SIGN Bidirectional,0.783224888923016
+political_blog,18,CountSketch,SIGN Bidirectional,-0.0334180090664891
+political_blog,19,Non-random,Random Projection,-0.035607950410681
+political_blog,19,Non-random,Random Sampling (p=0.7),0.907040902283918
+political_blog,19,Non-random,Random Sampling (p=0.8),0.960843054969502
+political_blog,19,Non-random,CountSketch,0.00643141917837126
+political_blog,19,Non-random,SIGN Bidirectional,0.736076393060876
+political_blog,19,Random Projection,Random Sampling (p=0.7),-0.033735866837224
+political_blog,19,Random Projection,Random Sampling (p=0.8),-0.0365041141977418
+political_blog,19,Random Projection,CountSketch,0.896584723792217
+political_blog,19,Random Projection,SIGN Bidirectional,0.0218509459702512
+political_blog,19,Random Sampling (p=0.7),Random Sampling (p=0.8),0.894794501206648
+political_blog,19,Random Sampling (p=0.7),CountSketch,0.00941328188335183
+political_blog,19,Random Sampling (p=0.7),SIGN Bidirectional,0.719659861711315
+political_blog,19,Random Sampling (p=0.8),CountSketch,0.00499740079655562
+political_blog,19,Random Sampling (p=0.8),SIGN Bidirectional,0.738081523846064
+political_blog,19,CountSketch,SIGN Bidirectional,0.0750164449158958
+political_blog,20,Non-random,Random Projection,-0.00691836689753703
+political_blog,20,Non-random,Random Sampling (p=0.7),0.900301141440319
+political_blog,20,Non-random,Random Sampling (p=0.8),0.934953101182889
+political_blog,20,Non-random,CountSketch,0.00150780287665089
+political_blog,20,Non-random,SIGN Bidirectional,0.779609997017561
+political_blog,20,Random Projection,Random Sampling (p=0.7),0.00441493843978501
+political_blog,20,Random Projection,Random Sampling (p=0.8),-0.0180604026835924
+political_blog,20,Random Projection,CountSketch,0.971308442496722
+political_blog,20,Random Projection,SIGN Bidirectional,0.00936925649290201
+political_blog,20,Random Sampling (p=0.7),Random Sampling (p=0.8),0.888824877900912
+political_blog,20,Random Sampling (p=0.7),CountSketch,0.0119807910424096
+political_blog,20,Random Sampling (p=0.7),SIGN Bidirectional,0.74267418832415
+political_blog,20,Random Sampling (p=0.8),CountSketch,-0.00967820998144687
+political_blog,20,Random Sampling (p=0.8),SIGN Bidirectional,0.769162342288444
+political_blog,20,CountSketch,SIGN Bidirectional,0.0173304286899411

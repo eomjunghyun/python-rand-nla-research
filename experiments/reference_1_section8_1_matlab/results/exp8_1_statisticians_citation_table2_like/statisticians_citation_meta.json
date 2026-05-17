@@ -1,0 +1,45 @@
+{
+  "dataset": "statisticians_citation",
+  "display_name": "Statisticians citation network (No true labels)",
+  "nodes": 2654,
+  "edges": 20049,
+  "target_rank": 3,
+  "embedding_rank": 3,
+  "cluster_count": 3,
+  "reps": 20,
+  "seed": 2026,
+  "q": 2,
+  "r": 10,
+  "p_values": [
+    0.7,
+    0.8
+  ],
+  "sign_k": 2,
+  "table_id": "table2d",
+  "source_meta": {
+    "raw_authors": 3607,
+    "raw_directed_arcs": 21603,
+    "raw_undirected_edges": 20083,
+    "lcc_nodes": 2654,
+    "lcc_edges": 20049,
+    "component_sizes_top10": [
+      2654,
+      5,
+      5,
+      4,
+      4,
+      4,
+      3,
+      3,
+      3,
+      2
+    ],
+    "node_names_preview": [
+      "\"A Adam Ding\"",
+      "\"A C Davison\"",
+      "\"A Chatterjee\"",
+      "\"A D Tsodikov\"",
+      "\"A Galichon\""
+    ]
+  }
+}

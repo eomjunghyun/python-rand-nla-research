@@ -1,0 +1,301 @@
+dataset,rep,method_i,method_j,ari
+email_eu,1,Non-random,Random Projection,0.830893381462725
+email_eu,1,Non-random,Random Sampling (p=0.7),0.758552188360225
+email_eu,1,Non-random,Random Sampling (p=0.8),0.822504798663841
+email_eu,1,Non-random,CountSketch,0.816851813928434
+email_eu,1,Non-random,SIGN Bidirectional,0.8010620230382
+email_eu,1,Random Projection,Random Sampling (p=0.7),0.79063158498218
+email_eu,1,Random Projection,Random Sampling (p=0.8),0.802881108880633
+email_eu,1,Random Projection,CountSketch,0.837172664905675
+email_eu,1,Random Projection,SIGN Bidirectional,0.787872628596492
+email_eu,1,Random Sampling (p=0.7),Random Sampling (p=0.8),0.772818406020973
+email_eu,1,Random Sampling (p=0.7),CountSketch,0.757515005971666
+email_eu,1,Random Sampling (p=0.7),SIGN Bidirectional,0.726375252566266
+email_eu,1,Random Sampling (p=0.8),CountSketch,0.80919522176245
+email_eu,1,Random Sampling (p=0.8),SIGN Bidirectional,0.809022528066621
+email_eu,1,CountSketch,SIGN Bidirectional,0.776184918245966
+email_eu,2,Non-random,Random Projection,0.840717997169018
+email_eu,2,Non-random,Random Sampling (p=0.7),0.770972164232591
+email_eu,2,Non-random,Random Sampling (p=0.8),0.769585874025641
+email_eu,2,Non-random,CountSketch,0.719738256182377
+email_eu,2,Non-random,SIGN Bidirectional,0.81712365421276
+email_eu,2,Random Projection,Random Sampling (p=0.7),0.785180041315627
+email_eu,2,Random Projection,Random Sampling (p=0.8),0.746050818435476
+email_eu,2,Random Projection,CountSketch,0.778941229561588
+email_eu,2,Random Projection,SIGN Bidirectional,0.8654235949426
+email_eu,2,Random Sampling (p=0.7),Random Sampling (p=0.8),0.714068946579002
+email_eu,2,Random Sampling (p=0.7),CountSketch,0.66838177411797
+email_eu,2,Random Sampling (p=0.7),SIGN Bidirectional,0.79683537490642
+email_eu,2,Random Sampling (p=0.8),CountSketch,0.716350402715007
+email_eu,2,Random Sampling (p=0.8),SIGN Bidirectional,0.746008036406701
+email_eu,2,CountSketch,SIGN Bidirectional,0.738338742709184
+email_eu,3,Non-random,Random Projection,0.781078328857965
+email_eu,3,Non-random,Random Sampling (p=0.7),0.846292912166341
+email_eu,3,Non-random,Random Sampling (p=0.8),0.784083081388412
+email_eu,3,Non-random,CountSketch,0.850573260267481
+email_eu,3,Non-random,SIGN Bidirectional,0.754598467491625
+email_eu,3,Random Projection,Random Sampling (p=0.7),0.754023036184346
+email_eu,3,Random Projection,Random Sampling (p=0.8),0.719601028627164
+email_eu,3,Random Projection,CountSketch,0.847659926903341
+email_eu,3,Random Projection,SIGN Bidirectional,0.734782854080726
+email_eu,3,Random Sampling (p=0.7),Random Sampling (p=0.8),0.719044996037108
+email_eu,3,Random Sampling (p=0.7),CountSketch,0.82767803120455
+email_eu,3,Random Sampling (p=0.7),SIGN Bidirectional,0.705465006001832
+email_eu,3,Random Sampling (p=0.8),CountSketch,0.762007872950171
+email_eu,3,Random Sampling (p=0.8),SIGN Bidirectional,0.781891129202417
+email_eu,3,CountSketch,SIGN Bidirectional,0.791060756655815
+email_eu,4,Non-random,Random Projection,0.831740164477146
+email_eu,4,Non-random,Random Sampling (p=0.7),0.746812086171772
+email_eu,4,Non-random,Random Sampling (p=0.8),0.76646297499999
+email_eu,4,Non-random,CountSketch,0.760877725152872
+email_eu,4,Non-random,SIGN Bidirectional,0.861247511115051
+email_eu,4,Random Projection,Random Sampling (p=0.7),0.757778182498439
+email_eu,4,Random Projection,Random Sampling (p=0.8),0.778304110816526
+email_eu,4,Random Projection,CountSketch,0.785765449952399
+email_eu,4,Random Projection,SIGN Bidirectional,0.843866267468747
+email_eu,4,Random Sampling (p=0.7),Random Sampling (p=0.8),0.769390460334522
+email_eu,4,Random Sampling (p=0.7),CountSketch,0.722634137018529
+email_eu,4,Random Sampling (p=0.7),SIGN Bidirectional,0.755711633622247
+email_eu,4,Random Sampling (p=0.8),CountSketch,0.72614408540563
+email_eu,4,Random Sampling (p=0.8),SIGN Bidirectional,0.785669965407064
+email_eu,4,CountSketch,SIGN Bidirectional,0.784563109082847
+email_eu,5,Non-random,Random Projection,0.793865575307191
+email_eu,5,Non-random,Random Sampling (p=0.7),0.73306258679792
+email_eu,5,Non-random,Random Sampling (p=0.8),0.782551191927505
+email_eu,5,Non-random,CountSketch,0.787152868160187
+email_eu,5,Non-random,SIGN Bidirectional,0.775263582910606
+email_eu,5,Random Projection,Random Sampling (p=0.7),0.800320658365555
+email_eu,5,Random Projection,Random Sampling (p=0.8),0.791260455203296
+email_eu,5,Random Projection,CountSketch,0.880599743551856
+email_eu,5,Random Projection,SIGN Bidirectional,0.820003992391905
+email_eu,5,Random Sampling (p=0.7),Random Sampling (p=0.8),0.798682997565826
+email_eu,5,Random Sampling (p=0.7),CountSketch,0.814998265911258
+email_eu,5,Random Sampling (p=0.7),SIGN Bidirectional,0.781426503719928
+email_eu,5,Random Sampling (p=0.8),CountSketch,0.81220680382333
+email_eu,5,Random Sampling (p=0.8),SIGN Bidirectional,0.809600997165576
+email_eu,5,CountSketch,SIGN Bidirectional,0.811107885641654
+email_eu,6,Non-random,Random Projection,0.759131682862937
+email_eu,6,Non-random,Random Sampling (p=0.7),0.679112057169967
+email_eu,6,Non-random,Random Sampling (p=0.8),0.741172081423881
+email_eu,6,Non-random,CountSketch,0.784027889700042
+email_eu,6,Non-random,SIGN Bidirectional,0.798382867108402
+email_eu,6,Random Projection,Random Sampling (p=0.7),0.718186574732988
+email_eu,6,Random Projection,Random Sampling (p=0.8),0.735882212649423
+email_eu,6,Random Projection,CountSketch,0.793955442920579
+email_eu,6,Random Projection,SIGN Bidirectional,0.798624702598819
+email_eu,6,Random Sampling (p=0.7),Random Sampling (p=0.8),0.70280460858618
+email_eu,6,Random Sampling (p=0.7),CountSketch,0.73144248653605
+email_eu,6,Random Sampling (p=0.7),SIGN Bidirectional,0.726519620025053
+email_eu,6,Random Sampling (p=0.8),CountSketch,0.795033721915406
+email_eu,6,Random Sampling (p=0.8),SIGN Bidirectional,0.804798653992271
+email_eu,6,CountSketch,SIGN Bidirectional,0.832662990028425
+email_eu,7,Non-random,Random Projection,0.840727173114783
+email_eu,7,Non-random,Random Sampling (p=0.7),0.77964870134754
+email_eu,7,Non-random,Random Sampling (p=0.8),0.839526114927165
+email_eu,7,Non-random,CountSketch,0.725828278786888
+email_eu,7,Non-random,SIGN Bidirectional,0.808895736530635
+email_eu,7,Random Projection,Random Sampling (p=0.7),0.760320593041402
+email_eu,7,Random Projection,Random Sampling (p=0.8),0.815396385720813
+email_eu,7,Random Projection,CountSketch,0.734728198333729
+email_eu,7,Random Projection,SIGN Bidirectional,0.850241154275021
+email_eu,7,Random Sampling (p=0.7),Random Sampling (p=0.8),0.770835817161124
+email_eu,7,Random Sampling (p=0.7),CountSketch,0.659334394846787
+email_eu,7,Random Sampling (p=0.7),SIGN Bidirectional,0.756908240618591
+email_eu,7,Random Sampling (p=0.8),CountSketch,0.699825967075593
+email_eu,7,Random Sampling (p=0.8),SIGN Bidirectional,0.809146626074071
+email_eu,7,CountSketch,SIGN Bidirectional,0.753266261302403
+email_eu,8,Non-random,Random Projection,0.854920792454958
+email_eu,8,Non-random,Random Sampling (p=0.7),0.789915652844729
+email_eu,8,Non-random,Random Sampling (p=0.8),0.835122505953809
+email_eu,8,Non-random,CountSketch,0.767986124497251
+email_eu,8,Non-random,SIGN Bidirectional,0.744894385986408
+email_eu,8,Random Projection,Random Sampling (p=0.7),0.758374245257722
+email_eu,8,Random Projection,Random Sampling (p=0.8),0.826384876844586
+email_eu,8,Random Projection,CountSketch,0.844804632927262
+email_eu,8,Random Projection,SIGN Bidirectional,0.727586717045763
+email_eu,8,Random Sampling (p=0.7),Random Sampling (p=0.8),0.763597130113802
+email_eu,8,Random Sampling (p=0.7),CountSketch,0.7277860278122
+email_eu,8,Random Sampling (p=0.7),SIGN Bidirectional,0.678714181708832
+email_eu,8,Random Sampling (p=0.8),CountSketch,0.786535928609035
+email_eu,8,Random Sampling (p=0.8),SIGN Bidirectional,0.699631443833029
+email_eu,8,CountSketch,SIGN Bidirectional,0.674944223736798
+email_eu,9,Non-random,Random Projection,0.789703879152446
+email_eu,9,Non-random,Random Sampling (p=0.7),0.819366981127862
+email_eu,9,Non-random,Random Sampling (p=0.8),0.786920741673153
+email_eu,9,Non-random,CountSketch,0.770598007571711
+email_eu,9,Non-random,SIGN Bidirectional,0.797765765514908
+email_eu,9,Random Projection,Random Sampling (p=0.7),0.795326562825268
+email_eu,9,Random Projection,Random Sampling (p=0.8),0.760945023610259
+email_eu,9,Random Projection,CountSketch,0.867384145879452
+email_eu,9,Random Projection,SIGN Bidirectional,0.836180763142668
+email_eu,9,Random Sampling (p=0.7),Random Sampling (p=0.8),0.811680014440709
+email_eu,9,Random Sampling (p=0.7),CountSketch,0.770803106920803
+email_eu,9,Random Sampling (p=0.7),SIGN Bidirectional,0.813027027769788
+email_eu,9,Random Sampling (p=0.8),CountSketch,0.741180166675672
+email_eu,9,Random Sampling (p=0.8),SIGN Bidirectional,0.778720906476981
+email_eu,9,CountSketch,SIGN Bidirectional,0.824260016988156
+email_eu,10,Non-random,Random Projection,0.769571397005727
+email_eu,10,Non-random,Random Sampling (p=0.7),0.768256656772743
+email_eu,10,Non-random,Random Sampling (p=0.8),0.781629987521147
+email_eu,10,Non-random,CountSketch,0.812466864479256
+email_eu,10,Non-random,SIGN Bidirectional,0.801654887287367
+email_eu,10,Random Projection,Random Sampling (p=0.7),0.791181633530344
+email_eu,10,Random Projection,Random Sampling (p=0.8),0.825011665339096
+email_eu,10,Random Projection,CountSketch,0.826698061096296
+email_eu,10,Random Projection,SIGN Bidirectional,0.867368798306292
+email_eu,10,Random Sampling (p=0.7),Random Sampling (p=0.8),0.793528747135755
+email_eu,10,Random Sampling (p=0.7),CountSketch,0.783530248375109
+email_eu,10,Random Sampling (p=0.7),SIGN Bidirectional,0.790875321572036
+email_eu,10,Random Sampling (p=0.8),CountSketch,0.827193236233725
+email_eu,10,Random Sampling (p=0.8),SIGN Bidirectional,0.805853938675873
+email_eu,10,CountSketch,SIGN Bidirectional,0.815162288831322
+email_eu,11,Non-random,Random Projection,0.830548441730251
+email_eu,11,Non-random,Random Sampling (p=0.7),0.750226852732707
+email_eu,11,Non-random,Random Sampling (p=0.8),0.83800715960878
+email_eu,11,Non-random,CountSketch,0.775566124411611
+email_eu,11,Non-random,SIGN Bidirectional,0.810872151479556
+email_eu,11,Random Projection,Random Sampling (p=0.7),0.724475196480243
+email_eu,11,Random Projection,Random Sampling (p=0.8),0.836590032704311
+email_eu,11,Random Projection,CountSketch,0.836208080378468
+email_eu,11,Random Projection,SIGN Bidirectional,0.844785179203943
+email_eu,11,Random Sampling (p=0.7),Random Sampling (p=0.8),0.722362210503293
+email_eu,11,Random Sampling (p=0.7),CountSketch,0.71686946249104
+email_eu,11,Random Sampling (p=0.7),SIGN Bidirectional,0.700903243176033
+email_eu,11,Random Sampling (p=0.8),CountSketch,0.784672669585122
+email_eu,11,Random Sampling (p=0.8),SIGN Bidirectional,0.787236768696274
+email_eu,11,CountSketch,SIGN Bidirectional,0.84496516743012
+email_eu,12,Non-random,Random Projection,0.805623792150753
+email_eu,12,Non-random,Random Sampling (p=0.7),0.752985660861317
+email_eu,12,Non-random,Random Sampling (p=0.8),0.800489148692557
+email_eu,12,Non-random,CountSketch,0.718613854031501
+email_eu,12,Non-random,SIGN Bidirectional,0.819772836268057
+email_eu,12,Random Projection,Random Sampling (p=0.7),0.749446675312605
+email_eu,12,Random Projection,Random Sampling (p=0.8),0.777621916897719
+email_eu,12,Random Projection,CountSketch,0.741337470847756
+email_eu,12,Random Projection,SIGN Bidirectional,0.792104447775345
+email_eu,12,Random Sampling (p=0.7),Random Sampling (p=0.8),0.753243821986789
+email_eu,12,Random Sampling (p=0.7),CountSketch,0.663926809243127
+email_eu,12,Random Sampling (p=0.7),SIGN Bidirectional,0.748048646228201
+email_eu,12,Random Sampling (p=0.8),CountSketch,0.679538470598272
+email_eu,12,Random Sampling (p=0.8),SIGN Bidirectional,0.792564144870441
+email_eu,12,CountSketch,SIGN Bidirectional,0.692735521993592
+email_eu,13,Non-random,Random Projection,0.824672002106077
+email_eu,13,Non-random,Random Sampling (p=0.7),0.755706483790085
+email_eu,13,Non-random,Random Sampling (p=0.8),0.799992117610878
+email_eu,13,Non-random,CountSketch,0.788144275888394
+email_eu,13,Non-random,SIGN Bidirectional,0.785828260210137
+email_eu,13,Random Projection,Random Sampling (p=0.7),0.693014363949242
+email_eu,13,Random Projection,Random Sampling (p=0.8),0.801806628129374
+email_eu,13,Random Projection,CountSketch,0.844058351416595
+email_eu,13,Random Projection,SIGN Bidirectional,0.839108110950973
+email_eu,13,Random Sampling (p=0.7),Random Sampling (p=0.8),0.657635161542633
+email_eu,13,Random Sampling (p=0.7),CountSketch,0.677695244852787
+email_eu,13,Random Sampling (p=0.7),SIGN Bidirectional,0.692842583485385
+email_eu,13,Random Sampling (p=0.8),CountSketch,0.749981353266831
+email_eu,13,Random Sampling (p=0.8),SIGN Bidirectional,0.747144357889032
+email_eu,13,CountSketch,SIGN Bidirectional,0.799863562312296
+email_eu,14,Non-random,Random Projection,0.73334348591152
+email_eu,14,Non-random,Random Sampling (p=0.7),0.77159482495742
+email_eu,14,Non-random,Random Sampling (p=0.8),0.847031690669485
+email_eu,14,Non-random,CountSketch,0.811118535201857
+email_eu,14,Non-random,SIGN Bidirectional,0.780166042333545
+email_eu,14,Random Projection,Random Sampling (p=0.7),0.670694698020641
+email_eu,14,Random Projection,Random Sampling (p=0.8),0.722201976957269
+email_eu,14,Random Projection,CountSketch,0.734670904256079
+email_eu,14,Random Projection,SIGN Bidirectional,0.808238697842465
+email_eu,14,Random Sampling (p=0.7),Random Sampling (p=0.8),0.797717948356459
+email_eu,14,Random Sampling (p=0.7),CountSketch,0.798799527324124
+email_eu,14,Random Sampling (p=0.7),SIGN Bidirectional,0.723798475739497
+email_eu,14,Random Sampling (p=0.8),CountSketch,0.841777631576232
+email_eu,14,Random Sampling (p=0.8),SIGN Bidirectional,0.75183237726449
+email_eu,14,CountSketch,SIGN Bidirectional,0.769851943449237
+email_eu,15,Non-random,Random Projection,0.870353006607956
+email_eu,15,Non-random,Random Sampling (p=0.7),0.752782642416509
+email_eu,15,Non-random,Random Sampling (p=0.8),0.81205334532922
+email_eu,15,Non-random,CountSketch,0.84126136685135
+email_eu,15,Non-random,SIGN Bidirectional,0.696423311036644
+email_eu,15,Random Projection,Random Sampling (p=0.7),0.797473464420266
+email_eu,15,Random Projection,Random Sampling (p=0.8),0.801440496862716
+email_eu,15,Random Projection,CountSketch,0.865053560658246
+email_eu,15,Random Projection,SIGN Bidirectional,0.738551125171359
+email_eu,15,Random Sampling (p=0.7),Random Sampling (p=0.8),0.78541620204192
+email_eu,15,Random Sampling (p=0.7),CountSketch,0.780620500053938
+email_eu,15,Random Sampling (p=0.7),SIGN Bidirectional,0.694135322678313
+email_eu,15,Random Sampling (p=0.8),CountSketch,0.83789965571051
+email_eu,15,Random Sampling (p=0.8),SIGN Bidirectional,0.721656882152282
+email_eu,15,CountSketch,SIGN Bidirectional,0.733466327330035
+email_eu,16,Non-random,Random Projection,0.73917784728294
+email_eu,16,Non-random,Random Sampling (p=0.7),0.79713157664192
+email_eu,16,Non-random,Random Sampling (p=0.8),0.839784396814077
+email_eu,16,Non-random,CountSketch,0.831225153714702
+email_eu,16,Non-random,SIGN Bidirectional,0.685793349483515
+email_eu,16,Random Projection,Random Sampling (p=0.7),0.719121326283685
+email_eu,16,Random Projection,Random Sampling (p=0.8),0.729602629849804
+email_eu,16,Random Projection,CountSketch,0.746688691149819
+email_eu,16,Random Projection,SIGN Bidirectional,0.772924392632432
+email_eu,16,Random Sampling (p=0.7),Random Sampling (p=0.8),0.76187479119832
+email_eu,16,Random Sampling (p=0.7),CountSketch,0.764109828541661
+email_eu,16,Random Sampling (p=0.7),SIGN Bidirectional,0.627926680525609
+email_eu,16,Random Sampling (p=0.8),CountSketch,0.773780920454787
+email_eu,16,Random Sampling (p=0.8),SIGN Bidirectional,0.664948252029499
+email_eu,16,CountSketch,SIGN Bidirectional,0.646101530003206
+email_eu,17,Non-random,Random Projection,0.8001967916456
+email_eu,17,Non-random,Random Sampling (p=0.7),0.772485283273931
+email_eu,17,Non-random,Random Sampling (p=0.8),0.787795854509328
+email_eu,17,Non-random,CountSketch,0.823827262976854
+email_eu,17,Non-random,SIGN Bidirectional,0.783570077268598
+email_eu,17,Random Projection,Random Sampling (p=0.7),0.759450553845494
+email_eu,17,Random Projection,Random Sampling (p=0.8),0.783879685669614
+email_eu,17,Random Projection,CountSketch,0.884340091349565
+email_eu,17,Random Projection,SIGN Bidirectional,0.848368703133267
+email_eu,17,Random Sampling (p=0.7),Random Sampling (p=0.8),0.775164236718246
+email_eu,17,Random Sampling (p=0.7),CountSketch,0.773172894630323
+email_eu,17,Random Sampling (p=0.7),SIGN Bidirectional,0.760106253055526
+email_eu,17,Random Sampling (p=0.8),CountSketch,0.799520512946037
+email_eu,17,Random Sampling (p=0.8),SIGN Bidirectional,0.814956962603261
+email_eu,17,CountSketch,SIGN Bidirectional,0.845136282511656
+email_eu,18,Non-random,Random Projection,0.773281268707704
+email_eu,18,Non-random,Random Sampling (p=0.7),0.708532729223575
+email_eu,18,Non-random,Random Sampling (p=0.8),0.814102835136162
+email_eu,18,Non-random,CountSketch,0.74976592657571
+email_eu,18,Non-random,SIGN Bidirectional,0.776650812237842
+email_eu,18,Random Projection,Random Sampling (p=0.7),0.750737951651704
+email_eu,18,Random Projection,Random Sampling (p=0.8),0.799454451173639
+email_eu,18,Random Projection,CountSketch,0.747148258608771
+email_eu,18,Random Projection,SIGN Bidirectional,0.783463808535825
+email_eu,18,Random Sampling (p=0.7),Random Sampling (p=0.8),0.747816921863748
+email_eu,18,Random Sampling (p=0.7),CountSketch,0.718514242132661
+email_eu,18,Random Sampling (p=0.7),SIGN Bidirectional,0.713872371843893
+email_eu,18,Random Sampling (p=0.8),CountSketch,0.749175882801264
+email_eu,18,Random Sampling (p=0.8),SIGN Bidirectional,0.8001129440804
+email_eu,18,CountSketch,SIGN Bidirectional,0.776750136728486
+email_eu,19,Non-random,Random Projection,0.751210483273024
+email_eu,19,Non-random,Random Sampling (p=0.7),0.710296295481441
+email_eu,19,Non-random,Random Sampling (p=0.8),0.749112935989081
+email_eu,19,Non-random,CountSketch,0.758327954829382
+email_eu,19,Non-random,SIGN Bidirectional,0.722805263099589
+email_eu,19,Random Projection,Random Sampling (p=0.7),0.803440356567004
+email_eu,19,Random Projection,Random Sampling (p=0.8),0.773837081760766
+email_eu,19,Random Projection,CountSketch,0.857246259587336
+email_eu,19,Random Projection,SIGN Bidirectional,0.80540366142896
+email_eu,19,Random Sampling (p=0.7),Random Sampling (p=0.8),0.773012968993179
+email_eu,19,Random Sampling (p=0.7),CountSketch,0.795149400660153
+email_eu,19,Random Sampling (p=0.7),SIGN Bidirectional,0.732551289021891
+email_eu,19,Random Sampling (p=0.8),CountSketch,0.806255932964261
+email_eu,19,Random Sampling (p=0.8),SIGN Bidirectional,0.76482349603508
+email_eu,19,CountSketch,SIGN Bidirectional,0.81693563967489
+email_eu,20,Non-random,Random Projection,0.77195908167423
+email_eu,20,Non-random,Random Sampling (p=0.7),0.799365929459807
+email_eu,20,Non-random,Random Sampling (p=0.8),0.829558620294995
+email_eu,20,Non-random,CountSketch,0.851444128474484
+email_eu,20,Non-random,SIGN Bidirectional,0.821729174665269
+email_eu,20,Random Projection,Random Sampling (p=0.7),0.694008472829469
+email_eu,20,Random Projection,Random Sampling (p=0.8),0.69096137436938
+email_eu,20,Random Projection,CountSketch,0.740534048628843
+email_eu,20,Random Projection,SIGN Bidirectional,0.71076550050778
+email_eu,20,Random Sampling (p=0.7),Random Sampling (p=0.8),0.773637546685277
+email_eu,20,Random Sampling (p=0.7),CountSketch,0.805918547626524
+email_eu,20,Random Sampling (p=0.7),SIGN Bidirectional,0.83689608121744
+email_eu,20,Random Sampling (p=0.8),CountSketch,0.802940570356013
+email_eu,20,Random Sampling (p=0.8),SIGN Bidirectional,0.808363357479077
+email_eu,20,CountSketch,SIGN Bidirectional,0.866375916665992

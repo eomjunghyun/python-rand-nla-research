@@ -1,0 +1,12 @@
+table2c: The clustering performance on the Statisticians coauthor network (No true labels).
+
+| Methods | F 1 | NMI | ARI |
+|---|---:|---:|---:|
+| Random Projection | 0.995(0.021) | 0.990(0.043) | 0.993(0.033) |
+| Random Sampling (p= 0.7) | 0.899(0.145) | 0.798(0.136) | 0.855(0.141) |
+| Random Sampling (p= 0.8) | 0.955(0.031) | 0.881(0.072) | 0.921(0.058) |
+| CountSketch | 0.998(0.007) | 0.996(0.019) | 0.997(0.011) |
+| SIGN Bidirectional | 0.726(0.203) | 0.513(0.273) | 0.529(0.301) |
+
+Note: Values are mean(std) over 20 MATLAB replications.
+For this dataset, scores are relative to non-random spectral clustering.

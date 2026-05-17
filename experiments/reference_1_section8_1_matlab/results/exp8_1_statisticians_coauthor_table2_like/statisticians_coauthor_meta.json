@@ -1,0 +1,44 @@
+{
+  "dataset": "statisticians_coauthor",
+  "display_name": "Statisticians coauthor network (No true labels)",
+  "nodes": 2263,
+  "edges": 4388,
+  "target_rank": 3,
+  "embedding_rank": 3,
+  "cluster_count": 3,
+  "reps": 20,
+  "seed": 2026,
+  "q": 2,
+  "r": 10,
+  "p_values": [
+    0.7,
+    0.8
+  ],
+  "sign_k": 2,
+  "table_id": "table2c",
+  "source_meta": {
+    "raw_authors": 3607,
+    "raw_edges": 5615,
+    "lcc_nodes": 2263,
+    "lcc_edges": 4388,
+    "component_sizes_top10": [
+      2263,
+      23,
+      12,
+      12,
+      11,
+      10,
+      9,
+      9,
+      9,
+      9
+    ],
+    "node_names_preview": [
+      "\"A B Kristoffersen\"",
+      "\"A C Davison\"",
+      "\"A Chatterjee\"",
+      "\"A D Tsodikov\"",
+      "\"A Galichon\""
+    ]
+  }
+}

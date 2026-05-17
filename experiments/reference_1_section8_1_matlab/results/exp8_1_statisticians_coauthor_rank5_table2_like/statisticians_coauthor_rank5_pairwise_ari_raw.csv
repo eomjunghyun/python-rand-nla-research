@@ -1,0 +1,301 @@
+dataset,rep,method_i,method_j,ari
+statisticians_coauthor,1,Non-random,Random Projection,1
+statisticians_coauthor,1,Non-random,Random Sampling (p=0.7),0.878018167904933
+statisticians_coauthor,1,Non-random,Random Sampling (p=0.8),0.893787678384185
+statisticians_coauthor,1,Non-random,CountSketch,1
+statisticians_coauthor,1,Non-random,SIGN Bidirectional,0.939167483622434
+statisticians_coauthor,1,Random Projection,Random Sampling (p=0.7),0.878018167904933
+statisticians_coauthor,1,Random Projection,Random Sampling (p=0.8),0.893787678384185
+statisticians_coauthor,1,Random Projection,CountSketch,1
+statisticians_coauthor,1,Random Projection,SIGN Bidirectional,0.939167483622434
+statisticians_coauthor,1,Random Sampling (p=0.7),Random Sampling (p=0.8),0.903291396550753
+statisticians_coauthor,1,Random Sampling (p=0.7),CountSketch,0.878018167904933
+statisticians_coauthor,1,Random Sampling (p=0.7),SIGN Bidirectional,0.820352097936454
+statisticians_coauthor,1,Random Sampling (p=0.8),CountSketch,0.893787678384185
+statisticians_coauthor,1,Random Sampling (p=0.8),SIGN Bidirectional,0.834322070017025
+statisticians_coauthor,1,CountSketch,SIGN Bidirectional,0.939167483622434
+statisticians_coauthor,2,Non-random,Random Projection,1
+statisticians_coauthor,2,Non-random,Random Sampling (p=0.7),0.307829352414343
+statisticians_coauthor,2,Non-random,Random Sampling (p=0.8),0.984097931583565
+statisticians_coauthor,2,Non-random,CountSketch,1
+statisticians_coauthor,2,Non-random,SIGN Bidirectional,0.838211443947647
+statisticians_coauthor,2,Random Projection,Random Sampling (p=0.7),0.307829352414343
+statisticians_coauthor,2,Random Projection,Random Sampling (p=0.8),0.984097931583565
+statisticians_coauthor,2,Random Projection,CountSketch,1
+statisticians_coauthor,2,Random Projection,SIGN Bidirectional,0.838211443947647
+statisticians_coauthor,2,Random Sampling (p=0.7),Random Sampling (p=0.8),0.303873543946855
+statisticians_coauthor,2,Random Sampling (p=0.7),CountSketch,0.307829352414343
+statisticians_coauthor,2,Random Sampling (p=0.7),SIGN Bidirectional,0.313380880857442
+statisticians_coauthor,2,Random Sampling (p=0.8),CountSketch,0.984097931583565
+statisticians_coauthor,2,Random Sampling (p=0.8),SIGN Bidirectional,0.823314175658727
+statisticians_coauthor,2,CountSketch,SIGN Bidirectional,0.838211443947647
+statisticians_coauthor,3,Non-random,Random Projection,0.853653536986216
+statisticians_coauthor,3,Non-random,Random Sampling (p=0.7),0.921234395069536
+statisticians_coauthor,3,Non-random,Random Sampling (p=0.8),0.921234395069536
+statisticians_coauthor,3,Non-random,CountSketch,0.386968766043909
+statisticians_coauthor,3,Non-random,SIGN Bidirectional,0.8382317061944
+statisticians_coauthor,3,Random Projection,Random Sampling (p=0.7),0.93140092679447
+statisticians_coauthor,3,Random Projection,Random Sampling (p=0.8),0.93140092679447
+statisticians_coauthor,3,Random Projection,CountSketch,0.484480440900861
+statisticians_coauthor,3,Random Projection,SIGN Bidirectional,0.984097931583565
+statisticians_coauthor,3,Random Sampling (p=0.7),Random Sampling (p=0.8),0.890114171456713
+statisticians_coauthor,3,Random Sampling (p=0.7),CountSketch,0.437090041403415
+statisticians_coauthor,3,Random Sampling (p=0.7),SIGN Bidirectional,0.915644838130648
+statisticians_coauthor,3,Random Sampling (p=0.8),CountSketch,0.437090041403415
+statisticians_coauthor,3,Random Sampling (p=0.8),SIGN Bidirectional,0.915644838130648
+statisticians_coauthor,3,CountSketch,SIGN Bidirectional,0.495929567165019
+statisticians_coauthor,4,Non-random,Random Projection,1
+statisticians_coauthor,4,Non-random,Random Sampling (p=0.7),0.40142971635615
+statisticians_coauthor,4,Non-random,Random Sampling (p=0.8),0.968672346037863
+statisticians_coauthor,4,Non-random,CountSketch,1
+statisticians_coauthor,4,Non-random,SIGN Bidirectional,0.480270476801018
+statisticians_coauthor,4,Random Projection,Random Sampling (p=0.7),0.40142971635615
+statisticians_coauthor,4,Random Projection,Random Sampling (p=0.8),0.968672346037863
+statisticians_coauthor,4,Random Projection,CountSketch,1
+statisticians_coauthor,4,Random Projection,SIGN Bidirectional,0.480270476801018
+statisticians_coauthor,4,Random Sampling (p=0.7),Random Sampling (p=0.8),0.38921601195748
+statisticians_coauthor,4,Random Sampling (p=0.7),CountSketch,0.40142971635615
+statisticians_coauthor,4,Random Sampling (p=0.7),SIGN Bidirectional,0.208414669525522
+statisticians_coauthor,4,Random Sampling (p=0.8),CountSketch,0.968672346037863
+statisticians_coauthor,4,Random Sampling (p=0.8),SIGN Bidirectional,0.471784775919179
+statisticians_coauthor,4,CountSketch,SIGN Bidirectional,0.480270476801018
+statisticians_coauthor,5,Non-random,Random Projection,0.853653536986216
+statisticians_coauthor,5,Non-random,Random Sampling (p=0.7),0.832395415991138
+statisticians_coauthor,5,Non-random,Random Sampling (p=0.8),0.501705412459414
+statisticians_coauthor,5,Non-random,CountSketch,1
+statisticians_coauthor,5,Non-random,SIGN Bidirectional,0.984097931583565
+statisticians_coauthor,5,Random Projection,Random Sampling (p=0.7),0.978210293897409
+statisticians_coauthor,5,Random Projection,Random Sampling (p=0.8),0.590024832958892
+statisticians_coauthor,5,Random Projection,CountSketch,0.853653536986216
+statisticians_coauthor,5,Random Projection,SIGN Bidirectional,0.8382317061944
+statisticians_coauthor,5,Random Sampling (p=0.7),Random Sampling (p=0.8),0.559121497952625
+statisticians_coauthor,5,Random Sampling (p=0.7),CountSketch,0.832395415991138
+statisticians_coauthor,5,Random Sampling (p=0.7),SIGN Bidirectional,0.817082464111186
+statisticians_coauthor,5,Random Sampling (p=0.8),CountSketch,0.501705412459414
+statisticians_coauthor,5,Random Sampling (p=0.8),SIGN Bidirectional,0.492431480376632
+statisticians_coauthor,5,CountSketch,SIGN Bidirectional,0.984097931583565
+statisticians_coauthor,6,Non-random,Random Projection,1
+statisticians_coauthor,6,Non-random,Random Sampling (p=0.7),0.603219807738119
+statisticians_coauthor,6,Non-random,Random Sampling (p=0.8),0.886200202713991
+statisticians_coauthor,6,Non-random,CountSketch,0.853653536986216
+statisticians_coauthor,6,Non-random,SIGN Bidirectional,0.823338631968068
+statisticians_coauthor,6,Random Projection,Random Sampling (p=0.7),0.603219807738119
+statisticians_coauthor,6,Random Projection,Random Sampling (p=0.8),0.886200202713991
+statisticians_coauthor,6,Random Projection,CountSketch,0.853653536986216
+statisticians_coauthor,6,Random Projection,SIGN Bidirectional,0.823338631968068
+statisticians_coauthor,6,Random Sampling (p=0.7),Random Sampling (p=0.8),0.531713148461201
+statisticians_coauthor,6,Random Sampling (p=0.7),CountSketch,0.511393938097511
+statisticians_coauthor,6,Random Sampling (p=0.7),SIGN Bidirectional,0.492520447057108
+statisticians_coauthor,6,Random Sampling (p=0.8),CountSketch,0.966734545359413
+statisticians_coauthor,6,Random Sampling (p=0.8),SIGN Bidirectional,0.935527804781503
+statisticians_coauthor,6,CountSketch,SIGN Bidirectional,0.968672346037863
+statisticians_coauthor,7,Non-random,Random Projection,1
+statisticians_coauthor,7,Non-random,Random Sampling (p=0.7),0.571922367955246
+statisticians_coauthor,7,Non-random,Random Sampling (p=0.8),0.755928284996391
+statisticians_coauthor,7,Non-random,CountSketch,0.292223100540362
+statisticians_coauthor,7,Non-random,SIGN Bidirectional,0.358459025093924
+statisticians_coauthor,7,Random Projection,Random Sampling (p=0.7),0.571922367955246
+statisticians_coauthor,7,Random Projection,Random Sampling (p=0.8),0.755928284996391
+statisticians_coauthor,7,Random Projection,CountSketch,0.292223100540362
+statisticians_coauthor,7,Random Projection,SIGN Bidirectional,0.358459025093924
+statisticians_coauthor,7,Random Sampling (p=0.7),Random Sampling (p=0.8),0.424832580471354
+statisticians_coauthor,7,Random Sampling (p=0.7),CountSketch,0.303002198421983
+statisticians_coauthor,7,Random Sampling (p=0.7),SIGN Bidirectional,0.18930952340064
+statisticians_coauthor,7,Random Sampling (p=0.8),CountSketch,0.262895947623545
+statisticians_coauthor,7,Random Sampling (p=0.8),SIGN Bidirectional,0.399133391780866
+statisticians_coauthor,7,CountSketch,SIGN Bidirectional,0.230752044573696
+statisticians_coauthor,8,Non-random,Random Projection,0.853653536986216
+statisticians_coauthor,8,Non-random,Random Sampling (p=0.7),0.893787678384185
+statisticians_coauthor,8,Non-random,Random Sampling (p=0.8),0.839991775669394
+statisticians_coauthor,8,Non-random,CountSketch,0.261726305875073
+statisticians_coauthor,8,Non-random,SIGN Bidirectional,0.825458145370459
+statisticians_coauthor,8,Random Projection,Random Sampling (p=0.7),0.918177921918794
+statisticians_coauthor,8,Random Projection,Random Sampling (p=0.8),0.755928284996391
+statisticians_coauthor,8,Random Projection,CountSketch,0.267284321546827
+statisticians_coauthor,8,Random Projection,SIGN Bidirectional,0.686950759397088
+statisticians_coauthor,8,Random Sampling (p=0.7),Random Sampling (p=0.8),0.794494906275251
+statisticians_coauthor,8,Random Sampling (p=0.7),CountSketch,0.261000571134596
+statisticians_coauthor,8,Random Sampling (p=0.7),SIGN Bidirectional,0.72428008325428
+statisticians_coauthor,8,Random Sampling (p=0.8),CountSketch,0.242409658983768
+statisticians_coauthor,8,Random Sampling (p=0.8),SIGN Bidirectional,0.704193960847183
+statisticians_coauthor,8,CountSketch,SIGN Bidirectional,0.226272202713807
+statisticians_coauthor,9,Non-random,Random Projection,0.273137397133958
+statisticians_coauthor,9,Non-random,Random Sampling (p=0.7),0.249296554212271
+statisticians_coauthor,9,Non-random,Random Sampling (p=0.8),0.265313671727933
+statisticians_coauthor,9,Non-random,CountSketch,0.267163109365118
+statisticians_coauthor,9,Non-random,SIGN Bidirectional,0.350767016675596
+statisticians_coauthor,9,Random Projection,Random Sampling (p=0.7),0.937335043778416
+statisticians_coauthor,9,Random Projection,Random Sampling (p=0.8),0.585297630452076
+statisticians_coauthor,9,Random Projection,CountSketch,0.853653536986216
+statisticians_coauthor,9,Random Projection,SIGN Bidirectional,0.567051381561948
+statisticians_coauthor,9,Random Sampling (p=0.7),Random Sampling (p=0.8),0.526947483345733
+statisticians_coauthor,9,Random Sampling (p=0.7),CountSketch,0.873941660097483
+statisticians_coauthor,9,Random Sampling (p=0.7),SIGN Bidirectional,0.583535836566401
+statisticians_coauthor,9,Random Sampling (p=0.8),CountSketch,0.492849091256927
+statisticians_coauthor,9,Random Sampling (p=0.8),SIGN Bidirectional,0.318615916664363
+statisticians_coauthor,9,CountSketch,SIGN Bidirectional,0.692262153595656
+statisticians_coauthor,10,Non-random,Random Projection,1
+statisticians_coauthor,10,Non-random,Random Sampling (p=0.7),0.522669621069797
+statisticians_coauthor,10,Non-random,Random Sampling (p=0.8),0.93140092679447
+statisticians_coauthor,10,Non-random,CountSketch,0.853653536986216
+statisticians_coauthor,10,Non-random,SIGN Bidirectional,0.417091442223135
+statisticians_coauthor,10,Random Projection,Random Sampling (p=0.7),0.522669621069797
+statisticians_coauthor,10,Random Projection,Random Sampling (p=0.8),0.93140092679447
+statisticians_coauthor,10,Random Projection,CountSketch,0.853653536986216
+statisticians_coauthor,10,Random Projection,SIGN Bidirectional,0.417091442223135
+statisticians_coauthor,10,Random Sampling (p=0.7),Random Sampling (p=0.8),0.50530470619743
+statisticians_coauthor,10,Random Sampling (p=0.7),CountSketch,0.486558702298798
+statisticians_coauthor,10,Random Sampling (p=0.7),SIGN Bidirectional,0.327783627375973
+statisticians_coauthor,10,Random Sampling (p=0.8),CountSketch,0.921234395069536
+statisticians_coauthor,10,Random Sampling (p=0.8),SIGN Bidirectional,0.373497602763778
+statisticians_coauthor,10,CountSketch,SIGN Bidirectional,0.327113682831062
+statisticians_coauthor,11,Non-random,Random Projection,0.273137397133958
+statisticians_coauthor,11,Non-random,Random Sampling (p=0.7),0.774274969695859
+statisticians_coauthor,11,Non-random,Random Sampling (p=0.8),0.848305530417491
+statisticians_coauthor,11,Non-random,CountSketch,0.853653536986216
+statisticians_coauthor,11,Non-random,SIGN Bidirectional,0.853653536986216
+statisticians_coauthor,11,Random Projection,Random Sampling (p=0.7),0.239574737404596
+statisticians_coauthor,11,Random Projection,Random Sampling (p=0.8),0.253698014985384
+statisticians_coauthor,11,Random Projection,CountSketch,0.267163109365118
+statisticians_coauthor,11,Random Projection,SIGN Bidirectional,0.267163109365118
+statisticians_coauthor,11,Random Sampling (p=0.7),Random Sampling (p=0.8),0.888919922568771
+statisticians_coauthor,11,Random Sampling (p=0.7),CountSketch,0.92290163026561
+statisticians_coauthor,11,Random Sampling (p=0.7),SIGN Bidirectional,0.92290163026561
+statisticians_coauthor,11,Random Sampling (p=0.8),CountSketch,0.966741250336814
+statisticians_coauthor,11,Random Sampling (p=0.8),SIGN Bidirectional,0.966741250336814
+statisticians_coauthor,11,CountSketch,SIGN Bidirectional,1
+statisticians_coauthor,12,Non-random,Random Projection,0.235086004428065
+statisticians_coauthor,12,Non-random,Random Sampling (p=0.7),0.952348476482787
+statisticians_coauthor,12,Non-random,Random Sampling (p=0.8),0.308183720517857
+statisticians_coauthor,12,Non-random,CountSketch,1
+statisticians_coauthor,12,Non-random,SIGN Bidirectional,0.353522602392863
+statisticians_coauthor,12,Random Projection,Random Sampling (p=0.7),0.215561668744022
+statisticians_coauthor,12,Random Projection,Random Sampling (p=0.8),0.79626416284886
+statisticians_coauthor,12,Random Projection,CountSketch,0.235086004428065
+statisticians_coauthor,12,Random Projection,SIGN Bidirectional,0.662738932627085
+statisticians_coauthor,12,Random Sampling (p=0.7),Random Sampling (p=0.8),0.282722077180428
+statisticians_coauthor,12,Random Sampling (p=0.7),CountSketch,0.952348476482787
+statisticians_coauthor,12,Random Sampling (p=0.7),SIGN Bidirectional,0.361923299748496
+statisticians_coauthor,12,Random Sampling (p=0.8),CountSketch,0.308183720517857
+statisticians_coauthor,12,Random Sampling (p=0.8),SIGN Bidirectional,0.552477182540708
+statisticians_coauthor,12,CountSketch,SIGN Bidirectional,0.353522602392863
+statisticians_coauthor,13,Non-random,Random Projection,0.275713239047257
+statisticians_coauthor,13,Non-random,Random Sampling (p=0.7),0.434735733582522
+statisticians_coauthor,13,Non-random,Random Sampling (p=0.8),0.293735070126599
+statisticians_coauthor,13,Non-random,CountSketch,0.253937765371801
+statisticians_coauthor,13,Non-random,SIGN Bidirectional,0.390418415898385
+statisticians_coauthor,13,Random Projection,Random Sampling (p=0.7),0.259307091704308
+statisticians_coauthor,13,Random Projection,Random Sampling (p=0.8),0.900989869975965
+statisticians_coauthor,13,Random Projection,CountSketch,0.88425346670566
+statisticians_coauthor,13,Random Projection,SIGN Bidirectional,0.866448575610087
+statisticians_coauthor,13,Random Sampling (p=0.7),Random Sampling (p=0.8),0.29717147403033
+statisticians_coauthor,13,Random Sampling (p=0.7),CountSketch,0.238643911060827
+statisticians_coauthor,13,Random Sampling (p=0.7),SIGN Bidirectional,0.211117001309839
+statisticians_coauthor,13,Random Sampling (p=0.8),CountSketch,0.828932974145855
+statisticians_coauthor,13,Random Sampling (p=0.8),SIGN Bidirectional,0.77112909278059
+statisticians_coauthor,13,CountSketch,SIGN Bidirectional,0.770268730607527
+statisticians_coauthor,14,Non-random,Random Projection,0.275713239047257
+statisticians_coauthor,14,Non-random,Random Sampling (p=0.7),0.843835535145715
+statisticians_coauthor,14,Non-random,Random Sampling (p=0.8),0.753267685130899
+statisticians_coauthor,14,Non-random,CountSketch,1
+statisticians_coauthor,14,Non-random,SIGN Bidirectional,0.838211443947647
+statisticians_coauthor,14,Random Projection,Random Sampling (p=0.7),0.250021635257129
+statisticians_coauthor,14,Random Projection,Random Sampling (p=0.8),0.222279936914513
+statisticians_coauthor,14,Random Projection,CountSketch,0.275713239047257
+statisticians_coauthor,14,Random Projection,SIGN Bidirectional,0.299490502288015
+statisticians_coauthor,14,Random Sampling (p=0.7),Random Sampling (p=0.8),0.782428800688266
+statisticians_coauthor,14,Random Sampling (p=0.7),CountSketch,0.843835535145715
+statisticians_coauthor,14,Random Sampling (p=0.7),SIGN Bidirectional,0.774234784823944
+statisticians_coauthor,14,Random Sampling (p=0.8),CountSketch,0.753267685130899
+statisticians_coauthor,14,Random Sampling (p=0.8),SIGN Bidirectional,0.613436030066273
+statisticians_coauthor,14,CountSketch,SIGN Bidirectional,0.838211443947647
+statisticians_coauthor,15,Non-random,Random Projection,0.304233005343263
+statisticians_coauthor,15,Non-random,Random Sampling (p=0.7),0.892164079642832
+statisticians_coauthor,15,Non-random,Random Sampling (p=0.8),0.937400460040056
+statisticians_coauthor,15,Non-random,CountSketch,0.853653536986216
+statisticians_coauthor,15,Non-random,SIGN Bidirectional,0.793843308630545
+statisticians_coauthor,15,Random Projection,Random Sampling (p=0.7),0.297753532912839
+statisticians_coauthor,15,Random Projection,Random Sampling (p=0.8),0.289875765884466
+statisticians_coauthor,15,Random Projection,CountSketch,0.238612343523938
+statisticians_coauthor,15,Random Projection,SIGN Bidirectional,0.340208025682133
+statisticians_coauthor,15,Random Sampling (p=0.7),Random Sampling (p=0.8),0.895154871823048
+statisticians_coauthor,15,Random Sampling (p=0.7),CountSketch,0.808947589120775
+statisticians_coauthor,15,Random Sampling (p=0.7),SIGN Bidirectional,0.731654476763316
+statisticians_coauthor,15,Random Sampling (p=0.8),CountSketch,0.823338631968068
+statisticians_coauthor,15,Random Sampling (p=0.8),SIGN Bidirectional,0.77083691800621
+statisticians_coauthor,15,CountSketch,SIGN Bidirectional,0.767953346080115
+statisticians_coauthor,16,Non-random,Random Projection,1
+statisticians_coauthor,16,Non-random,Random Sampling (p=0.7),0.93140092679447
+statisticians_coauthor,16,Non-random,Random Sampling (p=0.8),0.8740521032398
+statisticians_coauthor,16,Non-random,CountSketch,0.853653536986216
+statisticians_coauthor,16,Non-random,SIGN Bidirectional,0.135532005035019
+statisticians_coauthor,16,Random Projection,Random Sampling (p=0.7),0.93140092679447
+statisticians_coauthor,16,Random Projection,Random Sampling (p=0.8),0.8740521032398
+statisticians_coauthor,16,Random Projection,CountSketch,0.853653536986216
+statisticians_coauthor,16,Random Projection,SIGN Bidirectional,0.135532005035019
+statisticians_coauthor,16,Random Sampling (p=0.7),Random Sampling (p=0.8),0.903382359192865
+statisticians_coauthor,16,Random Sampling (p=0.7),CountSketch,0.921234395069536
+statisticians_coauthor,16,Random Sampling (p=0.7),SIGN Bidirectional,0.130890665280952
+statisticians_coauthor,16,Random Sampling (p=0.8),CountSketch,0.979111309408658
+statisticians_coauthor,16,Random Sampling (p=0.8),SIGN Bidirectional,0.134922922217384
+statisticians_coauthor,16,CountSketch,SIGN Bidirectional,0.136294099206494
+statisticians_coauthor,17,Non-random,Random Projection,0.501597564837546
+statisticians_coauthor,17,Non-random,Random Sampling (p=0.7),0.8740521032398
+statisticians_coauthor,17,Non-random,Random Sampling (p=0.8),1
+statisticians_coauthor,17,Non-random,CountSketch,0.853653536986216
+statisticians_coauthor,17,Non-random,SIGN Bidirectional,0.984097931583565
+statisticians_coauthor,17,Random Projection,Random Sampling (p=0.7),0.414606329230707
+statisticians_coauthor,17,Random Projection,Random Sampling (p=0.8),0.501597564837546
+statisticians_coauthor,17,Random Projection,CountSketch,0.401431895289278
+statisticians_coauthor,17,Random Projection,SIGN Bidirectional,0.497006758144959
+statisticians_coauthor,17,Random Sampling (p=0.7),Random Sampling (p=0.8),0.8740521032398
+statisticians_coauthor,17,Random Sampling (p=0.7),CountSketch,0.937389680958868
+statisticians_coauthor,17,Random Sampling (p=0.7),SIGN Bidirectional,0.858525080000431
+statisticians_coauthor,17,Random Sampling (p=0.8),CountSketch,0.853653536986216
+statisticians_coauthor,17,Random Sampling (p=0.8),SIGN Bidirectional,0.984097931583565
+statisticians_coauthor,17,CountSketch,SIGN Bidirectional,0.8382317061944
+statisticians_coauthor,18,Non-random,Random Projection,1
+statisticians_coauthor,18,Non-random,Random Sampling (p=0.7),0.868931537466571
+statisticians_coauthor,18,Non-random,Random Sampling (p=0.8),0.897994594498151
+statisticians_coauthor,18,Non-random,CountSketch,1
+statisticians_coauthor,18,Non-random,SIGN Bidirectional,0.269017838077474
+statisticians_coauthor,18,Random Projection,Random Sampling (p=0.7),0.868931537466571
+statisticians_coauthor,18,Random Projection,Random Sampling (p=0.8),0.897994594498151
+statisticians_coauthor,18,Random Projection,CountSketch,1
+statisticians_coauthor,18,Random Projection,SIGN Bidirectional,0.269017838077474
+statisticians_coauthor,18,Random Sampling (p=0.7),Random Sampling (p=0.8),0.920016440226481
+statisticians_coauthor,18,Random Sampling (p=0.7),CountSketch,0.868931537466571
+statisticians_coauthor,18,Random Sampling (p=0.7),SIGN Bidirectional,0.232509739722177
+statisticians_coauthor,18,Random Sampling (p=0.8),CountSketch,0.897994594498151
+statisticians_coauthor,18,Random Sampling (p=0.8),SIGN Bidirectional,0.249733107927252
+statisticians_coauthor,18,CountSketch,SIGN Bidirectional,0.269017838077474
+statisticians_coauthor,19,Non-random,Random Projection,1
+statisticians_coauthor,19,Non-random,Random Sampling (p=0.7),0.775919368035911
+statisticians_coauthor,19,Non-random,Random Sampling (p=0.8),0.893787678384185
+statisticians_coauthor,19,Non-random,CountSketch,1
+statisticians_coauthor,19,Non-random,SIGN Bidirectional,0.550829925826775
+statisticians_coauthor,19,Random Projection,Random Sampling (p=0.7),0.775919368035911
+statisticians_coauthor,19,Random Projection,Random Sampling (p=0.8),0.893787678384185
+statisticians_coauthor,19,Random Projection,CountSketch,1
+statisticians_coauthor,19,Random Projection,SIGN Bidirectional,0.550829925826775
+statisticians_coauthor,19,Random Sampling (p=0.7),Random Sampling (p=0.8),0.723212211087751
+statisticians_coauthor,19,Random Sampling (p=0.7),CountSketch,0.775919368035911
+statisticians_coauthor,19,Random Sampling (p=0.7),SIGN Bidirectional,0.437988689322694
+statisticians_coauthor,19,Random Sampling (p=0.8),CountSketch,0.893787678384185
+statisticians_coauthor,19,Random Sampling (p=0.8),SIGN Bidirectional,0.469255380344615
+statisticians_coauthor,19,CountSketch,SIGN Bidirectional,0.550829925826775
+statisticians_coauthor,20,Non-random,Random Projection,1
+statisticians_coauthor,20,Non-random,Random Sampling (p=0.7),0.967733387652545
+statisticians_coauthor,20,Non-random,Random Sampling (p=0.8),0.98361361274219
+statisticians_coauthor,20,Non-random,CountSketch,1
+statisticians_coauthor,20,Non-random,SIGN Bidirectional,0.9493388313431
+statisticians_coauthor,20,Random Projection,Random Sampling (p=0.7),0.967733387652545
+statisticians_coauthor,20,Random Projection,Random Sampling (p=0.8),0.98361361274219
+statisticians_coauthor,20,Random Projection,CountSketch,1
+statisticians_coauthor,20,Random Projection,SIGN Bidirectional,0.9493388313431
+statisticians_coauthor,20,Random Sampling (p=0.7),Random Sampling (p=0.8),0.95088457413562
+statisticians_coauthor,20,Random Sampling (p=0.7),CountSketch,0.967733387652545
+statisticians_coauthor,20,Random Sampling (p=0.7),SIGN Bidirectional,0.915639906154584
+statisticians_coauthor,20,Random Sampling (p=0.8),CountSketch,0.98361361274219
+statisticians_coauthor,20,Random Sampling (p=0.8),SIGN Bidirectional,0.93139786769742
+statisticians_coauthor,20,CountSketch,SIGN Bidirectional,0.9493388313431

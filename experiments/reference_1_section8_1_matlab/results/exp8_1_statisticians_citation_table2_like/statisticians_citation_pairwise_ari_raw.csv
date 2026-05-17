@@ -1,0 +1,301 @@
+dataset,rep,method_i,method_j,ari
+statisticians_citation,1,Non-random,Random Projection,0.956387317866093
+statisticians_citation,1,Non-random,Random Sampling (p=0.7),0.894332351232743
+statisticians_citation,1,Non-random,Random Sampling (p=0.8),0.914358362476791
+statisticians_citation,1,Non-random,CountSketch,0.983745544673014
+statisticians_citation,1,Non-random,SIGN Bidirectional,0.720398010239041
+statisticians_citation,1,Random Projection,Random Sampling (p=0.7),0.875391320478114
+statisticians_citation,1,Random Projection,Random Sampling (p=0.8),0.915582053048309
+statisticians_citation,1,Random Projection,CountSketch,0.946463410959407
+statisticians_citation,1,Random Projection,SIGN Bidirectional,0.711717496060095
+statisticians_citation,1,Random Sampling (p=0.7),Random Sampling (p=0.8),0.860824401357242
+statisticians_citation,1,Random Sampling (p=0.7),CountSketch,0.885124931644253
+statisticians_citation,1,Random Sampling (p=0.7),SIGN Bidirectional,0.709342282186162
+statisticians_citation,1,Random Sampling (p=0.8),CountSketch,0.904841365739099
+statisticians_citation,1,Random Sampling (p=0.8),SIGN Bidirectional,0.700621685666301
+statisticians_citation,1,CountSketch,SIGN Bidirectional,0.723441074175856
+statisticians_citation,2,Non-random,Random Projection,0.983911077821089
+statisticians_citation,2,Non-random,Random Sampling (p=0.7),0.920959204058578
+statisticians_citation,2,Non-random,Random Sampling (p=0.8),0.92131248099225
+statisticians_citation,2,Non-random,CountSketch,0.980604097100907
+statisticians_citation,2,Non-random,SIGN Bidirectional,0.445494180757867
+statisticians_citation,2,Random Projection,Random Sampling (p=0.7),0.918171189466171
+statisticians_citation,2,Random Projection,Random Sampling (p=0.8),0.924901772775733
+statisticians_citation,2,Random Projection,CountSketch,0.964774153436946
+statisticians_citation,2,Random Projection,SIGN Bidirectional,0.441534608318545
+statisticians_citation,2,Random Sampling (p=0.7),Random Sampling (p=0.8),0.901088305830316
+statisticians_citation,2,Random Sampling (p=0.7),CountSketch,0.908314036829399
+statisticians_citation,2,Random Sampling (p=0.7),SIGN Bidirectional,0.427521100373712
+statisticians_citation,2,Random Sampling (p=0.8),CountSketch,0.92145846489139
+statisticians_citation,2,Random Sampling (p=0.8),SIGN Bidirectional,0.437722822607269
+statisticians_citation,2,CountSketch,SIGN Bidirectional,0.456214826016014
+statisticians_citation,3,Non-random,Random Projection,0.993465247150164
+statisticians_citation,3,Non-random,Random Sampling (p=0.7),0.905363720495662
+statisticians_citation,3,Non-random,Random Sampling (p=0.8),0.914639151338096
+statisticians_citation,3,Non-random,CountSketch,0.983668373553411
+statisticians_citation,3,Non-random,SIGN Bidirectional,0.740643302162404
+statisticians_citation,3,Random Projection,Random Sampling (p=0.7),0.904983632078635
+statisticians_citation,3,Random Projection,Random Sampling (p=0.8),0.914331406132497
+statisticians_citation,3,Random Projection,CountSketch,0.983500987465157
+statisticians_citation,3,Random Projection,SIGN Bidirectional,0.739922592498909
+statisticians_citation,3,Random Sampling (p=0.7),Random Sampling (p=0.8),0.891664661881557
+statisticians_citation,3,Random Sampling (p=0.7),CountSketch,0.895328772034268
+statisticians_citation,3,Random Sampling (p=0.7),SIGN Bidirectional,0.726397162282565
+statisticians_citation,3,Random Sampling (p=0.8),CountSketch,0.898693219381024
+statisticians_citation,3,Random Sampling (p=0.8),SIGN Bidirectional,0.738078994204574
+statisticians_citation,3,CountSketch,SIGN Bidirectional,0.727090030868655
+statisticians_citation,4,Non-random,Random Projection,0.983668373553411
+statisticians_citation,4,Non-random,Random Sampling (p=0.7),0.904066680141973
+statisticians_citation,4,Non-random,Random Sampling (p=0.8),0.940542366392456
+statisticians_citation,4,Non-random,CountSketch,0.990268502299775
+statisticians_citation,4,Non-random,SIGN Bidirectional,0.610597202905608
+statisticians_citation,4,Random Projection,Random Sampling (p=0.7),0.900403454255252
+statisticians_citation,4,Random Projection,Random Sampling (p=0.8),0.937218430574982
+statisticians_citation,4,Random Projection,CountSketch,0.980595254986782
+statisticians_citation,4,Random Projection,SIGN Bidirectional,0.608060096972071
+statisticians_citation,4,Random Sampling (p=0.7),Random Sampling (p=0.8),0.883312893068895
+statisticians_citation,4,Random Sampling (p=0.7),CountSketch,0.895006211296674
+statisticians_citation,4,Random Sampling (p=0.7),SIGN Bidirectional,0.570493377148832
+statisticians_citation,4,Random Sampling (p=0.8),CountSketch,0.937751661107106
+statisticians_citation,4,Random Sampling (p=0.8),SIGN Bidirectional,0.59397637589755
+statisticians_citation,4,CountSketch,SIGN Bidirectional,0.614291237698801
+statisticians_citation,5,Non-random,Random Projection,0.987117669981462
+statisticians_citation,5,Non-random,Random Sampling (p=0.7),0.894807922560443
+statisticians_citation,5,Non-random,Random Sampling (p=0.8),0.919114186399689
+statisticians_citation,5,Non-random,CountSketch,0.980419458046147
+statisticians_citation,5,Non-random,SIGN Bidirectional,0.533241621432585
+statisticians_citation,5,Random Projection,Random Sampling (p=0.7),0.889320784927054
+statisticians_citation,5,Random Projection,Random Sampling (p=0.8),0.919886060535245
+statisticians_citation,5,Random Projection,CountSketch,0.980777704825578
+statisticians_citation,5,Random Projection,SIGN Bidirectional,0.531741040540888
+statisticians_citation,5,Random Sampling (p=0.7),Random Sampling (p=0.8),0.877788998581655
+statisticians_citation,5,Random Sampling (p=0.7),CountSketch,0.882242275380791
+statisticians_citation,5,Random Sampling (p=0.7),SIGN Bidirectional,0.555019037702224
+statisticians_citation,5,Random Sampling (p=0.8),CountSketch,0.912874212796255
+statisticians_citation,5,Random Sampling (p=0.8),SIGN Bidirectional,0.542290928742995
+statisticians_citation,5,CountSketch,SIGN Bidirectional,0.519062135527731
+statisticians_citation,6,Non-random,Random Projection,0.970765668778511
+statisticians_citation,6,Non-random,Random Sampling (p=0.7),0.898985768119599
+statisticians_citation,6,Non-random,Random Sampling (p=0.8),0.89544858816192
+statisticians_citation,6,Non-random,CountSketch,0.973334147718317
+statisticians_citation,6,Non-random,SIGN Bidirectional,0.546288192295059
+statisticians_citation,6,Random Projection,Random Sampling (p=0.7),0.890024376675685
+statisticians_citation,6,Random Projection,Random Sampling (p=0.8),0.899444115276279
+statisticians_citation,6,Random Projection,CountSketch,0.944035588292725
+statisticians_citation,6,Random Projection,SIGN Bidirectional,0.551278208011931
+statisticians_citation,6,Random Sampling (p=0.7),Random Sampling (p=0.8),0.835455211720748
+statisticians_citation,6,Random Sampling (p=0.7),CountSketch,0.897593537806943
+statisticians_citation,6,Random Sampling (p=0.7),SIGN Bidirectional,0.510229590562369
+statisticians_citation,6,Random Sampling (p=0.8),CountSketch,0.881193919107618
+statisticians_citation,6,Random Sampling (p=0.8),SIGN Bidirectional,0.56993121802555
+statisticians_citation,6,CountSketch,SIGN Bidirectional,0.541642377336345
+statisticians_citation,7,Non-random,Random Projection,0.983745544673014
+statisticians_citation,7,Non-random,Random Sampling (p=0.7),0.929766758581846
+statisticians_citation,7,Non-random,Random Sampling (p=0.8),0.902338057783122
+statisticians_citation,7,Non-random,CountSketch,0.983511582180811
+statisticians_citation,7,Non-random,SIGN Bidirectional,0.675431546772274
+statisticians_citation,7,Random Projection,Random Sampling (p=0.7),0.926564758521941
+statisticians_citation,7,Random Projection,Random Sampling (p=0.8),0.912088081678739
+statisticians_citation,7,Random Projection,CountSketch,0.980054341970839
+statisticians_citation,7,Random Projection,SIGN Bidirectional,0.678661286748812
+statisticians_citation,7,Random Sampling (p=0.7),Random Sampling (p=0.8),0.902937827582562
+statisticians_citation,7,Random Sampling (p=0.7),CountSketch,0.925531088305216
+statisticians_citation,7,Random Sampling (p=0.7),SIGN Bidirectional,0.64684044921205
+statisticians_citation,7,Random Sampling (p=0.8),CountSketch,0.904349289279351
+statisticians_citation,7,Random Sampling (p=0.8),SIGN Bidirectional,0.640552184409648
+statisticians_citation,7,CountSketch,SIGN Bidirectional,0.665234961340402
+statisticians_citation,8,Non-random,Random Projection,0.976975994923541
+statisticians_citation,8,Non-random,Random Sampling (p=0.7),0.871091902703736
+statisticians_citation,8,Non-random,Random Sampling (p=0.8),0.90536000118081
+statisticians_citation,8,Non-random,CountSketch,0.977579350369422
+statisticians_citation,8,Non-random,SIGN Bidirectional,0.562121953803347
+statisticians_citation,8,Random Projection,Random Sampling (p=0.7),0.854647429658296
+statisticians_citation,8,Random Projection,Random Sampling (p=0.8),0.901403055275066
+statisticians_citation,8,Random Projection,CountSketch,0.961176551882055
+statisticians_citation,8,Random Projection,SIGN Bidirectional,0.567611575798263
+statisticians_citation,8,Random Sampling (p=0.7),Random Sampling (p=0.8),0.834175545796524
+statisticians_citation,8,Random Sampling (p=0.7),CountSketch,0.864061425300758
+statisticians_citation,8,Random Sampling (p=0.7),SIGN Bidirectional,0.564684325115372
+statisticians_citation,8,Random Sampling (p=0.8),CountSketch,0.903684469062951
+statisticians_citation,8,Random Sampling (p=0.8),SIGN Bidirectional,0.575428208588992
+statisticians_citation,8,CountSketch,SIGN Bidirectional,0.570663257373594
+statisticians_citation,9,Non-random,Random Projection,0.98059853694592
+statisticians_citation,9,Non-random,Random Sampling (p=0.7),0.911030597749767
+statisticians_citation,9,Non-random,Random Sampling (p=0.8),0.908124271736417
+statisticians_citation,9,Non-random,CountSketch,0.959963052881047
+statisticians_citation,9,Non-random,SIGN Bidirectional,0.831401719993866
+statisticians_citation,9,Random Projection,Random Sampling (p=0.7),0.911972940350662
+statisticians_citation,9,Random Projection,Random Sampling (p=0.8),0.90927394341491
+statisticians_citation,9,Random Projection,CountSketch,0.947166360740327
+statisticians_citation,9,Random Projection,SIGN Bidirectional,0.833167528488331
+statisticians_citation,9,Random Sampling (p=0.7),Random Sampling (p=0.8),0.884917164758218
+statisticians_citation,9,Random Sampling (p=0.7),CountSketch,0.8964758277692
+statisticians_citation,9,Random Sampling (p=0.7),SIGN Bidirectional,0.860270552243521
+statisticians_citation,9,Random Sampling (p=0.8),CountSketch,0.933005697581715
+statisticians_citation,9,Random Sampling (p=0.8),SIGN Bidirectional,0.875132187345585
+statisticians_citation,9,CountSketch,SIGN Bidirectional,0.867413459547888
+statisticians_citation,10,Non-random,Random Projection,0.983670626907834
+statisticians_citation,10,Non-random,Random Sampling (p=0.7),0.879161255206072
+statisticians_citation,10,Non-random,Random Sampling (p=0.8),0.914527267411721
+statisticians_citation,10,Non-random,CountSketch,0.960313164505864
+statisticians_citation,10,Non-random,SIGN Bidirectional,0.561955506110867
+statisticians_citation,10,Random Projection,Random Sampling (p=0.7),0.882207644185957
+statisticians_citation,10,Random Projection,Random Sampling (p=0.8),0.930698429528615
+statisticians_citation,10,Random Projection,CountSketch,0.950260305963514
+statisticians_citation,10,Random Projection,SIGN Bidirectional,0.563549559071103
+statisticians_citation,10,Random Sampling (p=0.7),Random Sampling (p=0.8),0.864156749039476
+statisticians_citation,10,Random Sampling (p=0.7),CountSketch,0.891015686337253
+statisticians_citation,10,Random Sampling (p=0.7),SIGN Bidirectional,0.530086283325954
+statisticians_citation,10,Random Sampling (p=0.8),CountSketch,0.926474997324641
+statisticians_citation,10,Random Sampling (p=0.8),SIGN Bidirectional,0.558725108415223
+statisticians_citation,10,CountSketch,SIGN Bidirectional,0.550114188050583
+statisticians_citation,11,Non-random,Random Projection,0.977080890021018
+statisticians_citation,11,Non-random,Random Sampling (p=0.7),0.924936850176091
+statisticians_citation,11,Non-random,Random Sampling (p=0.8),0.871896520316226
+statisticians_citation,11,Non-random,CountSketch,0.957477562841538
+statisticians_citation,11,Non-random,SIGN Bidirectional,0.711055031520985
+statisticians_citation,11,Random Projection,Random Sampling (p=0.7),0.908450027425018
+statisticians_citation,11,Random Projection,Random Sampling (p=0.8),0.87461480056445
+statisticians_citation,11,Random Projection,CountSketch,0.94753926542668
+statisticians_citation,11,Random Projection,SIGN Bidirectional,0.718638932242876
+statisticians_citation,11,Random Sampling (p=0.7),Random Sampling (p=0.8),0.839148354469179
+statisticians_citation,11,Random Sampling (p=0.7),CountSketch,0.921629369907566
+statisticians_citation,11,Random Sampling (p=0.7),SIGN Bidirectional,0.686656183037703
+statisticians_citation,11,Random Sampling (p=0.8),CountSketch,0.874381163216061
+statisticians_citation,11,Random Sampling (p=0.8),SIGN Bidirectional,0.7553875672583
+statisticians_citation,11,CountSketch,SIGN Bidirectional,0.729484208481483
+statisticians_citation,12,Non-random,Random Projection,0.983500224603157
+statisticians_citation,12,Non-random,Random Sampling (p=0.7),0.850808362757759
+statisticians_citation,12,Non-random,Random Sampling (p=0.8),0.927019545912084
+statisticians_citation,12,Non-random,CountSketch,0.976781227732548
+statisticians_citation,12,Non-random,SIGN Bidirectional,0.85341700855618
+statisticians_citation,12,Random Projection,Random Sampling (p=0.7),0.841034429206675
+statisticians_citation,12,Random Projection,Random Sampling (p=0.8),0.930164504413507
+statisticians_citation,12,Random Projection,CountSketch,0.966755184678302
+statisticians_citation,12,Random Projection,SIGN Bidirectional,0.84978384766915
+statisticians_citation,12,Random Sampling (p=0.7),Random Sampling (p=0.8),0.83555352119927
+statisticians_citation,12,Random Sampling (p=0.7),CountSketch,0.839656822297284
+statisticians_citation,12,Random Sampling (p=0.7),SIGN Bidirectional,0.763704666283501
+statisticians_citation,12,Random Sampling (p=0.8),CountSketch,0.929426165932796
+statisticians_citation,12,Random Sampling (p=0.8),SIGN Bidirectional,0.843950041361891
+statisticians_citation,12,CountSketch,SIGN Bidirectional,0.874942275806853
+statisticians_citation,13,Non-random,Random Projection,0.987117669981462
+statisticians_citation,13,Non-random,Random Sampling (p=0.7),0.921579281897048
+statisticians_citation,13,Non-random,Random Sampling (p=0.8),0.927809227293501
+statisticians_citation,13,Non-random,CountSketch,0.970007222919419
+statisticians_citation,13,Non-random,SIGN Bidirectional,0.72706782571502
+statisticians_citation,13,Random Projection,Random Sampling (p=0.7),0.928603801908223
+statisticians_citation,13,Random Projection,Random Sampling (p=0.8),0.928482100004168
+statisticians_citation,13,Random Projection,CountSketch,0.963839777303279
+statisticians_citation,13,Random Projection,SIGN Bidirectional,0.74010251437499
+statisticians_citation,13,Random Sampling (p=0.7),Random Sampling (p=0.8),0.888565653237325
+statisticians_citation,13,Random Sampling (p=0.7),CountSketch,0.923541440008155
+statisticians_citation,13,Random Sampling (p=0.7),SIGN Bidirectional,0.711031790152039
+statisticians_citation,13,Random Sampling (p=0.8),CountSketch,0.923328796740383
+statisticians_citation,13,Random Sampling (p=0.8),SIGN Bidirectional,0.69796688655081
+statisticians_citation,13,CountSketch,SIGN Bidirectional,0.720973404075988
+statisticians_citation,14,Non-random,Random Projection,0.983683486298836
+statisticians_citation,14,Non-random,Random Sampling (p=0.7),0.889010352582254
+statisticians_citation,14,Non-random,Random Sampling (p=0.8),0.920809140126989
+statisticians_citation,14,Non-random,CountSketch,0.977474898038995
+statisticians_citation,14,Non-random,SIGN Bidirectional,0.537667481436255
+statisticians_citation,14,Random Projection,Random Sampling (p=0.7),0.88542055532255
+statisticians_citation,14,Random Projection,Random Sampling (p=0.8),0.904176677100523
+statisticians_citation,14,Random Projection,CountSketch,0.967550230441718
+statisticians_citation,14,Random Projection,SIGN Bidirectional,0.52970764640743
+statisticians_citation,14,Random Sampling (p=0.7),Random Sampling (p=0.8),0.88144457227204
+statisticians_citation,14,Random Sampling (p=0.7),CountSketch,0.892686617712119
+statisticians_citation,14,Random Sampling (p=0.7),SIGN Bidirectional,0.533015044403352
+statisticians_citation,14,Random Sampling (p=0.8),CountSketch,0.924526253158767
+statisticians_citation,14,Random Sampling (p=0.8),SIGN Bidirectional,0.547329319493487
+statisticians_citation,14,CountSketch,SIGN Bidirectional,0.537525952578275
+statisticians_citation,15,Non-random,Random Projection,0.944143596250028
+statisticians_citation,15,Non-random,Random Sampling (p=0.7),0.863434242850729
+statisticians_citation,15,Non-random,Random Sampling (p=0.8),0.930535455938838
+statisticians_citation,15,Non-random,CountSketch,0.97757038597215
+statisticians_citation,15,Non-random,SIGN Bidirectional,0.412903798393042
+statisticians_citation,15,Random Projection,Random Sampling (p=0.7),0.865820938360932
+statisticians_citation,15,Random Projection,Random Sampling (p=0.8),0.933330706752762
+statisticians_citation,15,Random Projection,CountSketch,0.941544866383275
+statisticians_citation,15,Random Projection,SIGN Bidirectional,0.417146375735868
+statisticians_citation,15,Random Sampling (p=0.7),Random Sampling (p=0.8),0.864670506814348
+statisticians_citation,15,Random Sampling (p=0.7),CountSketch,0.861823056756593
+statisticians_citation,15,Random Sampling (p=0.7),SIGN Bidirectional,0.399006386300788
+statisticians_citation,15,Random Sampling (p=0.8),CountSketch,0.934611124113612
+statisticians_citation,15,Random Sampling (p=0.8),SIGN Bidirectional,0.41745581814647
+statisticians_citation,15,CountSketch,SIGN Bidirectional,0.410102405333258
+statisticians_citation,16,Non-random,Random Projection,0.976967780969865
+statisticians_citation,16,Non-random,Random Sampling (p=0.7),0.90375093851442
+statisticians_citation,16,Non-random,Random Sampling (p=0.8),0.935632148514569
+statisticians_citation,16,Non-random,CountSketch,0.983750009672207
+statisticians_citation,16,Non-random,SIGN Bidirectional,0.624404829734601
+statisticians_citation,16,Random Projection,Random Sampling (p=0.7),0.899711449941674
+statisticians_citation,16,Random Projection,Random Sampling (p=0.8),0.925687687172585
+statisticians_citation,16,Random Projection,CountSketch,0.960720485180868
+statisticians_citation,16,Random Projection,SIGN Bidirectional,0.630026651497246
+statisticians_citation,16,Random Sampling (p=0.7),Random Sampling (p=0.8),0.879868598390279
+statisticians_citation,16,Random Sampling (p=0.7),CountSketch,0.907184715454141
+statisticians_citation,16,Random Sampling (p=0.7),SIGN Bidirectional,0.648229741942381
+statisticians_citation,16,Random Sampling (p=0.8),CountSketch,0.932593252927611
+statisticians_citation,16,Random Sampling (p=0.8),SIGN Bidirectional,0.639872962648035
+statisticians_citation,16,CountSketch,SIGN Bidirectional,0.632967349313166
+statisticians_citation,17,Non-random,Random Projection,0.96781765870146
+statisticians_citation,17,Non-random,Random Sampling (p=0.7),0.887232888660892
+statisticians_citation,17,Non-random,Random Sampling (p=0.8),0.917315272097612
+statisticians_citation,17,Non-random,CountSketch,0.990178309327746
+statisticians_citation,17,Non-random,SIGN Bidirectional,0.546376072639836
+statisticians_citation,17,Random Projection,Random Sampling (p=0.7),0.862908600304483
+statisticians_citation,17,Random Projection,Random Sampling (p=0.8),0.905612739424913
+statisticians_citation,17,Random Projection,CountSketch,0.964582489515865
+statisticians_citation,17,Random Projection,SIGN Bidirectional,0.55962526068783
+statisticians_citation,17,Random Sampling (p=0.7),Random Sampling (p=0.8),0.86331856164525
+statisticians_citation,17,Random Sampling (p=0.7),CountSketch,0.883591723538534
+statisticians_citation,17,Random Sampling (p=0.7),SIGN Bidirectional,0.504198753763657
+statisticians_citation,17,Random Sampling (p=0.8),CountSketch,0.907576650650837
+statisticians_citation,17,Random Sampling (p=0.8),SIGN Bidirectional,0.54234417120478
+statisticians_citation,17,CountSketch,SIGN Bidirectional,0.547553978830759
+statisticians_citation,18,Non-random,Random Projection,0.983837868292207
+statisticians_citation,18,Non-random,Random Sampling (p=0.7),0.865988686783281
+statisticians_citation,18,Non-random,Random Sampling (p=0.8),0.919175134933272
+statisticians_citation,18,Non-random,CountSketch,0.987210319676717
+statisticians_citation,18,Non-random,SIGN Bidirectional,0.619536428427258
+statisticians_citation,18,Random Projection,Random Sampling (p=0.7),0.869522553292347
+statisticians_citation,18,Random Projection,Random Sampling (p=0.8),0.92248720378814
+statisticians_citation,18,Random Projection,CountSketch,0.984083868446458
+statisticians_citation,18,Random Projection,SIGN Bidirectional,0.630867937352629
+statisticians_citation,18,Random Sampling (p=0.7),Random Sampling (p=0.8),0.82666637746163
+statisticians_citation,18,Random Sampling (p=0.7),CountSketch,0.879596493361814
+statisticians_citation,18,Random Sampling (p=0.7),SIGN Bidirectional,0.59379032239788
+statisticians_citation,18,Random Sampling (p=0.8),CountSketch,0.920007660276097
+statisticians_citation,18,Random Sampling (p=0.8),SIGN Bidirectional,0.605302834205126
+statisticians_citation,18,CountSketch,SIGN Bidirectional,0.630617138414026
+statisticians_citation,19,Non-random,Random Projection,0.966754287791117
+statisticians_citation,19,Non-random,Random Sampling (p=0.7),0.916911477032188
+statisticians_citation,19,Non-random,Random Sampling (p=0.8),0.912576966299008
+statisticians_citation,19,Non-random,CountSketch,0.970989634152557
+statisticians_citation,19,Non-random,SIGN Bidirectional,0.550636533674683
+statisticians_citation,19,Random Projection,Random Sampling (p=0.7),0.895657594573595
+statisticians_citation,19,Random Projection,Random Sampling (p=0.8),0.891633358672222
+statisticians_citation,19,Random Projection,CountSketch,0.964088339018951
+statisticians_citation,19,Random Projection,SIGN Bidirectional,0.542309000742969
+statisticians_citation,19,Random Sampling (p=0.7),Random Sampling (p=0.8),0.868177628638868
+statisticians_citation,19,Random Sampling (p=0.7),CountSketch,0.908039974887777
+statisticians_citation,19,Random Sampling (p=0.7),SIGN Bidirectional,0.534374038741368
+statisticians_citation,19,Random Sampling (p=0.8),CountSketch,0.904062767432502
+statisticians_citation,19,Random Sampling (p=0.8),SIGN Bidirectional,0.549197010226316
+statisticians_citation,19,CountSketch,SIGN Bidirectional,0.564629672066646
+statisticians_citation,20,Non-random,Random Projection,0.973349354082297
+statisticians_citation,20,Non-random,Random Sampling (p=0.7),0.897506763285064
+statisticians_citation,20,Non-random,Random Sampling (p=0.8),0.89892390004825
+statisticians_citation,20,Non-random,CountSketch,0.977181464559662
+statisticians_citation,20,Non-random,SIGN Bidirectional,0.767231818577218
+statisticians_citation,20,Random Projection,Random Sampling (p=0.7),0.877166345226233
+statisticians_citation,20,Random Projection,Random Sampling (p=0.8),0.88482945294354
+statisticians_citation,20,Random Projection,CountSketch,0.969913806328024
+statisticians_citation,20,Random Projection,SIGN Bidirectional,0.77520300701064
+statisticians_citation,20,Random Sampling (p=0.7),Random Sampling (p=0.8),0.905864284552044
+statisticians_citation,20,Random Sampling (p=0.7),CountSketch,0.888604838454498
+statisticians_citation,20,Random Sampling (p=0.7),SIGN Bidirectional,0.73591976987319
+statisticians_citation,20,Random Sampling (p=0.8),CountSketch,0.896215838042708
+statisticians_citation,20,Random Sampling (p=0.8),SIGN Bidirectional,0.779905898634661
+statisticians_citation,20,CountSketch,SIGN Bidirectional,0.759500083959516
