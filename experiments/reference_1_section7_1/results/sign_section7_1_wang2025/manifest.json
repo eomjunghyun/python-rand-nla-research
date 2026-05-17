@@ -1,0 +1,117 @@
+{
+  "outdir": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025",
+  "configs": {
+    "exp1": {
+      "n_values": [
+        200,
+        400,
+        600,
+        800,
+        1000,
+        1200
+      ],
+      "K": 3,
+      "K_prime": 3,
+      "alpha_n": 0.2,
+      "lam": 0.5,
+      "q": 2,
+      "r": 10,
+      "p": 0.7,
+      "reps": 20,
+      "seed": 2026
+    },
+    "exp2": {
+      "alpha_values": [
+        0.05,
+        0.1,
+        0.15,
+        0.2
+      ],
+      "n": 1152,
+      "K": 3,
+      "K_prime": 3,
+      "lam": 0.5,
+      "q": 2,
+      "r": 10,
+      "p": 0.7,
+      "reps": 20,
+      "seed": 2026
+    },
+    "exp3": {
+      "K_values": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "n": 1152,
+      "alpha_n": 0.2,
+      "lam": 0.5,
+      "q": 2,
+      "r": 10,
+      "p": 0.7,
+      "reps": 20,
+      "seed": 2026
+    },
+    "exp4": {
+      "n_values": [
+        200,
+        400,
+        600,
+        800,
+        1000,
+        1200
+      ],
+      "K": 2,
+      "K_prime": 2,
+      "lam": 0.5,
+      "q": 2,
+      "r": 10,
+      "p": 0.7,
+      "reps": 20,
+      "seed": 2026
+    }
+  },
+  "artifacts": {
+    "exp1": {
+      "sign_raw": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp1/exp1_sign_raw.csv",
+      "sign_summary": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp1/exp1_sign_summary.csv",
+      "sign_timing": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp1/exp1_sign_timing.csv",
+      "combined_raw": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp1/exp1_combined_raw.csv",
+      "combined_summary": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp1/exp1_combined_summary.csv",
+      "metrics_png": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp1/exp1_sign_metrics.png",
+      "runtime_png": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp1/exp1_sign_runtime.png"
+    },
+    "exp2": {
+      "sign_raw": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp2/exp2_sign_raw.csv",
+      "sign_summary": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp2/exp2_sign_summary.csv",
+      "sign_timing": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp2/exp2_sign_timing.csv",
+      "combined_raw": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp2/exp2_combined_raw.csv",
+      "combined_summary": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp2/exp2_combined_summary.csv",
+      "metrics_png": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp2/exp2_sign_metrics.png",
+      "runtime_png": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp2/exp2_sign_runtime.png"
+    },
+    "exp3": {
+      "sign_raw": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp3/exp3_sign_raw.csv",
+      "sign_summary": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp3/exp3_sign_summary.csv",
+      "sign_timing": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp3/exp3_sign_timing.csv",
+      "combined_raw": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp3/exp3_combined_raw.csv",
+      "combined_summary": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp3/exp3_combined_summary.csv",
+      "metrics_png": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp3/exp3_sign_metrics.png",
+      "runtime_png": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp3/exp3_sign_runtime.png"
+    },
+    "exp4": {
+      "sign_raw": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp4/exp4_sign_raw.csv",
+      "sign_summary": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp4/exp4_sign_summary.csv",
+      "sign_timing": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp4/exp4_sign_timing.csv",
+      "combined_raw": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp4/exp4_combined_raw.csv",
+      "combined_summary": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp4/exp4_combined_summary.csv",
+      "metrics_png": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp4/exp4_sign_metrics.png",
+      "runtime_png": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/exp4/exp4_sign_runtime.png"
+    }
+  },
+  "report": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/reference_1_section7_1/results/sign_section7_1_wang2025/sign_section7_1_report.md"
+}

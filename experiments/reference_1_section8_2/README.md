@@ -13,6 +13,7 @@
 - Random Projection
 - Random Sampling
 - `partial_eigen`: `scipy.sparse.linalg.eigsh`를 사용하는 Python proxy
+- `SIGN`: Wang et al. (2025)의 generalized Nystrom with subspace iteration을 sparse graph timing benchmark에 맞춘 변형
 
 ## 논문과 맞춘 측정 기준
 
@@ -42,6 +43,12 @@ python experiments/reference_1_section8_2/exp8_2_live.py \
   --p 0.7
 ```
 
+Wang et al. (2025) SIGN 추가 비교는 아래 스크립트로 실행한다.
+
+```bash
+python experiments/reference_1_section8_2/run_sign_section8_2.py
+```
+
 ## 출력 파일
 
 - `table4_time_raw.csv`
@@ -49,6 +56,7 @@ python experiments/reference_1_section8_2/exp8_2_live.py \
 - `table4_like_median_time.md`
 - `table4_time_breakdown.csv`
 - timing 관련 figure와 meta 파일
+- `results/sign_section8_2_wang2025/sign_section8_2_report.md`
 
 ## 작성 규칙
 

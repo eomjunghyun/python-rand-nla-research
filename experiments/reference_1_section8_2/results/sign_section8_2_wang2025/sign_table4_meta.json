@@ -1,0 +1,52 @@
+{
+  "config": {
+    "baseline_raw_csv": "experiments/reference_1_section8_2/results/exp8_2_table4_paper_aligned/table4_time_raw.csv",
+    "dblp_edgelist": "data/dblp/com-dblp.ungraph.txt",
+    "youtube_edgelist": "/private/tmp/sign82_data/com-youtube.ungraph.txt.gz",
+    "internet_edgelist": "/private/tmp/sign82_data/as-skitter.txt.gz",
+    "reps": 20,
+    "seed": 2026,
+    "r": 10,
+    "q": 2,
+    "delimiter": null,
+    "comment_prefix": "#",
+    "outdir": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025",
+    "no_progress": true
+  },
+  "datasets": [
+    {
+      "dataset": "DBLP",
+      "edgelist": "data/dblp/com-dblp.ungraph.txt",
+      "target_rank": 3,
+      "n_nodes": 317080,
+      "n_edges": 1049866,
+      "status": "ok"
+    },
+    {
+      "dataset": "Youtube",
+      "edgelist": "/private/tmp/sign82_data/com-youtube.ungraph.txt.gz",
+      "target_rank": 7,
+      "n_nodes": 1134890,
+      "n_edges": 2987624,
+      "status": "ok"
+    },
+    {
+      "dataset": "Internet",
+      "edgelist": "/private/tmp/sign82_data/as-skitter.txt.gz",
+      "target_rank": 4,
+      "n_nodes": 1696415,
+      "n_edges": 11095298,
+      "status": "ok"
+    }
+  ],
+  "artifacts": {
+    "sign_raw": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/sign_time_raw.csv",
+    "combined_raw": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/table4_with_sign_time_raw.csv",
+    "summary_csv": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/table4_with_sign_median_time.csv",
+    "summary_md": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/table4_with_sign_median_time.md",
+    "step_summary": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/sign_step_time_summary.csv",
+    "meta_json": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/sign_table4_meta.json",
+    "median_png": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/viz/table4_with_sign_median_bar.png",
+    "box_png": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/viz/table4_with_sign_runtime_boxplots.png"
+  }
+}

@@ -1429,6 +1429,77 @@ def run_random_projection(
     return A_hat, labels
 
 
+def run_sign_subspace_iteration(
+    A: np.ndarray,
+    K: int,
+    K_prime: int,
+    r: int,
+    k: int,
+    rng: np.random.Generator,
+    normalize_rows: bool = False,
+    return_timing: bool = False,
+):
+    """SIGN low-rank sketch adapted to Section 7.1 spectral clustering.
+
+    Wang et al. (2025) target nonsymmetric low-rank approximation. Section 7.1
+    uses symmetric SBM adjacency matrices, so this routine keeps the SIGN
+    alternating ``A.T``/``A`` subspace iteration and uses the final left basis
+    for a Rayleigh-Ritz spectral embedding.
+    """
+    if k < 1:
+        raise ValueError(f"SIGN power parameter k must be at least 1, got {k}.")
+
+    total_start = perf_counter()
+    timings = {}
+    n = A.shape[0]
+    ell = int(K_prime + r)
+
+    t0 = perf_counter()
+    Q_left = rng.standard_normal(size=(n, ell))
+    timings["sign_draw_omega_sec"] = perf_counter() - t0
+    timings["sign_embedding_dim"] = ell
+    timings["sign_power_parameter"] = int(k)
+
+    Q_right = None
+    last_left_sample = None
+
+    t0 = perf_counter()
+    for _ in range(k):
+        Q_right, _ = np.linalg.qr(A.T @ Q_left, mode="reduced")
+        last_left_sample = A @ Q_right
+        Q_left, _ = np.linalg.qr(last_left_sample, mode="reduced")
+    timings["sign_subspace_iter_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    row_sample = A.T @ Q_left
+    core = Q_left.T @ last_left_sample
+    core_pinv = np.linalg.pinv(core)
+    A_hat = last_left_sample @ core_pinv @ row_sample.T
+    A_hat = 0.5 * (A_hat + A_hat.T)
+    timings["sign_reconstruct_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    C = Q_left.T @ A @ Q_left
+    C = 0.5 * (C + C.T)
+    timings["sign_build_core_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    Uc = top_eigvecs_symmetric(C, K_prime)
+    timings["sign_small_eig_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    U_sign = Q_left @ Uc
+    timings["sign_lift_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    labels = kmeans_on_rows(U_sign, K, rng, normalize_rows=normalize_rows)
+    timings["sign_kmeans_sec"] = perf_counter() - t0
+
+    if return_timing:
+        return A_hat, labels, _finalize_algorithm_timing(timings, total_start)
+    return A_hat, labels
+
+
 def run_countsketch_projection(
     A: np.ndarray,
     K: int,
@@ -1842,6 +1913,53 @@ def eigvecs_random_projection_sparse(
     vals, vecs = np.linalg.eigh(B)
     vals, vecs = _sort_cols_by_abs_vals(vals, vecs)
     return vals[:k], Q @ vecs[:, :k]
+
+
+def eigvecs_sign_sparse(
+    A_csr: sp.csr_matrix,
+    k: int,
+    r: int,
+    power: int,
+    rng: np.random.Generator,
+    return_timing: bool = False,
+):
+    """Sparse SIGN eigenspace approximation for Section 8.2 timing tests."""
+    if power < 1:
+        raise ValueError(f"SIGN power parameter must be at least 1, got {power}.")
+
+    timings = {}
+    n = A_csr.shape[0]
+    ell = int(k + r)
+
+    t0 = perf_counter()
+    Q_left = rng.standard_normal((n, ell))
+    timings["sign_draw_omega_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    for _ in range(power):
+        Q_right, _ = np.linalg.qr(A_csr.T @ Q_left, mode="reduced")
+        Q_left, _ = np.linalg.qr(A_csr @ Q_right, mode="reduced")
+    timings["sign_subspace_iter_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    B = Q_left.T @ (A_csr @ Q_left)
+    B = 0.5 * (B + B.T)
+    timings["sign_build_core_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    vals, vecs = np.linalg.eigh(B)
+    vals, vecs = _sort_cols_by_abs_vals(vals, vecs)
+    timings["sign_small_eig_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    U = Q_left @ vecs[:, :k]
+    timings["sign_lift_sec"] = perf_counter() - t0
+    timings["sign_embedding_dim"] = ell
+    timings["sign_power_parameter"] = int(power)
+
+    if return_timing:
+        return vals[:k], U, timings
+    return vals[:k], U
 
 
 def sample_rescaled_adjacency_from_edges(

@@ -8,6 +8,7 @@
 - `exp2_live.ipynb`: `alpha_n` 변화 실험
 - `exp3_live.ipynb`: community 수 `K` 변화 실험
 - `exp4_live.ipynb`: `alpha_n = 2 / sqrt(n)` 조건에서의 `n` 변화 실험
+- `run_sign_section7_1.py`: Wang et al. (2025) SIGN 방법론을 Section 7.1 Exp1~4에 추가 적용하는 실행 스크립트
 
 각 노트북은 실험 실행, raw/summary CSV 저장, metric/runtime figure 저장, 단계별 timing breakdown plot 저장을 수행한다.
 
@@ -23,6 +24,7 @@
 - `experiments/reference_1_section7_1/results/exp2_section7_1_results/`
 - `experiments/reference_1_section7_1/results/exp3_section7_1_results/`
 - `experiments/reference_1_section7_1/results/exp4_section7_1_results/`
+- `experiments/reference_1_section7_1/results/sign_section7_1_wang2025/`
 
 ## 작성 규칙
 
