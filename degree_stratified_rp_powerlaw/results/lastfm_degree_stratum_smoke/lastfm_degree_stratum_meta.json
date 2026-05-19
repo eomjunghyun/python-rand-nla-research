@@ -1,0 +1,121 @@
+{
+  "config": {
+    "dataset_path": "..\\data\\lastfm_asia\\lastfm_asia.zip",
+    "outdir": "results\\lastfm_degree_stratum_smoke",
+    "dataset_name": "lastfm-stratum-smoke",
+    "r_values": [
+      0,
+      2
+    ],
+    "alpha": 0.5,
+    "tau": "0",
+    "k": null,
+    "q": 1,
+    "reps": 1,
+    "seed": 20260519,
+    "ell_min": 1,
+    "normalize_embedding_rows": true,
+    "kmeans_n_init": 20,
+    "max_n": 300,
+    "subgraph_mode": "degree-weighted",
+    "no_plots": true
+  },
+  "source": {
+    "zip_file": "..\\data\\lastfm_asia\\lastfm_asia.zip",
+    "edge_member": "lasftm_asia/lastfm_asia_edges.csv",
+    "target_member": "lasftm_asia/lastfm_asia_target.csv",
+    "edge_columns": [
+      "node_1",
+      "node_2"
+    ],
+    "target_columns": [
+      "id",
+      "target"
+    ],
+    "label_mapping_original_to_zero_based": {
+      "0": 0,
+      "1": 1,
+      "2": 2,
+      "3": 3,
+      "4": 4,
+      "5": 5,
+      "6": 6,
+      "7": 7,
+      "8": 8,
+      "9": 9,
+      "10": 10,
+      "11": 11,
+      "12": 12,
+      "13": 13,
+      "14": 14,
+      "15": 15,
+      "16": 16,
+      "17": 17
+    }
+  },
+  "graph": {
+    "full_nodes": 7624,
+    "full_edges": 27806,
+    "experiment_nodes": 136,
+    "experiment_edges": 288,
+    "num_classes": 10,
+    "k_used": 10,
+    "subgraph_mode": "degree-weighted",
+    "requested_max_n": 300,
+    "pre_lcc_nodes": 300,
+    "pre_lcc_edges": 389,
+    "component_sizes_top10": [
+      136,
+      24,
+      20,
+      3,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1
+    ],
+    "degree_min": 1.0,
+    "degree_q25": 1.75,
+    "degree_median": 3.0,
+    "degree_mean": 4.235294342041016,
+    "degree_q75": 6.0,
+    "degree_q90": 9.5,
+    "degree_q99": 18.600000381469727,
+    "degree_max": 24.0,
+    "degree_gini": 0.45976307189542487,
+    "tail_xmin": 6.0,
+    "tail_count": 36,
+    "tail_alpha_mle_rough": 3.2556938157919033,
+    "tail_loglog_ccdf_slope": -2.7899362884465133,
+    "tail_loglog_ccdf_r2": 0.9749936913419098
+  },
+  "strata": {
+    "all": {
+      "num_nodes": 136,
+      "num_classes_present": 10,
+      "degree_min": 1.0,
+      "degree_max": 24.0
+    },
+    "low_deg_1_2": {
+      "num_nodes": 63,
+      "num_classes_present": 10,
+      "degree_min": 1.0,
+      "degree_max": 2.0
+    },
+    "mid_deg_3_8": {
+      "num_nodes": 51,
+      "num_classes_present": 8,
+      "degree_min": 3.0,
+      "degree_max": 8.0
+    },
+    "high_deg_9_plus": {
+      "num_nodes": 22,
+      "num_classes_present": 4,
+      "degree_min": 9.0,
+      "degree_max": 24.0
+    }
+  },
+  "operator": "S = D^{-1/2} A D^{-1/2}"
+}

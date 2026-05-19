@@ -1,0 +1,49 @@
+{
+  "config": {
+    "edgelist": "..\\data\\email-Eu-core.txt",
+    "dataset_name": "email-eu-core",
+    "max_n": 0,
+    "subgraph_mode": "none",
+    "k": 42,
+    "r": 20,
+    "q": 1,
+    "reps": 10,
+    "seed": 20260518,
+    "sampling_p": 0.7,
+    "ell_min": 1,
+    "rs_eigensolver": "general",
+    "normalize_embedding_rows": true,
+    "kmeans_n_init": 20,
+    "outdir": "results\\email_eu_core_k42_r20_q1",
+    "delimiter": null,
+    "comment_prefix": "#",
+    "no_plots": false
+  },
+  "graph": {
+    "full_nodes": 986,
+    "full_edges": 16064,
+    "experiment_nodes": 986,
+    "experiment_edges": 16064,
+    "subgraph_mode": "largest-connected-component",
+    "component_sizes_top10": [
+      986
+    ],
+    "degree_min": 1.0,
+    "degree_q25": 6.25,
+    "degree_median": 22.0,
+    "degree_mean": 32.58417892456055,
+    "degree_q75": 44.75,
+    "degree_q90": 78.0,
+    "degree_q99": 169.3000030517578,
+    "degree_max": 345.0,
+    "degree_gini": 0.5440732001002075,
+    "tail_xmin": 44.75,
+    "tail_count": 247,
+    "tail_alpha_mle_rough": 2.9484315487808064,
+    "tail_loglog_ccdf_slope": -2.550688395942936,
+    "tail_loglog_ccdf_r2": 0.954865791930804,
+    "has_true_labels": true,
+    "num_true_classes": 42
+  },
+  "metric_note": "ARI_vs_general_clustering compares each approximate embedding's k-means labels with the dense general eigensolver's spectral clustering labels. It is not ground-truth classification accuracy."
+}

@@ -1,0 +1,92 @@
+{
+  "config": {
+    "dataset_path": "..\\data\\lastfm_asia\\lastfm_asia.zip",
+    "dataset_name": "lastfm-asia",
+    "outdir": "results\\lastfm_alpha_tau_r_sweep",
+    "alpha_values": [
+      0.0,
+      0.25,
+      0.5
+    ],
+    "tau_values": [
+      "0",
+      "mean"
+    ],
+    "r_values": [
+      5,
+      10,
+      20,
+      40
+    ],
+    "k": null,
+    "q": 1,
+    "reps": 10,
+    "seed": 20260519,
+    "ell_min": 1,
+    "normalize_embedding_rows": true,
+    "kmeans_n_init": 20,
+    "max_n": 0,
+    "subgraph_mode": "none",
+    "no_plots": false
+  },
+  "source": {
+    "zip_file": "..\\data\\lastfm_asia\\lastfm_asia.zip",
+    "edge_member": "lasftm_asia/lastfm_asia_edges.csv",
+    "target_member": "lasftm_asia/lastfm_asia_target.csv",
+    "edge_columns": [
+      "node_1",
+      "node_2"
+    ],
+    "target_columns": [
+      "id",
+      "target"
+    ],
+    "label_mapping_original_to_zero_based": {
+      "0": 0,
+      "1": 1,
+      "2": 2,
+      "3": 3,
+      "4": 4,
+      "5": 5,
+      "6": 6,
+      "7": 7,
+      "8": 8,
+      "9": 9,
+      "10": 10,
+      "11": 11,
+      "12": 12,
+      "13": 13,
+      "14": 14,
+      "15": 15,
+      "16": 16,
+      "17": 17
+    }
+  },
+  "graph": {
+    "full_nodes": 7624,
+    "full_edges": 27806,
+    "experiment_nodes": 7624,
+    "experiment_edges": 27806,
+    "num_classes": 18,
+    "k_used": 18,
+    "subgraph_mode": "largest-connected-component",
+    "component_sizes_top10": [
+      7624
+    ],
+    "degree_min": 1.0,
+    "degree_q25": 2.0,
+    "degree_median": 4.0,
+    "degree_mean": 7.294333457946777,
+    "degree_q75": 8.0,
+    "degree_q90": 16.0,
+    "degree_q99": 55.77000045776367,
+    "degree_max": 216.0,
+    "degree_gini": 0.5834550700895025,
+    "tail_xmin": 8.0,
+    "tail_count": 2105,
+    "tail_alpha_mle_rough": 2.5336056990834557,
+    "tail_loglog_ccdf_slope": -2.207259660206475,
+    "tail_loglog_ccdf_r2": 0.9727520221051862
+  },
+  "operator": "S_alpha_tau = D_tau^{-alpha} A D_tau^{-alpha}"
+}
