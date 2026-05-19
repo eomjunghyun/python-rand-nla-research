@@ -2,11 +2,13 @@
 
 이 보고서는 Reference 1 논문의 Section 8.2와 Table 4를 재현한 대규모 real network 효율성 실험을 정리한다. Section 8.1이 clustering accuracy를 보는 실험이었다면, Section 8.2는 대규모 sparse graph에서 spectral clustering의 핵심 계산인 eigenvector computation이 얼마나 빠르게 수행되는지를 비교하는 runtime benchmark다.
 
+> 2026-05-19 업데이트: 최종 정리 결과는 `Random Projection`, `CountSketch`, `Random Sampling`, `Non-random`, `SIGN Bidirectional` 다섯 방법 기준이다. 기존 3방법 재현 해석은 아래에 참고용으로 남아 있으며, 최종 5방법 표와 plot은 `results/sign_section8_2_wang2025/` 및 `results/sign_section8_2_wang2025/sign_section8_2_report.md`를 우선 기준으로 본다.
+
 보고서의 목적은 다음과 같다.
 
 - Section 8.2가 어떤 실험인지 설명한다.
 - Table 4에서 측정하는 시간이 정확히 무엇인지 정리한다.
-- Random Projection, Random Sampling, partial_eigen이 각각 무엇을 의미하는지 설명한다.
+- Random Projection, CountSketch, Random Sampling, Non-random, SIGN Bidirectional이 각각 무엇을 의미하는지 설명한다.
 - 재현 결과와 논문 결과를 비교한다.
 - `table4_median_bar.png`, `table4_runtime_boxplots.png`, DBLP recheck plot들을 어떻게 해석해야 하는지 설명한다.
 - 논문과 재현 결과가 다르게 나온 이유를 보고용으로 정리한다.
@@ -19,12 +21,14 @@ Section 8.2의 핵심 질문은 다음이다.
 
 여기서 중요한 점은 Section 8.2가 clustering accuracy 실험이 아니라는 것이다. 이 실험은 F1, NMI, ARI 같은 정확도 지표를 비교하지 않고, eigenvector computation 시간만 비교한다.
 
-논문 Table 4는 네트워크별로 다음 방법들의 median runtime을 보고한다.
+현재 정리된 Table 4-style 재현은 네트워크별로 다음 방법들의 median runtime을 보고한다.
 
 - Random Projection
+- CountSketch
 - Random Sampling
-- partial_eigen
-- 논문 원본에는 `irlba`, `svds`, `svdr`도 포함되어 있지만, 현재 재현에서는 Table 4의 핵심 비교군 중 세 방법을 구현했다.
+- Non-random: `scipy.sparse.linalg.eigsh` 기반 Python proxy
+- SIGN Bidirectional
+- 논문 원본에는 `irlba`, `svds`, `svdr`도 포함되어 있지만, 현재 재현에서는 로컬 Python/MATLAB 비교 흐름에 맞춘 다섯 방법을 구현했다.
 
 현재 저장소의 공식 재현 결과는 다음 위치에 있다.
 
@@ -36,6 +40,18 @@ Section 8.2의 핵심 질문은 다음이다.
 | `results/exp8_2_table4_paper_aligned/table4_meta.json` | dataset 크기, rank, seed, 반복 횟수 등 메타데이터 |
 | `results/exp8_2_table4_paper_aligned/viz/table4_median_bar.png` | median runtime grouped bar plot |
 | `results/exp8_2_table4_paper_aligned/viz/table4_runtime_boxplots.png` | 반복별 runtime 분포 boxplot |
+
+SIGN Bidirectional까지 병합한 최종 5방법 결과는 다음 위치에 있다.
+
+| 파일 | 설명 |
+|---|---|
+| `results/sign_section8_2_wang2025/table4_with_sign_time_raw.csv` | baseline 4방법과 SIGN Bidirectional을 합친 raw runtime |
+| `results/sign_section8_2_wang2025/table4_with_sign_median_time.csv` | dataset별 5방법 median runtime |
+| `results/sign_section8_2_wang2025/table4_with_sign_median_time.md` | 5방법 Table 4-style markdown 표 |
+| `results/sign_section8_2_wang2025/sign_step_time_summary.csv` | SIGN Bidirectional 내부 단계별 timing |
+| `results/sign_section8_2_wang2025/viz/table4_with_sign_median_bar.png` | 5방법 median runtime plot |
+| `results/sign_section8_2_wang2025/viz/table4_with_sign_runtime_boxplots.png` | 5방법 runtime distribution plot |
+| `results/sign_section8_2_wang2025/sign_section8_2_report.md` | SIGN Bidirectional 적용 보고서 |
 
 추가로 DBLP만 더 자세히 쪼개 본 recheck 결과가 있다.
 
@@ -105,9 +121,32 @@ Table 4에서는 Random Sampling 시간을 두 가지로 표시한다.
 
 예를 들어 `0.310(0.209)`는 sampling 포함 median time이 0.310초이고, sampling 제외 median time이 0.209초라는 뜻이다.
 
-### 3.3 partial_eigen
+### 3.3 CountSketch
 
-`partial_eigen`은 기존 partial eigen solver baseline이다. 논문에서는 R 계열 구현을 사용한다. 현재 Python 재현에서는 동일한 R 함수를 직접 호출하지 않고, `scipy.sparse.linalg.eigsh`를 이용한 proxy 구현을 사용했다.
+CountSketch는 Random Projection의 Gaussian test matrix를 CountSketch sparse embedding으로 바꾼 방법이다. 현재 구현에서는 Gaussian RP와 같은 oversampling `r=10`, power parameter `q=2`를 사용한다.
+
+### 3.4 Random Sampling
+
+Random Sampling은 graph edge를 확률 `p`로 샘플링해 더 작은 sparse matrix를 만든 뒤, 그 matrix에서 eigenvectors를 계산하는 방법이다.
+
+현재 설정은 다음과 같다.
+
+| 파라미터 | 값 | 의미 |
+|---|---:|---|
+| `p` | 0.7 | 각 edge를 남길 확률 |
+
+샘플링된 edge는 weight를 `1/p`로 rescale한다. 이렇게 하면 expectation 관점에서 원래 adjacency matrix의 scale을 보존한다. 예를 들어 `p=0.7`이면 edge의 약 70%만 남기고, 남은 edge에는 `1/0.7` 배의 weight를 준다.
+
+Table 4에서는 Random Sampling 시간을 두 가지로 표시한다.
+
+- 괄호 밖 값: sampling을 포함한 전체 시간
+- 괄호 안 값: sampling을 제외한 eigenvector computation 시간
+
+예를 들어 `0.310(0.209)`는 sampling 포함 median time이 0.310초이고, sampling 제외 median time이 0.209초라는 뜻이다.
+
+### 3.5 Non-random
+
+`Non-random`은 기존 partial eigen solver baseline이다. 논문에서는 R 계열 구현을 사용한다. 현재 Python 재현에서는 동일한 R 함수를 직접 호출하지 않고, `scipy.sparse.linalg.eigsh`를 이용한 proxy 구현을 사용했다.
 
 따라서 `partial_eigen` 결과는 다음처럼 해석해야 한다.
 
@@ -116,6 +155,10 @@ Table 4에서는 Random Sampling 시간을 두 가지로 표시한다.
 - 주의: 논문 Table 4의 `partial_eigen`과 내부 구현체가 다르므로 절대 runtime은 직접적으로 완전히 같은 의미가 아니다.
 
 이 차이가 8.2 재현에서 가장 큰 해석상 주의점이다.
+
+### 3.6 SIGN Bidirectional
+
+SIGN Bidirectional은 Wang et al. (2025)의 generalized Nyström/subspace iteration 구조를 sparse graph timing benchmark에 적용한 방법이다. 한 iteration마다 `A.T`와 `A`를 번갈아 쓰는 양방향 QR 갱신을 수행한다. Section 8.2의 graph는 undirected adjacency라 `A.T`와 `A`가 같지만, 구현은 논문 구조를 유지한다.
 
 ## 4. 측정 방식
 

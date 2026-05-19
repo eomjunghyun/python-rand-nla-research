@@ -1,0 +1,21 @@
+{
+  "edge_path": "data/email-Eu-core.txt",
+  "label_path": "data/email-Eu-core-department-labels.txt",
+  "reps": 20,
+  "seed": 2026,
+  "q": 2,
+  "r": 10,
+  "p_values": [
+    0.7,
+    0.8
+  ],
+  "kmeans_n_init": 20,
+  "directed_nodes": 1005,
+  "directed_edges": 25571,
+  "undirected_nodes": 1005,
+  "undirected_edges": 16064,
+  "lcc_nodes": 986,
+  "lcc_edges": 16064,
+  "num_classes": 42,
+  "target_rank_used": 42
+}

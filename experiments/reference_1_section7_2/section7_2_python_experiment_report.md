@@ -1,6 +1,6 @@
 # Reference 1 Section 7.2 Python 실험 보고서
 
-이 보고서는 Reference 1 논문 Section 7.2의 Model 1-6 실험을 Python 코드로 실행한 결과를 정리한다. 기존 Python 실험의 세 방법에 CountSketch random projection을 추가했고, 같은 CSV/PNG 형식으로 결과를 다시 산출했다.
+이 보고서는 Reference 1 논문 Section 7.2의 Model 1-6 실험을 Python 코드로 실행한 결과를 정리한다. 기존 Python 실험의 세 방법에 `CountSketch`와 `SIGN Bidirectional`을 추가했고, 같은 CSV/PNG 형식으로 결과를 다시 산출했다.
 
 ## 1. 실행 요약
 
@@ -12,8 +12,8 @@
 | 반복 횟수 | 20 |
 | seed | 2026 |
 | n 값 | 200, 400, 600, 800, 1000, 1200 |
-| Model 1-3 출력 row 수 | raw 1440개, summary 72개 |
-| Model 4-6 출력 row 수 | raw 1440개, summary 72개 |
+| Model 1-3 출력 row 수 | raw 1800개, summary 90개 |
+| Model 4-6 출력 row 수 | raw 1800개, summary 90개 |
 
 실행 명령은 다음과 같다.
 
@@ -21,17 +21,19 @@
 python experiments/reference_1_section7_2/sec72_models123_live.py \
   --reps 20 \
   --seed 2026 \
+  --detailed-timing \
   --no-progress
 
 python experiments/reference_1_section7_2/sec72_models456_live.py \
   --reps 20 \
   --seed 2026 \
+  --detailed-timing \
   --no-progress
 ```
 
 ## 2. 실험 방법
 
-비교한 방법은 네 가지다.
+비교한 방법은 다섯 가지다.
 
 | 방법 | 설명 |
 |---|---|
@@ -39,10 +41,13 @@ python experiments/reference_1_section7_2/sec72_models456_live.py \
 | Random Projection | Gaussian random projection과 power iteration으로 spectral subspace를 근사한 뒤 k-means를 수행 |
 | Random Sampling | edge를 확률 `p=0.7`로 샘플링하고 `1/p`로 rescale한 matrix에서 spectral clustering 수행 |
 | CountSketch | Gaussian test matrix 대신 CountSketch sparse test matrix를 사용해 random projection을 수행 |
+| SIGN Bidirectional | Wang et al. (2025)의 양방향 subspace iteration을 spectral clustering embedding에 적용 |
 
 공통 파라미터는 `K=3`, `q=2`, `r=10`, `p=0.7`이다. Model 3과 Model 6은 rank-deficient 설정이므로 `K_prime=2`를 사용했고, 나머지는 `K_prime=3`을 사용했다. CountSketch의 sketch dimension은 Gaussian RP와 같이 `ell = K_prime + r`로 두었다.
 
 CountSketch 구현은 `src/common.py`의 `run_countsketch_projection`에 들어 있다. CountSketch 행렬 `S`는 각 column에 하나의 nonzero sign만 갖는 sparse matrix이고, 초기 곱셈은 대칭성을 이용해 `A @ S.T = (S @ A.T).T`로 계산했다. 이후 과정은 Gaussian RP와 동일하게 power iteration, QR, core matrix 구성, 작은 고유값 문제, lift, k-means 순서로 진행한다.
+
+SIGN Bidirectional 구현은 `src/common.py`의 `run_sign_subspace_iteration`에 들어 있다. 대칭 adjacency에서도 논문 구조에 맞춰 `A.T`와 `A`를 번갈아 쓰는 양방향 QR 갱신을 수행한 뒤, 작은 core matrix의 eigen decomposition과 lift를 거쳐 embedding을 만든다.
 
 평가 지표는 기존 Section 7.2 실험과 같은 형식이다.
 
@@ -61,6 +66,8 @@ Model 1-3 결과:
 |---|---|
 | `results/exp72_models123_paper_aligned_live/sec72_models123_raw_per_rep.csv` | 반복별 raw 결과 |
 | `results/exp72_models123_paper_aligned_live/sec72_models123_summary_mean_std.csv` | 평균/표준편차 summary |
+| `results/exp72_models123_paper_aligned_live/sec72_models123_timing_breakdown_raw.csv` | 반복별 단계별 timing |
+| `results/exp72_models123_paper_aligned_live/sec72_models123_timing_breakdown_summary.csv` | 단계별 timing summary |
 | `results/exp72_models123_paper_aligned_live/sec72_models123_metrics_figure5_like.png` | Figure 5 형식의 metric plot |
 | `results/exp72_models123_paper_aligned_live/sec72_models123_runtime.png` | runtime plot |
 
@@ -70,6 +77,8 @@ Model 4-6 결과:
 |---|---|
 | `results/exp72_models456_paper_aligned_live/sec72_models456_raw_per_rep.csv` | 반복별 raw 결과 |
 | `results/exp72_models456_paper_aligned_live/sec72_models456_summary_mean_std.csv` | 평균/표준편차 summary |
+| `results/exp72_models456_paper_aligned_live/sec72_models456_timing_breakdown_raw.csv` | 반복별 단계별 timing |
+| `results/exp72_models456_paper_aligned_live/sec72_models456_timing_breakdown_summary.csv` | 단계별 timing summary |
 | `results/exp72_models456_paper_aligned_live/sec72_models456_metrics_figure6_like.png` | Figure 6 형식의 metric plot |
 | `results/exp72_models456_paper_aligned_live/sec72_models456_runtime.png` | runtime plot |
 
@@ -137,7 +146,7 @@ Model 1-3에서는 Random Projection과 CountSketch가 `error_P` 기준으로 �
 
 Model 4-6에서도 Random Projection과 CountSketch가 `error_P` 기준의 가장 좋은 그룹이다. 18개 `(model, n)` 지점 중 CountSketch가 Gaussian Random Projection보다 낮은 `error_P`를 기록한 지점은 5개, 더 높은 지점은 13개였다. `n=1200`에서는 Model 6에서 CountSketch가 Random Projection보다 낮았고, Model 4와 Model 5에서는 Random Projection이 더 낮았다.
 
-degree-corrected 구조가 들어간 Model 4-6에서는 Model 1-3보다 `error_Theta`가 높게 남아 있다. 특히 Model 6은 rank-deficient 구조와 degree correction이 동시에 들어가 네 방법 모두 membership recovery가 어렵다. 그래도 `error_P` 기준으로는 CountSketch와 Random Projection이 Random Sampling 및 Non-random보다 낮다.
+degree-corrected 구조가 들어간 Model 4-6에서는 Model 1-3보다 `error_Theta`가 높게 남아 있다. 특히 Model 6은 rank-deficient 구조와 degree correction이 동시에 들어가 다섯 방법 모두 membership recovery가 어렵다. 그래도 `error_P` 기준으로는 CountSketch와 Random Projection이 Random Sampling 및 Non-random보다 낮다.
 
 실행 시간은 Model 4-6에서도 Random Projection이 가장 짧고 CountSketch가 그 뒤를 따른다. CountSketch의 평균 실행 시간은 Gaussian RP 대비 약 1.012배로, 거의 같은 수준이지만 약간 더 길었다.
 

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import annotations
+
 """Section 8.1 accuracy experiments for the remaining real networks.
 
 Datasets:
@@ -29,9 +31,11 @@ if str(ROOT) not in sys.path:
 from src.common import (  # noqa: E402
     LiveProgress,
     align_labels_weighted_hungarian,
+    eigvecs_countsketch_sparse,
     eigvecs_eigsh_sparse,
     eigvecs_random_projection_sparse,
     eigvecs_random_sampling_sparse,
+    eigvecs_sign_sparse,
     kmeans_on_rows,
     pairwise_ari,
     upper_triangle_edges,
@@ -117,6 +121,7 @@ def run_one_dataset(cfg: Exp81RemainingConfig, ds: DatasetSpec):
     methods = (
         ["Random Projection"]
         + [f"Random Sampling (p={p:g})" for p in cfg.p_values]
+        + ["CountSketch", "SIGN Bidirectional"]
         + ["Non-random"]
     )
 
@@ -156,6 +161,48 @@ def run_one_dataset(cfg: Exp81RemainingConfig, ds: DatasetSpec):
         labels["Random Projection"] = y_rp.copy()
         if progress is not None:
             progress.update(ds.name, rep, rep, cfg.reps, "Random Projection")
+
+        rng_cs = np.random.default_rng(rep_seed + 53)
+        t0 = perf_counter()
+        _, U_cs, timing_cs = eigvecs_countsketch_sparse(
+            A,
+            k=K_embed,
+            r=cfg.r,
+            q=cfg.q,
+            rng=rng_cs,
+            return_timing=True,
+        )
+        y_cs = kmeans_on_rows(U_cs, K, rng_cs)
+        dt_cs = perf_counter() - t0
+        timings["CountSketch"] = {
+            "time_rand_sec": float(timing_cs.get("cs_draw_hash_sec", np.nan)),
+            "time_post_sec": float(dt_cs - timing_cs.get("cs_draw_hash_sec", 0.0)),
+            "time_total_sec": float(dt_cs),
+        }
+        labels["CountSketch"] = y_cs.copy()
+        if progress is not None:
+            progress.update(ds.name, rep, rep, cfg.reps, "CountSketch")
+
+        rng_sign = np.random.default_rng(rep_seed + 71)
+        t0 = perf_counter()
+        _, U_sign, timing_sign = eigvecs_sign_sparse(
+            A,
+            k=K_embed,
+            r=cfg.r,
+            power=cfg.q,
+            rng=rng_sign,
+            return_timing=True,
+        )
+        y_sign = kmeans_on_rows(U_sign, K, rng_sign)
+        dt_sign = perf_counter() - t0
+        timings["SIGN Bidirectional"] = {
+            "time_rand_sec": float(timing_sign.get("sign_draw_omega_sec", np.nan)),
+            "time_post_sec": float(dt_sign - timing_sign.get("sign_draw_omega_sec", 0.0)),
+            "time_total_sec": float(dt_sign),
+        }
+        labels["SIGN Bidirectional"] = y_sign.copy()
+        if progress is not None:
+            progress.update(ds.name, rep, rep, cfg.reps, "SIGN Bidirectional")
 
         for p in cfg.p_values:
             mname = f"Random Sampling (p={p:g})"
@@ -237,7 +284,11 @@ def summarize(df_raw: pd.DataFrame) -> pd.DataFrame:
 
 
 def method_order(p_values: tuple[float, ...], include_non_random: bool):
-    ordered = ["Random Projection"] + [f"Random Sampling (p={p:g})" for p in p_values]
+    ordered = (
+        ["Random Projection"]
+        + [f"Random Sampling (p={p:g})" for p in p_values]
+        + ["CountSketch", "SIGN Bidirectional"]
+    )
     if include_non_random:
         ordered.append("Non-random")
     return ordered
@@ -248,6 +299,10 @@ def display_method(method: str, p_values: tuple[float, ...]) -> str:
         return "Non-Random"
     if method == "Random Projection":
         return "Random Projection"
+    if method == "CountSketch":
+        return "CountSketch"
+    if method == "SIGN Bidirectional":
+        return "SIGN Bidirectional"
     for p in p_values:
         if method == f"Random Sampling (p={p:g})":
             return f"Random Sampling (p= {p:.1f})"

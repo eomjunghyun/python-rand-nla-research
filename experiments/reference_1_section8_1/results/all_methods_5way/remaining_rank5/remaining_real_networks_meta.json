@@ -1,0 +1,94 @@
+{
+  "datasets": [
+    "political_blog",
+    "statisticians_coauthor",
+    "statisticians_citation"
+  ],
+  "reps": 20,
+  "seed": 2026,
+  "q": 2,
+  "r": 10,
+  "p_values": [
+    0.7,
+    0.8
+  ],
+  "embedding_rank": 5,
+  "dataset_meta": {
+    "political_blog": {
+      "name": "political_blog",
+      "num_nodes": 1222,
+      "num_edges": 16714,
+      "target_rank": 2,
+      "has_ground_truth": true,
+      "num_classes": 2,
+      "class_counts": {
+        "0": 586,
+        "1": 636
+      },
+      "source_file": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/data/reference_1_section8_1/raw/polblogs/polblogs.gml",
+      "raw_nodes": 1490,
+      "raw_directed_edges": 19090,
+      "raw_unique_directed_edges": 19025,
+      "raw_self_loops": 3,
+      "component_sizes_top10": [
+        1222,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "statisticians_coauthor": {
+      "name": "statisticians_coauthor",
+      "num_nodes": 2263,
+      "num_edges": 4388,
+      "target_rank": 3,
+      "has_ground_truth": false,
+      "source_file": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/data/reference_1_section8_1/raw/scc2016/SCC2016-with-abs/SCC2016/Data/authorPaperBiadj.txt",
+      "raw_authors": 3607,
+      "raw_edges": 5615,
+      "component_sizes_top10": [
+        2263,
+        23,
+        12,
+        12,
+        11,
+        10,
+        9,
+        9,
+        9,
+        9
+      ],
+      "ground_truth_reference": "No true labels; Section 8.1 evaluates randomized labels relative to non-random spectral clustering."
+    },
+    "statisticians_citation": {
+      "name": "statisticians_citation",
+      "num_nodes": 2654,
+      "num_edges": 20049,
+      "target_rank": 3,
+      "has_ground_truth": false,
+      "source_file": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/data/reference_1_section8_1/raw/scc2016/SCC2016-with-abs/SCC2016/Data/paperCitAdj.txt",
+      "raw_authors": 3607,
+      "raw_directed_arcs": 21603,
+      "raw_undirected_edges": 20083,
+      "component_sizes_top10": [
+        2654,
+        5,
+        5,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        2
+      ],
+      "ground_truth_reference": "No true labels; Section 8.1 evaluates randomized labels relative to non-random spectral clustering."
+    }
+  }
+}

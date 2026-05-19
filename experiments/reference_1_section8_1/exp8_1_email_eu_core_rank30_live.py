@@ -37,9 +37,11 @@ if str(ROOT) not in sys.path:
 from src.common import (  # noqa: E402
     LiveProgress,
     align_labels_weighted_hungarian,
+    eigvecs_countsketch_sparse,
     eigvecs_eigsh_sparse,
     eigvecs_random_projection_sparse,
     eigvecs_random_sampling_sparse,
+    eigvecs_sign_sparse,
     kmeans_on_rows,
     load_undirected_edgelist_csr,
     pairwise_ari,
@@ -158,7 +160,7 @@ def run_experiment(cfg: Exp81Config, A, y_true: np.ndarray, K: int):
     if Kp >= A.shape[0]:
         raise ValueError(f"target_rank must be smaller than node count {A.shape[0]}, got {Kp}.")
     rs_methods = [f"Random Sampling (p={p:g})" for p in cfg.p_values]
-    methods = ["Random Projection"] + rs_methods + ["Non-random"]
+    methods = ["Random Projection"] + rs_methods + ["CountSketch", "SIGN Bidirectional", "Non-random"]
 
     upper_rows, upper_cols = upper_triangle_edges(A)
     master_rng = np.random.default_rng(cfg.seed)
@@ -191,6 +193,64 @@ def run_experiment(cfg: Exp81Config, A, y_true: np.ndarray, K: int):
         labels["Random Projection"] = y_rp.copy()
         if progress is not None:
             progress.update("rep", rep, rep, cfg.reps, "Random Projection")
+
+        rng_cs = np.random.default_rng(rep_seed + 53)
+        t0 = perf_counter()
+        _, U_cs, timing_cs = eigvecs_countsketch_sparse(
+            A,
+            k=Kp,
+            r=cfg.r,
+            q=cfg.q,
+            rng=rng_cs,
+            return_timing=True,
+        )
+        y_cs = kmeans_on_rows(U_cs, K, rng_cs)
+        dt_cs = perf_counter() - t0
+        f1, nmi, ari = evaluate_metrics(y_true, y_cs, K)
+        rows.append(
+            {
+                "rep": rep,
+                "method": "CountSketch",
+                "F1": f1,
+                "NMI": nmi,
+                "ARI": ari,
+                "time_rand_sec": float(timing_cs.get("cs_draw_hash_sec", np.nan)),
+                "time_post_sec": float(dt_cs - timing_cs.get("cs_draw_hash_sec", 0.0)),
+                "time_total_sec": dt_cs,
+            }
+        )
+        labels["CountSketch"] = y_cs.copy()
+        if progress is not None:
+            progress.update("rep", rep, rep, cfg.reps, "CountSketch")
+
+        rng_sign = np.random.default_rng(rep_seed + 71)
+        t0 = perf_counter()
+        _, U_sign, timing_sign = eigvecs_sign_sparse(
+            A,
+            k=Kp,
+            r=cfg.r,
+            power=cfg.q,
+            rng=rng_sign,
+            return_timing=True,
+        )
+        y_sign = kmeans_on_rows(U_sign, K, rng_sign)
+        dt_sign = perf_counter() - t0
+        f1, nmi, ari = evaluate_metrics(y_true, y_sign, K)
+        rows.append(
+            {
+                "rep": rep,
+                "method": "SIGN Bidirectional",
+                "F1": f1,
+                "NMI": nmi,
+                "ARI": ari,
+                "time_rand_sec": float(timing_sign.get("sign_draw_omega_sec", np.nan)),
+                "time_post_sec": float(dt_sign - timing_sign.get("sign_draw_omega_sec", 0.0)),
+                "time_total_sec": dt_sign,
+            }
+        )
+        labels["SIGN Bidirectional"] = y_sign.copy()
+        if progress is not None:
+            progress.update("rep", rep, rep, cfg.reps, "SIGN Bidirectional")
 
         for p in cfg.p_values:
             mname = f"Random Sampling (p={p:g})"
@@ -290,11 +350,14 @@ def build_table2a_like(summary: pd.DataFrame, p_values: tuple) -> pd.DataFrame:
     ordered = (
         ["Random Projection"]
         + [f"Random Sampling (p={p:g})" for p in p_values]
+        + ["CountSketch", "SIGN Bidirectional"]
         + ["Non-random"]
     )
     d = summary.set_index("method").loc[[m for m in ordered if m in set(summary["method"])]].reset_index()
     disp_map = {
         "Random Projection": "Random Projection",
+        "CountSketch": "CountSketch",
+        "SIGN Bidirectional": "SIGN Bidirectional",
         "Non-random": "Non-Random",
     }
     for p in p_values:
@@ -428,6 +491,7 @@ def main():
     methods = (
         ["Random Projection"]
         + [f"Random Sampling (p={p:g})" for p in cfg.p_values]
+        + ["CountSketch", "SIGN Bidirectional"]
         + ["Non-random"]
     )
     ari_mat = ari_mean_matrix(df_pair, methods)

@@ -25,24 +25,29 @@ from src.common import (  # noqa: E402
 
 METHOD_ORDER = [
     "Random Projection",
-    "SIGN",
+    "CountSketch",
+    "SIGN Bidirectional",
     "Random Sampling",
     "Random Sampling (excl. sampling)",
-    "partial_eigen",
+    "Non-random",
 ]
 METHOD_COLORS = {
     "Random Projection": "#4C78A8",
-    "SIGN": "#9467BD",
+    "CountSketch": "#9467BD",
+    "SIGN Bidirectional": "#d62728",
+    "SIGN": "#d62728",
     "Random Sampling": "#F58518",
     "Random Sampling (excl. sampling)": "#E45756",
-    "partial_eigen": "#54A24B",
+    "Non-random": "#54A24B",
 }
 METHOD_LABELS = {
     "Random Projection": "Random projection",
-    "SIGN": "SIGN",
+    "CountSketch": "CountSketch",
+    "SIGN Bidirectional": "SIGN bidirectional",
+    "SIGN": "SIGN bidirectional",
     "Random Sampling": "Random sampling",
     "Random Sampling (excl. sampling)": "Random sampling\n(excl. sampling)",
-    "partial_eigen": "partial_eigen",
+    "Non-random": "Non-random",
 }
 
 
@@ -133,7 +138,7 @@ def benchmark_sign_sparse(cfg: Sign82Config) -> tuple[pd.DataFrame, list[dict[st
                 {
                     "dataset": spec.name,
                     "rep": rep,
-                    "method": "SIGN",
+                    "method": "SIGN Bidirectional",
                     "time_sec": float(time_sec),
                     "time_sec_excl_sampling": float(time_sec),
                     "time_sampling_sec": 0.0,
@@ -144,7 +149,7 @@ def benchmark_sign_sparse(cfg: Sign82Config) -> tuple[pd.DataFrame, list[dict[st
                 }
             )
             if progress is not None:
-                progress.update("dataset", spec.name, rep, cfg.reps, "SIGN")
+                progress.update("dataset", spec.name, rep, cfg.reps, "SIGN Bidirectional")
 
     if progress is not None:
         progress.close()
@@ -152,15 +157,23 @@ def benchmark_sign_sparse(cfg: Sign82Config) -> tuple[pd.DataFrame, list[dict[st
 
 
 def summarize_with_sign(df_raw: pd.DataFrame) -> pd.DataFrame:
+    def _median_for(block: pd.DataFrame, method_names: list[str], col: str = "time_sec") -> float:
+        vals = pd.Series(dtype=float)
+        for method_name in method_names:
+            vals = block.loc[block["method"] == method_name, col]
+            if not vals.empty:
+                break
+        return float(vals.median()) if not vals.empty else float("nan")
+
     records = []
     for dataset, block in df_raw.groupby("dataset", sort=False):
         meta = block.iloc[0]
-        get = lambda method, col="time_sec": block.loc[block["method"] == method, col]
-        rp = get("Random Projection").median()
-        sign = get("SIGN").median() if (block["method"] == "SIGN").any() else np.nan
-        rs = get("Random Sampling").median()
-        rs_excl = get("Random Sampling", "time_sec_excl_sampling").median()
-        pe = get("partial_eigen").median()
+        rp = _median_for(block, ["Random Projection"])
+        cs = _median_for(block, ["CountSketch"])
+        sign = _median_for(block, ["SIGN Bidirectional", "SIGN"])
+        rs = _median_for(block, ["Random Sampling"])
+        rs_excl = _median_for(block, ["Random Sampling"], "time_sec_excl_sampling")
+        nr = _median_for(block, ["Non-random", "partial_eigen"])
         records.append(
             {
                 "dataset": dataset,
@@ -168,12 +181,15 @@ def summarize_with_sign(df_raw: pd.DataFrame) -> pd.DataFrame:
                 "n_edges": int(meta["n_edges"]),
                 "target_rank": int(meta["target_rank"]),
                 "random_projection_median_sec": float(rp),
+                "countsketch_median_sec": float(cs),
                 "sign_median_sec": float(sign),
                 "random_sampling_median_sec": float(rs),
                 "random_sampling_excl_sampling_median_sec": float(rs_excl),
-                "partial_eigen_median_sec": float(pe),
+                "non_random_median_sec": float(nr),
+                "partial_eigen_median_sec": float(nr),
                 "sign_vs_random_projection": float(sign / rp) if rp > 0 else np.nan,
-                "sign_vs_partial_eigen": float(sign / pe) if pe > 0 else np.nan,
+                "sign_vs_non_random": float(sign / nr) if nr > 0 else np.nan,
+                "sign_vs_partial_eigen": float(sign / nr) if nr > 0 else np.nan,
                 "random_sampling_display": f"{rs:.3f}({rs_excl:.3f})",
             }
         )
@@ -199,21 +215,22 @@ def summarize_sign_steps(df_sign_raw: pd.DataFrame) -> pd.DataFrame:
 
 def format_markdown_table(df_summary: pd.DataFrame) -> str:
     lines = [
-        "Table 4-like median time (seconds) over replications, with Wang 2025 SIGN added.",
+        "Table 4-like median time (seconds) over replications, with Wang 2025 SIGN Bidirectional added.",
         "",
-        "| Networks | Random projection | SIGN | Random sampling | partial_eigen | SIGN / RP | SIGN / partial_eigen |",
-        "|---|---:|---:|---:|---:|---:|---:|",
+        "| Networks | Random projection | CountSketch | SIGN Bidirectional | Random sampling | Non-random | SIGN / RP | SIGN / Non-random |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in df_summary.itertuples(index=False):
         lines.append(
             "| "
             f"{row.dataset} | "
             f"{row.random_projection_median_sec:.3f} | "
+            f"{row.countsketch_median_sec:.3f} | "
             f"{row.sign_median_sec:.3f} | "
             f"{row.random_sampling_display} | "
-            f"{row.partial_eigen_median_sec:.3f} | "
+            f"{row.non_random_median_sec:.3f} | "
             f"{row.sign_vs_random_projection:.2f}x | "
-            f"{row.sign_vs_partial_eigen:.2f}x |"
+            f"{row.sign_vs_non_random:.2f}x |"
         )
     lines.append("")
     lines.append(
@@ -233,7 +250,16 @@ def _plot_long_frame(df_summary: pd.DataFrame) -> pd.DataFrame:
                     "method_variant": "Random Projection",
                     "time_sec": row.random_projection_median_sec,
                 },
-                {"dataset": row.dataset, "method_variant": "SIGN", "time_sec": row.sign_median_sec},
+                {
+                    "dataset": row.dataset,
+                    "method_variant": "CountSketch",
+                    "time_sec": row.countsketch_median_sec,
+                },
+                {
+                    "dataset": row.dataset,
+                    "method_variant": "SIGN Bidirectional",
+                    "time_sec": row.sign_median_sec,
+                },
                 {
                     "dataset": row.dataset,
                     "method_variant": "Random Sampling",
@@ -246,8 +272,8 @@ def _plot_long_frame(df_summary: pd.DataFrame) -> pd.DataFrame:
                 },
                 {
                     "dataset": row.dataset,
-                    "method_variant": "partial_eigen",
-                    "time_sec": row.partial_eigen_median_sec,
+                    "method_variant": "Non-random",
+                    "time_sec": row.non_random_median_sec,
                 },
             ]
         )
@@ -258,11 +284,11 @@ def plot_median_bars_with_sign(df_summary: pd.DataFrame, out_png: Path) -> None:
     plot_df = _plot_long_frame(df_summary)
     datasets = list(dict.fromkeys(plot_df["dataset"].tolist()))
     x = np.arange(len(datasets))
-    width = 0.15
+    width = 0.13
     fig, ax = plt.subplots(figsize=(10.8, 5.0))
     for idx, method in enumerate(METHOD_ORDER):
         block = plot_df[plot_df["method_variant"] == method]
-        offsets = x + (idx - 2) * width
+        offsets = x + (idx - 2.5) * width
         bars = ax.bar(
             offsets,
             block["time_sec"].values,
@@ -287,7 +313,7 @@ def plot_median_bars_with_sign(df_summary: pd.DataFrame, out_png: Path) -> None:
     ax.set_xticks(x)
     ax.set_xticklabels(datasets)
     ax.set_ylabel("Median eigenvector runtime (sec)")
-    ax.set_title("Section 8.2 Runtime with Wang 2025 SIGN")
+    ax.set_title("Section 8.2 Runtime with Wang 2025 SIGN Bidirectional")
     ax.grid(axis="y", alpha=0.3)
     ax.legend(ncols=3)
     fig.tight_layout()
@@ -308,6 +334,8 @@ def plot_runtime_boxplots_with_sign(df_raw: pd.DataFrame, out_png: Path) -> None
         for method in METHOD_ORDER:
             if method == "Random Sampling (excl. sampling)":
                 vals = block.loc[block["method"] == "Random Sampling", "time_sec_excl_sampling"].values
+            elif method == "Non-random":
+                vals = block.loc[block["method"].isin(["Non-random", "partial_eigen"]), "time_sec"].values
             else:
                 vals = block.loc[block["method"] == method, "time_sec"].values
             if vals.size == 0:
@@ -315,7 +343,7 @@ def plot_runtime_boxplots_with_sign(df_raw: pd.DataFrame, out_png: Path) -> None
             series.append(vals)
             labels.append(METHOD_LABELS[method])
             variants.append(method)
-        box = ax.boxplot(series, tick_labels=labels, showfliers=False, patch_artist=True)
+        box = ax.boxplot(series, labels=labels, showfliers=False, patch_artist=True)
         for patch, method in zip(box["boxes"], variants):
             patch.set_facecolor(METHOD_COLORS[method])
             patch.set_edgecolor("black")
@@ -325,7 +353,7 @@ def plot_runtime_boxplots_with_sign(df_raw: pd.DataFrame, out_png: Path) -> None
         ax.tick_params(axis="x", rotation=25)
         ax.grid(axis="y", alpha=0.3)
     axes[0].set_ylabel("Per-rep eigenvector runtime (sec)")
-    fig.suptitle("Section 8.2 Runtime Distribution with SIGN", y=1.02)
+    fig.suptitle("Section 8.2 Runtime Distribution with SIGN Bidirectional", y=1.02)
     fig.tight_layout()
     fig.savefig(out_png, dpi=180, bbox_inches="tight")
     plt.close(fig)
@@ -376,20 +404,20 @@ def build_report(
     median_rel = out_paths["median_png"].relative_to(cfg.outdir)
     box_rel = out_paths["box_png"].relative_to(cfg.outdir)
 
-    report = f"""# Wang 2025 SIGN 방법론의 Section 8.2 적용 보고서
+    report = f"""# Wang 2025 SIGN Bidirectional 방법론의 Section 8.2 적용 보고서
 
 ## 목적
 
-Reference 1 Section 8.2는 대규모 sparse real network에서 eigenvector computation time을 비교하는 Table 4 스타일 benchmark다. 여기에 사용자가 제공한 Wang et al. (2025)의 SIGN subspace iteration 방법을 추가해 기존 `Random Projection`, `Random Sampling`, `partial_eigen` 결과와 같은 단위로 비교했다.
+Reference 1 Section 8.2는 대규모 sparse real network에서 eigenvector computation time을 비교하는 Table 4 스타일 benchmark다. 여기에 사용자가 제공한 Wang et al. (2025)의 SIGN Bidirectional subspace iteration 방법을 추가해 기존 `Random Projection`, `CountSketch`, `Random Sampling`, `Non-random` 결과와 같은 단위로 비교했다.
 
 ## 구현 메모
 
-- sparse SIGN 구현: `src.common.eigvecs_sign_sparse`
+- sparse SIGN Bidirectional 구현: `src.common.eigvecs_sign_sparse`
 - 실행 스크립트: `experiments/reference_1_section8_2/run_sign_section8_2.py`
 - 출력 폴더: `{cfg.outdir}`
 - 기존 baseline: `{cfg.baseline_raw_csv}`
-- SIGN 설정: 기존 8.2와 맞춰 oversampling `r={cfg.r}`, power parameter `k=q={cfg.q}`를 사용했다.
-- Section 8.2의 graph는 undirected adjacency로 읽기 때문에 `A.T`와 `A`가 같은 대칭 문제다. 따라서 여기서 SIGN은 비대칭 행렬용 장점보다는 양방향 subspace iteration의 runtime 특성을 보는 실험이다.
+- SIGN Bidirectional 설정: 기존 8.2와 맞춰 oversampling `r={cfg.r}`, power parameter `k=q={cfg.q}`를 사용했다.
+- Section 8.2의 graph는 undirected adjacency로 읽기 때문에 `A.T`와 `A`가 같은 대칭 문제다. 따라서 여기서 SIGN Bidirectional은 비대칭 행렬용 장점보다는 양방향 subspace iteration의 runtime 특성을 보는 실험이다.
 - timing은 Table 4와 맞춰 KMeans나 accuracy 계산 없이 eigenvector approximation pipeline만 잰다.
 
 ## 설정
@@ -406,21 +434,21 @@ Reference 1 Section 8.2는 대규모 sparse real network에서 eigenvector compu
 
 {table_md}
 
-## SIGN 내부 단계별 Median
+## SIGN Bidirectional 내부 단계별 Median
 
 {step_md}
 
 ## 그림
 
-![Median runtime with SIGN]({median_rel.as_posix()})
+![Median runtime with SIGN Bidirectional]({median_rel.as_posix()})
 
-![Runtime distribution with SIGN]({box_rel.as_posix()})
+![Runtime distribution with SIGN Bidirectional]({box_rel.as_posix()})
 
 ## 해석
 
-SIGN은 Random Projection과 같은 randomized subspace family에 속하지만, 한 iteration마다 `A.T`와 `A`를 번갈아 곱고 QR을 수행한다. 대칭 sparse graph에서는 이것이 기존 Random Projection의 `A^(2q+1) Omega`와 비슷한 방향의 근사지만, QR 횟수와 matrix multiplication 횟수 구성이 다르다.
+SIGN Bidirectional은 Random Projection과 같은 randomized subspace family에 속하지만, 한 iteration마다 `A.T`와 `A`를 번갈아 곱고 QR을 수행한다. 대칭 sparse graph에서는 이것이 기존 Random Projection의 `A^(2q+1) Omega`와 비슷한 방향의 근사지만, QR 횟수와 matrix multiplication 횟수 구성이 다르다.
 
-따라서 이 결과는 Wang 2025의 비대칭 행렬 low-rank approximation 장점을 직접 검증한다기보다는, 현재 8.2의 대칭 graph runtime benchmark에서 SIGN 변형이 어느 정도 비용을 갖는지 확인하는 의미가 크다. `SIGN / RP`가 1보다 작으면 SIGN이 Random Projection보다 빠르고, 1보다 크면 느리다.
+따라서 이 결과는 Wang 2025의 비대칭 행렬 low-rank approximation 장점을 직접 검증한다기보다는, 현재 8.2의 대칭 graph runtime benchmark에서 SIGN Bidirectional 변형이 어느 정도 비용을 갖는지 확인하는 의미가 크다. `SIGN / RP`가 1보다 작으면 SIGN Bidirectional이 Random Projection보다 빠르고, 1보다 크면 느리다.
 """
     report_path.write_text(report, encoding="utf-8")
     return report_path
@@ -479,7 +507,9 @@ def run_all(cfg: Sign82Config):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run Wang 2025 SIGN on Section 8.2 Table 4 benchmark.")
+    parser = argparse.ArgumentParser(
+        description="Run Wang 2025 SIGN Bidirectional on Section 8.2 Table 4 benchmark."
+    )
     parser.add_argument("--baseline-raw-csv", type=Path, default=Sign82Config.baseline_raw_csv)
     parser.add_argument("--dblp-edgelist", type=Path, default=Sign82Config.dblp_edgelist)
     parser.add_argument("--youtube-edgelist", type=Path, default=Sign82Config.youtube_edgelist)

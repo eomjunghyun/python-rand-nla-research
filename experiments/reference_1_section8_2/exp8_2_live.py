@@ -9,8 +9,9 @@ Networks:
 
 Methods:
 - Random Projection
+- CountSketch
 - Random Sampling
-- partial_eigen (Python proxy)
+- Non-random (Python eigsh proxy)
 """
 
 import argparse
@@ -69,7 +70,7 @@ def build_network_specs(cfg: Exp82Config):
 
 def run_experiment(cfg: Exp82Config):
     specs = build_network_specs(cfg)
-    progress = None if cfg.no_progress else LiveProgress(len(specs) * cfg.reps * 3)
+    progress = None if cfg.no_progress else LiveProgress(len(specs) * cfg.reps * 4)
     raw_blocks = []
     dataset_meta = []
 
@@ -115,7 +116,7 @@ def run_experiment(cfg: Exp82Config):
         "q": cfg.q,
         "r": cfg.r,
         "p": cfg.p,
-        "partial_eigen_note": "Python proxy implemented with scipy.sparse.linalg.eigsh",
+        "non_random_note": "Python proxy implemented with scipy.sparse.linalg.eigsh",
     }
     return df_raw_all, df_summary, markdown, meta
 

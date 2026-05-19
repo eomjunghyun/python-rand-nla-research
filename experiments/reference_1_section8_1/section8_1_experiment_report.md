@@ -2,6 +2,8 @@
 
 이 보고서는 Reference 1 논문의 Section 8.1 real network accuracy experiment를 재현한 결과를 정리한다. 실험 대상은 네 개의 real network이며, 각 데이터셋마다 논문에서 사용한 target rank로 한 번, rank를 바꾼 설정으로 한 번 실행했다. 따라서 총 8개 실험이다.
 
+> 2026-05-19 업데이트: 최종 정리 결과는 `Random Projection`, `CountSketch`, `Random Sampling`, `Non-random`, `SIGN Bidirectional` 다섯 방법 기준이다. 기존 rank 해석은 참고용으로 유지하고, 새 raw/summary/table 산출물은 `results/all_methods_5way/` 아래 폴더들을 우선 기준으로 본다.
+
 보고서의 목적은 다음과 같다.
 
 - 각 실험이 무엇을 재현하는지 설명한다.
@@ -14,15 +16,17 @@
 
 Section 8.1은 실제 네트워크 데이터에서 randomized spectral clustering 방법이 non-random spectral clustering과 비교해 어느 정도의 clustering 품질을 내는지 확인하는 실험이다.
 
-사용한 방법은 세 종류다.
+정리된 5방법 실행에서 사용한 방법은 다음과 같다.
 
 | 방법 | 의미 | 이 실험에서 보는 점 |
 |---|---|---|
 | Non-random spectral clustering | 원래 adjacency matrix에서 직접 leading eigenvectors를 구해 KMeans를 수행하는 기준 방법 | randomized 방법의 기준선 |
 | Random Projection | random Gaussian projection과 power iteration으로 저차원 subspace를 근사한 뒤 clustering | 빠른 근사가 기준 방법과 비슷한 결과를 내는지 |
+| CountSketch | Gaussian random matrix 대신 CountSketch sparse sketch를 사용해 subspace를 근사 | sparse sketch가 Gaussian RP와 비슷한 품질을 내는지 |
 | Random Sampling | edge를 확률 `p`로 샘플링하고 `1/p`로 rescale한 sparse matrix에서 eigenvectors를 구함 | edge 일부만 사용해도 clustering이 유지되는지 |
+| SIGN Bidirectional | Wang et al. (2025)의 양방향 subspace iteration을 graph spectral embedding에 적용 | 양방향 randomized subspace iteration의 품질과 시간 |
 
-실험은 20회 반복으로 수행했다. Random Projection, Random Sampling, KMeans 초기화에는 randomness가 있으므로 평균과 표준편차를 함께 기록한다. 표의 값 `0.320(0.013)`은 평균이 `0.320`, 표준편차가 `0.013`이라는 뜻이다.
+실험은 20회 반복으로 수행했다. Random Projection, CountSketch, Random Sampling, SIGN Bidirectional, KMeans 초기화에는 randomness가 있으므로 평균과 표준편차를 함께 기록한다. 표의 값 `0.320(0.013)`은 평균이 `0.320`, 표준편차가 `0.013`이라는 뜻이다.
 
 ## 2. 8개 실험 목록
 
@@ -64,7 +68,13 @@ Random Sampling은 edge를 확률 `p`로 남기고, 남은 edge weight를 `1/p`�
 
 이 실험에서는 `p=0.7`, `p=0.8`을 사용했다. `p=0.8`은 edge를 더 많이 보존하므로 보통 `p=0.7`보다 원래 graph에 가까운 결과를 기대할 수 있다. 다만 실제 결과는 데이터셋 구조와 rank 설정에 따라 달라질 수 있다.
 
-### 3.5 F1, NMI, ARI
+### 3.5 CountSketch와 SIGN Bidirectional
+
+CountSketch는 Random Projection의 Gaussian test matrix를 sparse sketch로 바꾼 방법이다. 각 column에 하나의 signed nonzero만 두므로 sketch 생성과 곱셈 구조가 달라진다.
+
+SIGN Bidirectional은 Wang et al. (2025)의 generalized Nyström/subspace iteration 흐름을 adjacency spectral embedding에 맞춘 것이다. 현재 graph는 undirected adjacency로 처리되므로 `A.T`와 `A`가 같지만, 구현은 논문 구조처럼 양방향 QR 갱신을 수행한다.
+
+### 3.6 F1, NMI, ARI
 
 세 지표 모두 clustering 결과가 reference label과 얼마나 가까운지 보는 지표다.
 
@@ -76,7 +86,7 @@ Random Sampling은 edge를 확률 `p`로 남기고, 남은 edge weight를 `1/p`�
 
 F1은 class별 label alignment가 중요하고, NMI/ARI는 partition 구조 비교에 더 가깝다. 따라서 세 지표가 항상 같은 방향으로 움직이지는 않는다.
 
-### 3.6 Pairwise ARI
+### 3.7 Pairwise ARI
 
 Pairwise ARI는 방법 A와 방법 B의 clustering 결과가 서로 얼마나 비슷한지 보는 값이다. ground-truth label과의 정확도와는 다른 질문이다.
 
@@ -104,6 +114,15 @@ Pairwise ARI 수치를 읽을 때는 다음을 보면 된다.
 | `results/exp8_1_statisticians_coauthor_rank5_table2_like/` | Statisticians coauthor rank 5 결과 |
 | `results/exp8_1_statisticians_citation_table2_like/` | Statisticians citation rank 3 결과 |
 | `results/exp8_1_statisticians_citation_rank5_table2_like/` | Statisticians citation rank 5 결과 |
+
+5방법 정리 결과는 아래 폴더에 별도로 모았다.
+
+| 폴더 | 설명 |
+|---|---|
+| `results/all_methods_5way/email_rank42/` | European email rank 42, 5방법 결과 |
+| `results/all_methods_5way/email_rank30/` | European email rank 30, 5방법 결과 |
+| `results/all_methods_5way/remaining_paper_rank/` | Political blog/statisticians paper rank, 5방법 결과 |
+| `results/all_methods_5way/remaining_rank5/` | Political blog/statisticians rank 5, 5방법 결과 |
 
 ## 5. 전체 결과 요약
 

@@ -17,11 +17,20 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_rand_score
 
 
-METHODS = ["Random Projection", "Random Sampling", "Non-random"]
+METHODS = [
+    "Random Projection",
+    "Random Sampling",
+    "Non-random",
+    "CountSketch",
+    "SIGN Bidirectional",
+]
 METHOD_COLORS = {
     "Random Projection": "#1f77b4",
     "Random Sampling": "#ff7f0e",
     "Non-random": "#2ca02c",
+    "CountSketch": "#9467bd",
+    "SIGN Bidirectional": "#d62728",
+    "SIGN": "#d62728",
 }
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -76,7 +85,13 @@ EXPERIMENT_META = {
 
 plt.style.use("seaborn-v0_8-whitegrid")
 
-TIMING_METHOD_ORDER = ["Non-random", "Random Sampling", "Random Projection"]
+TIMING_METHOD_ORDER = [
+    "Non-random",
+    "Random Sampling",
+    "Random Projection",
+    "CountSketch",
+    "SIGN Bidirectional",
+]
 TIMING_METRIC_LABELS = {
     "time_sec": "Total runtime (sec)",
     "nr_eig_sec": "Spectral decomposition on A (sec)",
@@ -95,6 +110,24 @@ TIMING_METRIC_LABELS = {
     "rp_small_eig_sec": "Eigen decomposition on core matrix C (sec)",
     "rp_lift_sec": "Lift embedding back with Q (sec)",
     "rp_kmeans_sec": "K-means on projected embedding (sec)",
+    "cs_draw_hash_sec": "Generate CountSketch hash/signs (sec)",
+    "cs_initial_multiply_sec": "Apply CountSketch to A (sec)",
+    "cs_sparse_explicit_sketch_sec": "Apply sparse CountSketch to A (sec)",
+    "cs_power_iter_sec": "Power iterations with A (sec)",
+    "cs_qr_sec": "Construct QR basis Q (sec)",
+    "cs_build_core_sec": "Project A to core matrix C (sec)",
+    "cs_reconstruct_sec": "Reconstruct low-rank A_hat (sec)",
+    "cs_small_eig_sec": "Eigen decomposition on core matrix C (sec)",
+    "cs_lift_sec": "Lift embedding back with Q (sec)",
+    "cs_kmeans_sec": "K-means on CountSketch embedding (sec)",
+    "sign_draw_omega_sec": "Generate SIGN test matrix Omega (sec)",
+    "sign_subspace_iter_sec": "SIGN bidirectional subspace iterations (sec)",
+    "sign_bidirectional_iter_sec": "SIGN bidirectional subspace iterations (sec)",
+    "sign_reconstruct_sec": "Reconstruct SIGN low-rank A_hat (sec)",
+    "sign_build_core_sec": "Project A to SIGN core matrix C (sec)",
+    "sign_small_eig_sec": "Eigen decomposition on SIGN core matrix C (sec)",
+    "sign_lift_sec": "Lift SIGN embedding back with Q (sec)",
+    "sign_kmeans_sec": "K-means on SIGN embedding (sec)",
 }
 TIMING_METHOD_STEP_METRICS = {
     "Non-random": ["nr_eig_sec", "nr_kmeans_sec"],
@@ -115,6 +148,26 @@ TIMING_METHOD_STEP_METRICS = {
         "rp_small_eig_sec",
         "rp_lift_sec",
         "rp_kmeans_sec",
+    ],
+    "CountSketch": [
+        "cs_draw_hash_sec",
+        "cs_initial_multiply_sec",
+        "cs_power_iter_sec",
+        "cs_qr_sec",
+        "cs_build_core_sec",
+        "cs_reconstruct_sec",
+        "cs_small_eig_sec",
+        "cs_lift_sec",
+        "cs_kmeans_sec",
+    ],
+    "SIGN Bidirectional": [
+        "sign_draw_omega_sec",
+        "sign_subspace_iter_sec",
+        "sign_reconstruct_sec",
+        "sign_build_core_sec",
+        "sign_small_eig_sec",
+        "sign_lift_sec",
+        "sign_kmeans_sec",
     ],
 }
 TIMING_METHOD_COMPONENTS = {
@@ -140,6 +193,26 @@ TIMING_METHOD_COMPONENTS = {
         ("rp_lift_sec", "Lift embedding back with Q"),
         ("rp_kmeans_sec", "K-means on projected embedding"),
     ],
+    "CountSketch": [
+        ("cs_draw_hash_sec", "Generate CountSketch hash/signs"),
+        ("cs_initial_multiply_sec", "Apply CountSketch to A"),
+        ("cs_power_iter_sec", "Power iterations with A"),
+        ("cs_qr_sec", "Construct QR basis Q"),
+        ("cs_build_core_sec", "Project A to core matrix C"),
+        ("cs_reconstruct_sec", "Reconstruct low-rank A_hat"),
+        ("cs_small_eig_sec", "Eigen decomposition on core matrix C"),
+        ("cs_lift_sec", "Lift embedding back with Q"),
+        ("cs_kmeans_sec", "K-means on CountSketch embedding"),
+    ],
+    "SIGN Bidirectional": [
+        ("sign_draw_omega_sec", "Generate SIGN test matrix Omega"),
+        ("sign_subspace_iter_sec", "Bidirectional subspace iterations"),
+        ("sign_reconstruct_sec", "Reconstruct SIGN low-rank A_hat"),
+        ("sign_build_core_sec", "Project A to SIGN core matrix C"),
+        ("sign_small_eig_sec", "Eigen decomposition on SIGN core matrix C"),
+        ("sign_lift_sec", "Lift SIGN embedding back with Q"),
+        ("sign_kmeans_sec", "K-means on SIGN embedding"),
+    ],
 }
 TIMING_METHOD_PALETTES = {
     "Non-random": ["#117733", "#CC6677", "#BBBBBB"],
@@ -161,6 +234,26 @@ TIMING_METHOD_PALETTES = {
         "#DDCC77",
         "#CC6677",
         "#AA4499",
+        "#BBBBBB",
+    ],
+    "CountSketch": [
+        "#6A3D9A",
+        "#B15928",
+        "#1F78B4",
+        "#33A02C",
+        "#FB9A99",
+        "#E31A1C",
+        "#FDBF6F",
+        "#CAB2D6",
+        "#BBBBBB",
+    ],
+    "SIGN Bidirectional": [
+        "#B2182B",
+        "#D6604D",
+        "#F4A582",
+        "#92C5DE",
+        "#4393C3",
+        "#2166AC",
         "#BBBBBB",
     ],
 }
@@ -1915,6 +2008,63 @@ def eigvecs_random_projection_sparse(
     return vals[:k], Q @ vecs[:, :k]
 
 
+def eigvecs_countsketch_sparse(
+    A_csr: sp.csr_matrix,
+    k: int,
+    r: int,
+    q: int,
+    rng: np.random.Generator,
+    return_timing: bool = False,
+):
+    """Sparse CountSketch spectral embedding for real-network experiments."""
+    timings = {}
+    n = A_csr.shape[0]
+    ell = int(k + r)
+
+    t0 = perf_counter()
+    h = rng.integers(0, ell, size=n)
+    signs = rng.choice(np.array([-1.0, 1.0]), size=n)
+    bucket_counts = np.bincount(h, minlength=ell)
+    timings["cs_draw_hash_sec"] = perf_counter() - t0
+    timings["cs_embedding_dim"] = ell
+    timings["cs_bucket_min_load"] = int(bucket_counts.min()) if ell > 0 else 0
+    timings["cs_bucket_max_load"] = int(bucket_counts.max()) if ell > 0 else 0
+    timings["cs_empty_buckets"] = int(np.sum(bucket_counts == 0))
+
+    t0 = perf_counter()
+    S = sp.csr_matrix((signs, (h, np.arange(n))), shape=(ell, n))
+    Y = (S @ A_csr.T).T.toarray()
+    timings["cs_initial_multiply_sec"] = perf_counter() - t0
+    timings["cs_sparse_explicit_sketch_sec"] = timings["cs_initial_multiply_sec"]
+
+    t0 = perf_counter()
+    for _ in range(2 * q):
+        Y = A_csr @ Y
+    timings["cs_power_iter_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    Q, _ = np.linalg.qr(Y, mode="reduced")
+    timings["cs_qr_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    B = Q.T @ (A_csr @ Q)
+    B = 0.5 * (B + B.T)
+    timings["cs_build_core_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    vals, vecs = np.linalg.eigh(B)
+    vals, vecs = _sort_cols_by_abs_vals(vals, vecs)
+    timings["cs_small_eig_sec"] = perf_counter() - t0
+
+    t0 = perf_counter()
+    U = Q @ vecs[:, :k]
+    timings["cs_lift_sec"] = perf_counter() - t0
+
+    if return_timing:
+        return vals[:k], U, timings
+    return vals[:k], U
+
+
 def eigvecs_sign_sparse(
     A_csr: sp.csr_matrix,
     k: int,
@@ -2073,23 +2223,26 @@ def load_large_integer_edgelist_csr(
 
 TABLE4_PLOT_ORDER = [
     "Random Projection",
+    "CountSketch",
     "Random Sampling",
     "Random Sampling (excl. sampling)",
-    "partial_eigen",
+    "Non-random",
 ]
 
 TABLE4_PLOT_COLORS = {
     "Random Projection": "#4C78A8",
+    "CountSketch": "#9467BD",
     "Random Sampling": "#F58518",
     "Random Sampling (excl. sampling)": "#E45756",
-    "partial_eigen": "#54A24B",
+    "Non-random": "#54A24B",
 }
 
 TABLE4_PLOT_LABELS = {
     "Random Projection": "Random projection",
+    "CountSketch": "CountSketch",
     "Random Sampling": "Random sampling",
     "Random Sampling (excl. sampling)": "Random sampling\n(excl. sampling)",
-    "partial_eigen": "partial_eigen",
+    "Non-random": "Non-random",
 }
 
 
@@ -2134,6 +2287,25 @@ def benchmark_table4_methods_sparse(
         if progress is not None:
             progress.update("dataset", dataset_name, rep, reps, "Random Projection")
 
+        t0 = perf_counter()
+        eigvecs_countsketch_sparse(A_csr, target_rank, r, q, rng)
+        t_cs = perf_counter() - t0
+        rows.append(
+            {
+                "dataset": dataset_name,
+                "rep": rep,
+                "method": "CountSketch",
+                "time_sec": t_cs,
+                "time_sec_excl_sampling": t_cs,
+                "time_sampling_sec": 0.0,
+                "target_rank": target_rank,
+                "n_nodes": n_nodes,
+                "n_edges": n_edges,
+            }
+        )
+        if progress is not None:
+            progress.update("dataset", dataset_name, rep, reps, "CountSketch")
+
         _, t_rs_with, t_rs_without = eigvecs_random_sampling_sparse_table4(
             n=n_nodes,
             upper_rows=upper_rows,
@@ -2165,7 +2337,7 @@ def benchmark_table4_methods_sparse(
             {
                 "dataset": dataset_name,
                 "rep": rep,
-                "method": "partial_eigen",
+                "method": "Non-random",
                 "time_sec": t_pe,
                 "time_sec_excl_sampling": t_pe,
                 "time_sampling_sec": 0.0,
@@ -2175,19 +2347,28 @@ def benchmark_table4_methods_sparse(
             }
         )
         if progress is not None:
-            progress.update("dataset", dataset_name, rep, reps, "partial_eigen")
+            progress.update("dataset", dataset_name, rep, reps, "Non-random")
 
     return pd.DataFrame(rows)
 
 
 def summarize_table4_median_times(df_raw: pd.DataFrame):
     """Summarize paper-style Table 4 medians into one row per dataset."""
+    def _median_for(block: pd.DataFrame, method_names: Sequence[str], col: str = "time_sec") -> float:
+        vals = pd.Series(dtype=float)
+        for method_name in method_names:
+            vals = block.loc[block["method"] == method_name, col]
+            if not vals.empty:
+                break
+        return float(vals.median()) if not vals.empty else float("nan")
+
     records = []
     for dataset, block in df_raw.groupby("dataset", sort=False):
-        rp = block[block["method"] == "Random Projection"]["time_sec"].median()
-        rs = block[block["method"] == "Random Sampling"]["time_sec"].median()
-        rs_excl = block[block["method"] == "Random Sampling"]["time_sec_excl_sampling"].median()
-        pe = block[block["method"] == "partial_eigen"]["time_sec"].median()
+        rp = _median_for(block, ["Random Projection"])
+        cs = _median_for(block, ["CountSketch"])
+        rs = _median_for(block, ["Random Sampling"])
+        rs_excl = _median_for(block, ["Random Sampling"], "time_sec_excl_sampling")
+        nr = _median_for(block, ["Non-random", "partial_eigen"])
         meta = block.iloc[0]
         records.append(
             {
@@ -2196,9 +2377,11 @@ def summarize_table4_median_times(df_raw: pd.DataFrame):
                 "n_edges": int(meta["n_edges"]),
                 "target_rank": int(meta["target_rank"]),
                 "random_projection_median_sec": float(rp),
+                "countsketch_median_sec": float(cs),
                 "random_sampling_median_sec": float(rs),
                 "random_sampling_excl_sampling_median_sec": float(rs_excl),
-                "partial_eigen_median_sec": float(pe),
+                "non_random_median_sec": float(nr),
+                "partial_eigen_median_sec": float(nr),
                 "random_sampling_display": f"{rs:.3f}({rs_excl:.3f})",
             }
         )
@@ -2210,16 +2393,17 @@ def format_table4_markdown(df_summary: pd.DataFrame):
     lines = [
         "Table 4-like median time (seconds) over 20 replications.",
         "",
-        "| Networks | Random projection | Random sampling | partial_eigen |",
-        "|---|---:|---:|---:|",
+        "| Networks | Random projection | CountSketch | Random sampling | Non-random |",
+        "|---|---:|---:|---:|---:|",
     ]
     for row in df_summary.itertuples(index=False):
         lines.append(
             "| "
             f"{row.dataset} | "
             f"{row.random_projection_median_sec:.3f} | "
+            f"{row.countsketch_median_sec:.3f} | "
             f"{row.random_sampling_display} | "
-            f"{row.partial_eigen_median_sec:.3f} |"
+            f"{row.non_random_median_sec:.3f} |"
         )
     lines.append("")
     lines.append(
@@ -2251,8 +2435,13 @@ def _table4_plot_long_frame(df_summary: pd.DataFrame):
                 },
                 {
                     "dataset": row.dataset,
-                    "method_variant": "partial_eigen",
-                    "time_sec": row.partial_eigen_median_sec,
+                    "method_variant": "CountSketch",
+                    "time_sec": row.countsketch_median_sec,
+                },
+                {
+                    "dataset": row.dataset,
+                    "method_variant": "Non-random",
+                    "time_sec": row.non_random_median_sec,
                 },
             ]
         )
@@ -2269,7 +2458,7 @@ def plot_table4_median_bars(df_summary: pd.DataFrame, out_png: Path):
     fig, ax = plt.subplots(figsize=(9.2, 4.8))
     for idx, method in enumerate(TABLE4_PLOT_ORDER):
         d = plot_df[plot_df["method_variant"] == method]
-        offsets = x + (idx - 1.5) * width
+        offsets = x + (idx - 2.0) * width
         bars = ax.bar(
             offsets,
             d["time_sec"].values,
@@ -2313,20 +2502,28 @@ def plot_table4_runtime_boxplots(df_raw: pd.DataFrame, out_png: Path):
     for ax, dataset in zip(axes, datasets):
         block = df_raw[df_raw["dataset"] == dataset]
         series = []
+        labels = []
+        variants = []
         for variant in TABLE4_PLOT_ORDER:
             if variant == "Random Sampling (excl. sampling)":
                 vals = block.loc[block["method"] == "Random Sampling", "time_sec_excl_sampling"].values
+            elif variant == "Non-random":
+                vals = block.loc[block["method"].isin(["Non-random", "partial_eigen"]), "time_sec"].values
             else:
                 vals = block.loc[block["method"] == variant, "time_sec"].values
+            if vals.size == 0:
+                continue
             series.append(vals)
+            labels.append(TABLE4_PLOT_LABELS[variant])
+            variants.append(variant)
 
         box = ax.boxplot(
             series,
-            tick_labels=[TABLE4_PLOT_LABELS[v] for v in TABLE4_PLOT_ORDER],
+            labels=labels,
             showfliers=False,
             patch_artist=True,
         )
-        for patch, variant in zip(box["boxes"], TABLE4_PLOT_ORDER):
+        for patch, variant in zip(box["boxes"], variants):
             patch.set_facecolor(TABLE4_PLOT_COLORS[variant])
             patch.set_edgecolor("black")
             if "excl." in variant:
@@ -2544,7 +2741,7 @@ def run_experiment1(
 ) -> pd.DataFrame:
     master_rng = np.random.default_rng(cfg.seed)
     records = []
-    total_steps = len(cfg.n_values) * cfg.reps * 3
+    total_steps = len(cfg.n_values) * cfg.reps * len(METHODS)
     progress = LiveProgress(total_steps) if show_progress else None
 
     for n in cfg.n_values:
@@ -2582,6 +2779,18 @@ def run_experiment1(
                         A, cfg.K, cfg.K_prime, rng, return_timing=return_timing
                     ),
                 ),
+                (
+                    "CountSketch",
+                    lambda return_timing=False: run_countsketch_projection(
+                        A, cfg.K, cfg.K_prime, cfg.r, cfg.q, rng, return_timing=return_timing
+                    ),
+                ),
+                (
+                    "SIGN Bidirectional",
+                    lambda return_timing=False: run_sign_subspace_iteration(
+                        A, cfg.K, cfg.K_prime, cfg.r, cfg.q, rng, return_timing=return_timing
+                    ),
+                ),
             ]
 
             for method_name, job in jobs:
@@ -2616,7 +2825,7 @@ def run_experiment2(
 ) -> pd.DataFrame:
     master_rng = np.random.default_rng(cfg.seed)
     records = []
-    total_steps = len(cfg.alpha_values) * cfg.reps * 3
+    total_steps = len(cfg.alpha_values) * cfg.reps * len(METHODS)
     progress = LiveProgress(total_steps) if show_progress else None
 
     for alpha_n in cfg.alpha_values:
@@ -2654,6 +2863,18 @@ def run_experiment2(
                         A, cfg.K, cfg.K_prime, rng, return_timing=return_timing
                     ),
                 ),
+                (
+                    "CountSketch",
+                    lambda return_timing=False: run_countsketch_projection(
+                        A, cfg.K, cfg.K_prime, cfg.r, cfg.q, rng, return_timing=return_timing
+                    ),
+                ),
+                (
+                    "SIGN Bidirectional",
+                    lambda return_timing=False: run_sign_subspace_iteration(
+                        A, cfg.K, cfg.K_prime, cfg.r, cfg.q, rng, return_timing=return_timing
+                    ),
+                ),
             ]
 
             for method_name, job in jobs:
@@ -2688,7 +2909,7 @@ def run_experiment3(
 ) -> pd.DataFrame:
     master_rng = np.random.default_rng(cfg.seed)
     records = []
-    total_steps = len(cfg.K_values) * cfg.reps * 3
+    total_steps = len(cfg.K_values) * cfg.reps * len(METHODS)
     progress = LiveProgress(total_steps) if show_progress else None
 
     for K in cfg.K_values:
@@ -2727,6 +2948,18 @@ def run_experiment3(
                         A, K, K_prime, rng, return_timing=return_timing
                     ),
                 ),
+                (
+                    "CountSketch",
+                    lambda return_timing=False: run_countsketch_projection(
+                        A, K, K_prime, cfg.r, cfg.q, rng, return_timing=return_timing
+                    ),
+                ),
+                (
+                    "SIGN Bidirectional",
+                    lambda return_timing=False: run_sign_subspace_iteration(
+                        A, K, K_prime, cfg.r, cfg.q, rng, return_timing=return_timing
+                    ),
+                ),
             ]
 
             for method_name, job in jobs:
@@ -2761,7 +2994,7 @@ def run_experiment4(
 ) -> pd.DataFrame:
     master_rng = np.random.default_rng(cfg.seed)
     records = []
-    total_steps = len(cfg.n_values) * cfg.reps * 3
+    total_steps = len(cfg.n_values) * cfg.reps * len(METHODS)
     progress = LiveProgress(total_steps) if show_progress else None
 
     for n in cfg.n_values:
@@ -2798,6 +3031,18 @@ def run_experiment4(
                     "Non-random",
                     lambda return_timing=False: run_non_random(
                         A, cfg.K, cfg.K_prime, rng, return_timing=return_timing
+                    ),
+                ),
+                (
+                    "CountSketch",
+                    lambda return_timing=False: run_countsketch_projection(
+                        A, cfg.K, cfg.K_prime, cfg.r, cfg.q, rng, return_timing=return_timing
+                    ),
+                ),
+                (
+                    "SIGN Bidirectional",
+                    lambda return_timing=False: run_sign_subspace_iteration(
+                        A, cfg.K, cfg.K_prime, cfg.r, cfg.q, rng, return_timing=return_timing
                     ),
                 ),
             ]

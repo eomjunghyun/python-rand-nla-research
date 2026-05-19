@@ -18,7 +18,6 @@ if str(ROOT) not in sys.path:
 
 from src.common import (  # noqa: E402
     LiveProgress,
-    METHODS,
     METHOD_COLORS,
     attach_timing_breakdown,
     evaluate_metrics,
@@ -27,14 +26,27 @@ from src.common import (  # noqa: E402
     run_non_random,
     run_random_projection,
     run_random_sampling,
+    run_sign_subspace_iteration,
     summarize_metrics,
     summarize_timing_breakdown,
 )
 
 
-SECTION72_METHODS = METHODS + ["CountSketch"]
-SECTION72_METHOD_COLORS = {**METHOD_COLORS, "CountSketch": "#9467bd"}
-SUMMARY_METHOD_ORDER = ["Non-random", "Random Projection", "Random Sampling", "CountSketch"]
+SECTION72_METHODS = [
+    "Random Projection",
+    "Random Sampling",
+    "Non-random",
+    "CountSketch",
+    "SIGN Bidirectional",
+]
+SECTION72_METHOD_COLORS = {**METHOD_COLORS}
+SUMMARY_METHOD_ORDER = [
+    "Non-random",
+    "Random Projection",
+    "Random Sampling",
+    "CountSketch",
+    "SIGN Bidirectional",
+]
 
 
 @dataclass
@@ -325,6 +337,49 @@ def run_experiment72_models123(
                 if progress is not None:
                     progress.update("model/n", f"{model_id}/{n}", rep, cfg.reps, "CountSketch")
 
+                if detailed_timing:
+                    Ahat_sign, y_sign, timing_sign = run_sign_subspace_iteration(
+                        A,
+                        cfg.K,
+                        K_prime,
+                        cfg.r,
+                        cfg.q,
+                        rng,
+                        return_timing=True,
+                    )
+                    t_sign = timing_sign["algo_total_sec"]
+                else:
+                    t0 = perf_counter()
+                    Ahat_sign, y_sign = run_sign_subspace_iteration(A, cfg.K, K_prime, cfg.r, cfg.q, rng)
+                    t_sign = perf_counter() - t0
+                    timing_sign = None
+
+                t0 = perf_counter()
+                eP_sign, eT_sign, eB_sign = evaluate_metrics(
+                    Ahat_sign, y_sign, P, B_true, Theta_true, y_true, cfg.K, theta_mode=theta_mode
+                )
+                t_eval_sign = perf_counter() - t0
+                record_sign = {
+                    "model": model_id,
+                    "n": n,
+                    "rep": rep,
+                    "method": "SIGN Bidirectional",
+                    "error_P": eP_sign,
+                    "error_Theta": eT_sign,
+                    "error_B": eB_sign,
+                    "time_sec": t_sign,
+                }
+                if detailed_timing:
+                    record_sign = attach_timing_breakdown(
+                        record_sign,
+                        algo_timing=timing_sign,
+                        instance_sec=t_instance,
+                        metric_sec=t_eval_sign,
+                    )
+                records.append(record_sign)
+                if progress is not None:
+                    progress.update("model/n", f"{model_id}/{n}", rep, cfg.reps, "SIGN Bidirectional")
+
     if progress is not None:
         progress.close()
 
@@ -370,7 +425,7 @@ def plot_models123_metrics(summary: pd.DataFrame, out_png: Path):
             ax.grid(alpha=0.3)
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 0.995))
+    fig.legend(handles, labels, loc="upper center", ncol=5, frameon=False, bbox_to_anchor=(0.5, 0.995))
     fig.tight_layout(rect=[0, 0, 1, 0.97])
     fig.savefig(out_png, dpi=180, bbox_inches="tight")
     plt.close(fig)
@@ -396,7 +451,7 @@ def plot_models123_runtime(summary: pd.DataFrame, out_png: Path):
         ax.grid(alpha=0.3)
     axes[0].set_ylabel("Runtime (sec)")
     handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 1.05))
+    fig.legend(handles, labels, loc="upper center", ncol=5, frameon=False, bbox_to_anchor=(0.5, 1.05))
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(out_png, dpi=180, bbox_inches="tight")
     plt.close(fig)

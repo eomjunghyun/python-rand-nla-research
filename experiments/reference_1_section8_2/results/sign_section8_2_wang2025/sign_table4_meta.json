@@ -1,9 +1,9 @@
 {
   "config": {
     "baseline_raw_csv": "experiments/reference_1_section8_2/results/exp8_2_table4_paper_aligned/table4_time_raw.csv",
-    "dblp_edgelist": "data/dblp/com-dblp.ungraph.txt",
-    "youtube_edgelist": "/private/tmp/sign82_data/com-youtube.ungraph.txt.gz",
-    "internet_edgelist": "/private/tmp/sign82_data/as-skitter.txt.gz",
+    "dblp_edgelist": "data/com-dblp.ungraph.txt.gz",
+    "youtube_edgelist": "data/com-youtube.ungraph.txt.gz",
+    "internet_edgelist": "data/as-skitter.txt.gz",
     "reps": 20,
     "seed": 2026,
     "r": 10,
@@ -16,7 +16,7 @@
   "datasets": [
     {
       "dataset": "DBLP",
-      "edgelist": "data/dblp/com-dblp.ungraph.txt",
+      "edgelist": "data/com-dblp.ungraph.txt.gz",
       "target_rank": 3,
       "n_nodes": 317080,
       "n_edges": 1049866,
@@ -24,7 +24,7 @@
     },
     {
       "dataset": "Youtube",
-      "edgelist": "/private/tmp/sign82_data/com-youtube.ungraph.txt.gz",
+      "edgelist": "data/com-youtube.ungraph.txt.gz",
       "target_rank": 7,
       "n_nodes": 1134890,
       "n_edges": 2987624,
@@ -32,7 +32,7 @@
     },
     {
       "dataset": "Internet",
-      "edgelist": "/private/tmp/sign82_data/as-skitter.txt.gz",
+      "edgelist": "data/as-skitter.txt.gz",
       "target_rank": 4,
       "n_nodes": 1696415,
       "n_edges": 11095298,

@@ -5,7 +5,9 @@
 ## 비교 방법
 
 - Random Projection (`q=2`, `r=10`)
+- CountSketch
 - Random Sampling (`p=0.7`, `p=0.8`)
+- SIGN Bidirectional
 - Non-random spectral clustering
 
 ## 현재 구현 상태
@@ -95,6 +97,13 @@ python experiments/reference_1_section8_1/exp8_1_remaining_real_networks_live.py
   --r 10 \
   --p-values 0.7,0.8
 ```
+
+정리된 5방법 산출물은 아래 폴더에 모았다.
+
+- `results/all_methods_5way/email_rank42/`
+- `results/all_methods_5way/email_rank30/`
+- `results/all_methods_5way/remaining_paper_rank/`
+- `results/all_methods_5way/remaining_rank5/`
 
 ## 출력 파일
 
