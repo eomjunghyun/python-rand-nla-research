@@ -9,6 +9,7 @@
 - 각 실험이 무엇을 재현하는지 설명한다.
 - `target rank`, `embedding rank`, `cluster count`, `F1`, `NMI`, `ARI`, `pairwise ARI` 같은 용어를 정리한다.
 - 논문 rank 결과와 rank 변경 결과를 비교한다.
+- 실행시간 지표도 함께 정리한다.
 - 표와 결과 지표를 어떤 관점에서 해석해야 하는지 설명한다.
 - 결과가 논문과 다르거나 rank 변경에 민감하게 반응한 이유를 해석한다.
 
@@ -145,6 +146,60 @@ European email에서는 논문의 F1 값보다 재현 F1이 상당히 높게 나
 Political blog의 논문 rank 결과는 NMI/ARI가 논문과 거의 같은 수준이지만 F1은 낮다. 이 역시 class imbalance, label alignment, preprocessing 차이의 영향을 받을 수 있다.
 
 Statisticians 네트워크는 true label이 없고 Non-random을 reference label로 쓰는 relative score다. 따라서 논문과 재현값 차이는 "진짜 정답과의 차이"가 아니라 "우리 구현의 randomized method가 우리 구현의 Non-random 기준을 얼마나 따라갔는지"의 차이다.
+
+### 5.3 실행시간 요약
+
+아래 표는 5방법 정리 결과의 summary CSV에 기록된 `time_total_sec`의 평균과 표준편차다. 표기 `0.257(0.024)`는 평균 실행시간이 0.257초, 표준편차가 0.024초라는 뜻이다.
+
+여기서 실행시간은 8.1 스크립트 기준의 end-to-end 시간이다. 즉 randomized embedding 또는 eigenvector 계산 뒤 KMeans까지 포함한다. 따라서 8.2의 Table 4 스타일처럼 eigenvector computation만 따로 떼어 비교하는 시간표와는 목적이 다르다. 절대 시간 자체보다는 같은 환경과 구현 안에서의 상대적 경향을 보는 것이 더 적절하다.
+
+European email 결과는 다음과 같다.
+
+| Methods | rank42 total sec | rank30 total sec |
+|---|---:|---:|
+| Random Projection | 0.257(0.024) | 0.233(0.014) |
+| CountSketch | 0.259(0.018) | 0.226(0.009) |
+| Random Sampling (p=0.7) | 0.415(0.022) | 0.369(0.023) |
+| Random Sampling (p=0.8) | 0.421(0.041) | 0.360(0.014) |
+| Non-random | 0.400(0.057) | 0.339(0.014) |
+| SIGN Bidirectional | 0.320(0.031) | 0.265(0.014) |
+
+Political blog 결과는 다음과 같다.
+
+| Methods | rank2 total sec | rank5 total sec |
+|---|---:|---:|
+| Random Projection | 0.067(0.014) | 0.101(0.011) |
+| CountSketch | 0.069(0.017) | 0.092(0.009) |
+| Random Sampling (p=0.7) | 0.085(0.023) | 0.140(0.013) |
+| Random Sampling (p=0.8) | 0.079(0.007) | 0.133(0.012) |
+| Non-random | 0.068(0.012) | 0.125(0.025) |
+| SIGN Bidirectional | 0.074(0.012) | 0.093(0.012) |
+
+Statisticians coauthor 결과는 다음과 같다.
+
+| Methods | rank3 total sec | rank5 total sec |
+|---|---:|---:|
+| Random Projection | 0.080(0.018) | 0.094(0.015) |
+| CountSketch | 0.072(0.008) | 0.099(0.015) |
+| Random Sampling (p=0.7) | 0.116(0.022) | 0.128(0.014) |
+| Random Sampling (p=0.8) | 0.108(0.009) | 0.124(0.014) |
+| SIGN Bidirectional | 0.086(0.009) | 0.112(0.011) |
+
+Statisticians citation 결과는 다음과 같다.
+
+| Methods | rank3 total sec | rank5 total sec |
+|---|---:|---:|
+| Random Projection | 0.152(0.012) | 0.127(0.038) |
+| CountSketch | 0.136(0.022) | 0.116(0.025) |
+| Random Sampling (p=0.7) | 0.222(0.044) | 0.167(0.039) |
+| Random Sampling (p=0.8) | 0.206(0.042) | 0.157(0.030) |
+| SIGN Bidirectional | 0.158(0.025) | 0.124(0.038) |
+
+European email에서는 rank를 42에서 30으로 낮추면 모든 방법의 총 실행시간이 줄어든다. Random Projection과 CountSketch가 가장 빠른 그룹이고, SIGN Bidirectional은 그 다음, Random Sampling과 Non-random은 상대적으로 더 오래 걸린다.
+
+Political blog와 statisticians 네트워크는 그래프 크기가 작아 전체 시간이 모두 짧다. 이 범위에서는 Random Projection, CountSketch, SIGN Bidirectional의 차이가 크지 않고, Random Sampling은 edge sampling과 후속 spectral clustering 비용 때문에 대체로 더 느리게 나타난다.
+
+Statisticians coauthor/citation의 5방법 summary에서는 Non-random이 reference label 생성에 쓰였고 method row로 따로 저장되지 않았다. 따라서 위 statisticians 시간표에는 randomized methods, CountSketch, sampling, SIGN만 표시했다.
 
 ## 6. 데이터셋별 상세 해석
 
