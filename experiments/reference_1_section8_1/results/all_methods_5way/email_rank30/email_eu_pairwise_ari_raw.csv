@@ -2,18 +2,18 @@ rep,method_i,method_j,ari
 1,Random Projection,CountSketch,0.7659682080023534
 1,Random Projection,SIGN Bidirectional,0.7664255594075838
 1,Random Projection,Random Sampling (p=0.7),0.7233988752851966
-1,Random Projection,Random Sampling (p=0.8),0.6859195437436139
+1,Random Projection,Random Sampling (p=0.8),0.70078422516243
 1,Random Projection,Non-random,0.7929629394796588
 1,CountSketch,SIGN Bidirectional,0.8357149704321335
 1,CountSketch,Random Sampling (p=0.7),0.7964150732868378
-1,CountSketch,Random Sampling (p=0.8),0.758472995706673
+1,CountSketch,Random Sampling (p=0.8),0.768440198877082
 1,CountSketch,Non-random,0.7877692871948351
 1,SIGN Bidirectional,Random Sampling (p=0.7),0.793743791155197
-1,SIGN Bidirectional,Random Sampling (p=0.8),0.7664383060189812
+1,SIGN Bidirectional,Random Sampling (p=0.8),0.7525924008213529
 1,SIGN Bidirectional,Non-random,0.7960876818349591
-1,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7435722728864784
+1,Random Sampling (p=0.7),Random Sampling (p=0.8),0.7833230936215112
 1,Random Sampling (p=0.7),Non-random,0.7453850458372799
-1,Random Sampling (p=0.8),Non-random,0.7219905001886644
+1,Random Sampling (p=0.8),Non-random,0.7619108640456917
 2,Random Projection,CountSketch,0.833707556147762
 2,Random Projection,SIGN Bidirectional,0.8700482919137972
 2,Random Projection,Random Sampling (p=0.7),0.7853443215918299
@@ -121,18 +121,18 @@ rep,method_i,method_j,ari
 8,Random Sampling (p=0.8),Non-random,0.6481345446366231
 9,Random Projection,CountSketch,0.7886463529812513
 9,Random Projection,SIGN Bidirectional,0.8431211748416487
-9,Random Projection,Random Sampling (p=0.7),0.7803901101908827
+9,Random Projection,Random Sampling (p=0.7),0.7620922245825422
 9,Random Projection,Random Sampling (p=0.8),0.6565000908567752
 9,Random Projection,Non-random,0.8374302958638024
 9,CountSketch,SIGN Bidirectional,0.8248019677979578
-9,CountSketch,Random Sampling (p=0.7),0.753562181785227
+9,CountSketch,Random Sampling (p=0.7),0.7719842089963198
 9,CountSketch,Random Sampling (p=0.8),0.6838846844204279
 9,CountSketch,Non-random,0.7751651613506809
-9,SIGN Bidirectional,Random Sampling (p=0.7),0.7690614125439654
+9,SIGN Bidirectional,Random Sampling (p=0.7),0.7811618893634373
 9,SIGN Bidirectional,Random Sampling (p=0.8),0.6649923696355794
 9,SIGN Bidirectional,Non-random,0.8024901236130293
-9,Random Sampling (p=0.7),Random Sampling (p=0.8),0.6855199702237064
-9,Random Sampling (p=0.7),Non-random,0.7933512203981081
+9,Random Sampling (p=0.7),Random Sampling (p=0.8),0.6743099378729345
+9,Random Sampling (p=0.7),Non-random,0.8148225687323313
 9,Random Sampling (p=0.8),Non-random,0.6963254146791414
 10,Random Projection,CountSketch,0.8135603213881485
 10,Random Projection,SIGN Bidirectional,0.7487075293699725

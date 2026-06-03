@@ -1482,9 +1482,11 @@ def run_random_projection(
     total_start = perf_counter()
     timings = {}
     n = A.shape[0]
+    ell = int(K_prime + r)
 
     t0 = perf_counter()
-    Omega = rng.standard_normal(size=(n, K_prime + r))
+    omega_scale = 1.0 / math.sqrt(float(ell))
+    Omega = rng.standard_normal(size=(n, ell)) * omega_scale
     timings["rp_draw_omega_sec"] = perf_counter() - t0
 
     t0 = perf_counter()
@@ -1994,7 +1996,8 @@ def eigvecs_random_projection_sparse(
 ):
     n = A_csr.shape[0]
     l = k + r
-    omega = rng.standard_normal((n, l))
+    omega_scale = 1.0 / math.sqrt(float(l))
+    omega = rng.standard_normal((n, l)) * omega_scale
 
     Y = omega
     for _ in range(2 * q + 1):

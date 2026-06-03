@@ -8,6 +8,7 @@
   "seed": 2026,
   "q": 2,
   "r": 10,
+  "gaussian_omega_scaling": "1/sqrt(embedding_rank + r)",
   "p_values": [
     0.7,
     0.8

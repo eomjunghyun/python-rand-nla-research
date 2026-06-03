@@ -2,7 +2,7 @@
   "datasets": [
     {
       "dataset": "DBLP",
-      "edgelist": "data/com-dblp.ungraph.txt.gz",
+      "edgelist": "data/dblp/com-dblp.ungraph.txt.gz",
       "target_rank": 3,
       "n_nodes": 317080,
       "n_edges": 1049866
@@ -26,6 +26,7 @@
   "seed": 2026,
   "q": 2,
   "r": 10,
+  "gaussian_omega_scaling": "1/sqrt(target_rank + r)",
   "p": 0.7,
   "non_random_note": "Python proxy implemented with scipy.sparse.linalg.eigsh"
 }

@@ -295,7 +295,8 @@ def gaussian_random_projection_embedding(
     ell = int(K + r)
 
     t0 = time.perf_counter()
-    Y = rng.standard_normal(size=(n, ell))
+    omega_scale = 1.0 / math.sqrt(float(ell))
+    Y = rng.standard_normal(size=(n, ell)) * omega_scale
     timings["rp_draw_omega_sec"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
@@ -883,6 +884,7 @@ def run_spec(spec: ExperimentSpec, show_progress: bool = True) -> pd.DataFrame:
     summary.to_csv(spec.summary_path, index=False)
     config = asdict(spec)
     config["methods"] = METHOD_ORDER
+    config["gaussian_omega_scaling"] = "1/sqrt(K + oversampling)"
     config["design_note"] = (
         "Density and signal are separated through primary strong-signal sweeps and weak-gap "
         "diagnostics. K sweeps include rho_n compensation for the 3-uniform within-candidate loss."
@@ -945,6 +947,7 @@ def write_report(specs: dict[str, ExperimentSpec]) -> Path:
     lines.append("- 주요 `n` sweep: `K=6`, `rho_n=16`, `a_in=36`, `b_out=4`, `n={3000,6000,9000,12000,15000}`. 같은 signal regime에서 scaling을 봅니다.")
     lines.append("- 진단용 weak-gap 블록도 함께 남겼습니다. `center=10` 근처에서 gap을 작게 잡으면 계산 speedup은 보이지만 non-random 자체가 random baseline에 머무는 것을 확인하기 위한 대조군입니다.")
     lines.append("- randomized method의 본 실험 설정은 계산 이점을 보기 위해 `oversampling=30`, `power_iter=1`, random sampling `p=0.3`으로 낮췄습니다. 별도 진단 표에서는 RP 폭/반복과 sampling 확률을 키워도 정확도가 회복되는지 확인했습니다.")
+    lines.append("- Gaussian RP의 test matrix는 `N(0, 1) / sqrt(K + oversampling)`으로 스케일링했습니다.")
     lines.append("- 확률 계산은 `clip=False`로 수행해 잘못된 큰 확률이 조용히 잘리지 않게 했습니다.")
     lines.append("")
 

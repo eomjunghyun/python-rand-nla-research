@@ -446,6 +446,7 @@ def main():
         "seed": cfg.seed,
         "q": cfg.q,
         "r": cfg.r,
+        "gaussian_omega_scaling": "1/sqrt(embedding_rank + r)",
         "p_values": list(cfg.p_values),
         "embedding_rank": cfg.embedding_rank,
         "dataset_meta": metas,

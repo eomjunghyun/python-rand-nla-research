@@ -10,6 +10,7 @@ Reference 1 Section 8.2는 대규모 sparse real network에서 eigenvector compu
 - 실행 스크립트: `experiments/reference_1_section8_2/run_sign_section8_2.py`
 - 출력 폴더: `experiments/reference_1_section8_2/results/sign_section8_2_wang2025`
 - 기존 baseline: `experiments/reference_1_section8_2/results/exp8_2_table4_paper_aligned/table4_time_raw.csv`
+- 기존 baseline의 Gaussian RP는 `N(0, 1) / sqrt(target_rank + r)` test matrix로 재실행했다.
 - SIGN Bidirectional 설정: 기존 8.2와 맞춰 oversampling `r=10`, power parameter `k=q=2`를 사용했다.
 - Section 8.2의 graph는 undirected adjacency로 읽기 때문에 `A.T`와 `A`가 같은 대칭 문제다. 따라서 여기서 SIGN Bidirectional은 비대칭 행렬용 장점보다는 양방향 subspace iteration의 runtime 특성을 보는 실험이다.
 - timing은 Table 4와 맞춰 KMeans나 accuracy 계산 없이 eigenvector approximation pipeline만 잰다.
@@ -19,7 +20,7 @@ Reference 1 Section 8.2는 대규모 sparse real network에서 eigenvector compu
 ```json
 {
   "baseline_raw_csv": "experiments/reference_1_section8_2/results/exp8_2_table4_paper_aligned/table4_time_raw.csv",
-  "dblp_edgelist": "data/com-dblp.ungraph.txt.gz",
+  "dblp_edgelist": "data/dblp/com-dblp.ungraph.txt.gz",
   "youtube_edgelist": "data/com-youtube.ungraph.txt.gz",
   "internet_edgelist": "data/as-skitter.txt.gz",
   "reps": 20,
@@ -37,7 +38,7 @@ Reference 1 Section 8.2는 대규모 sparse real network에서 eigenvector compu
 
 | dataset | edgelist | target_rank | n_nodes | n_edges | status |
 | --- | --- | --- | --- | --- | --- |
-| DBLP | data/com-dblp.ungraph.txt.gz | 3 | 317080 | 1049866 | ok |
+| DBLP | data/dblp/com-dblp.ungraph.txt.gz | 3 | 317080 | 1049866 | ok |
 | Youtube | data/com-youtube.ungraph.txt.gz | 7 | 1134890 | 2987624 | ok |
 | Internet | data/as-skitter.txt.gz | 4 | 1696415 | 11095298 | ok |
 
@@ -47,9 +48,9 @@ Table 4-like median time (seconds) over replications, with Wang 2025 SIGN Bidire
 
 | Networks | Random projection | CountSketch | SIGN Bidirectional | Random sampling | Non-random | SIGN / RP | SIGN / Non-random |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| DBLP | 0.618 | 0.635 | 1.253 | 3.119(0.391) | 0.398 | 2.03x | 3.15x |
-| Youtube | 5.517 | 5.498 | 10.265 | 11.660(1.819) | 1.446 | 1.86x | 7.10x |
-| Internet | 4.172 | 4.121 | 9.447 | 12.229(1.684) | 1.822 | 2.26x | 5.19x |
+| DBLP | 0.446 | 0.454 | 0.661 | 0.430(0.348) | 0.348 | 1.48x | 1.90x |
+| Youtube | 1.494 | 1.472 | 3.019 | 1.830(1.604) | 1.248 | 2.02x | 2.42x |
+| Internet | 2.548 | 2.576 | 3.963 | 2.403(1.760) | 1.972 | 1.56x | 2.01x |
 
 Note: Random Sampling values outside parentheses include sampling time; values inside parentheses exclude sampling time.
 
@@ -57,9 +58,9 @@ Note: Random Sampling values outside parentheses include sampling time; values i
 
 | dataset | sign_draw_omega_sec_median | sign_subspace_iter_sec_median | sign_build_core_sec_median | sign_small_eig_sec_median | sign_lift_sec_median | time_sec_median |
 | --- | --- | --- | --- | --- | --- | --- |
-| DBLP | 0.03489 | 1.184 | 0.03013 | 0.0001075 | 0.001266 | 1.253 |
-| Internet | 0.2407 | 8.818 | 0.3705 | 0.0001209 | 0.007763 | 9.447 |
-| Youtube | 0.1946 | 9.903 | 0.1508 | 0.0001494 | 0.007335 | 10.26 |
+| DBLP | 0.02307 | 0.5674 | 0.06069 | 7.081e-05 | 0.002227 | 0.6611 |
+| Internet | 0.1362 | 3.419 | 0.3851 | 7.052e-05 | 0.01501 | 3.963 |
+| Youtube | 0.1088 | 2.7 | 0.2071 | 7.708e-05 | 0.01591 | 3.019 |
 
 ## 그림
 

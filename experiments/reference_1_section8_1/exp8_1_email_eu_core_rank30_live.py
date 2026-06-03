@@ -505,6 +505,7 @@ def main():
         "seed": cfg.seed,
         "q": cfg.q,
         "r": cfg.r,
+        "gaussian_omega_scaling": "1/sqrt(target_rank + r)",
         "target_rank_used": cfg.target_rank,
         "p_values": list(cfg.p_values),
         "kmeans_n_init": cfg.n_init,

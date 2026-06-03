@@ -1,7 +1,7 @@
 {
   "config": {
     "baseline_raw_csv": "experiments/reference_1_section8_2/results/exp8_2_table4_paper_aligned/table4_time_raw.csv",
-    "dblp_edgelist": "data/com-dblp.ungraph.txt.gz",
+    "dblp_edgelist": "data/dblp/com-dblp.ungraph.txt.gz",
     "youtube_edgelist": "data/com-youtube.ungraph.txt.gz",
     "internet_edgelist": "data/as-skitter.txt.gz",
     "reps": 20,
@@ -16,7 +16,7 @@
   "datasets": [
     {
       "dataset": "DBLP",
-      "edgelist": "data/com-dblp.ungraph.txt.gz",
+      "edgelist": "data/dblp/com-dblp.ungraph.txt.gz",
       "target_rank": 3,
       "n_nodes": 317080,
       "n_edges": 1049866,
@@ -39,6 +39,7 @@
       "status": "ok"
     }
   ],
+  "baseline_gaussian_omega_scaling": "1/sqrt(target_rank + r)",
   "artifacts": {
     "sign_raw": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/sign_time_raw.csv",
     "combined_raw": "experiments/reference_1_section8_2/results/sign_section8_2_wang2025/table4_with_sign_time_raw.csv",

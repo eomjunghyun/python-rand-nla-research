@@ -358,7 +358,8 @@ def gaussian_random_projection_embedding(
     ell = int(K + r)
 
     t0 = time.perf_counter()
-    omega = rng.standard_normal(size=(n, ell))
+    omega_scale = 1.0 / math.sqrt(float(ell))
+    omega = rng.standard_normal(size=(n, ell)) * omega_scale
     timings["rp_draw_omega_sec"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
@@ -792,6 +793,8 @@ def run_spec(spec: SweepSpec, show_progress: bool = True):
     summary.to_csv(summary_path, index=False)
     config = asdict(spec)
     config["method_label"] = spec.method_label
+    if spec.method == "gaussian_random_projection":
+        config["gaussian_omega_scaling"] = "1/sqrt(K + r)"
     config["outdir"] = str(spec.outdir)
     config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
     plot_summary(summary, spec, plot_path)
@@ -1220,7 +1223,7 @@ def write_combined_report(path: Path | None = None):
         "- `K변화`: `n=5000`, `rho_n=8.0`을 고정하고 `K`를 바꿉니다.\n",
         "- `rho_n변화`: `n=5000`, `K=3`을 고정하고 `rho_n`을 바꿉니다.\n",
         "- `Non-random`: `Theta`에 대해 `eigsh`로 top-`K` 고유벡터를 직접 계산합니다.\n",
-        "- `Gaussian random projection`: Gaussian test matrix와 power iteration으로 작은 core matrix를 만든 뒤 고유벡터를 lift합니다.\n",
+        "- `Gaussian random projection`: `N(0, 1) / sqrt(ell)`로 스케일링한 Gaussian test matrix와 power iteration으로 작은 core matrix를 만든 뒤 고유벡터를 lift합니다.\n",
         "- `Random sampling`: `Theta`의 sparse nonzero entry를 확률 `p=0.7`로 샘플링하고 `1/p`로 rescale한 뒤 `eigsh`를 적용합니다.\n",
         "- 세부 표는 같은 `n`, `K`, `rho_n` 값끼리 작은 표로 묶었습니다. 볼드 처리된 행은 해당 묶음 안에서 오분류율이 가장 낮은 결과입니다. 동률이면 여러 행을 함께 표시합니다.\n",
         "\n",

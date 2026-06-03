@@ -35,5 +35,6 @@
   "random_sampling_p": 0.7,
   "kmeans_n_init": 20,
   "method_label": "Gaussian random projection",
+  "gaussian_omega_scaling": "1/sqrt(K + r)",
   "outdir": "/Users/eomjeonghyeon/Documents/github_project/python-rand-nla-research/experiments/균일 HSBM 실험/results/EXP-20260428-003_uniform_hsbm_n_scaling_gaussian_random_projection"
 }

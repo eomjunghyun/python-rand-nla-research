@@ -98,9 +98,11 @@ Random Projection은 큰 sparse adjacency matrix `A`의 leading eigenspace를 �
 | `q` | 2 | power iteration 관련 파라미터 |
 | `r` | 10 | oversampling 차원 |
 
+Gaussian test matrix는 `N(0, 1) / sqrt(k + r)`로 스케일링했다. 여기서 `k`는 dataset별 target rank다.
+
 Random Projection은 큰 matrix에서 직접 eigen decomposition을 하는 대신 matrix multiplication과 작은 matrix eigen decomposition으로 문제를 줄이는 것이 핵심이다.
 
-여기서 주의할 점은 Random Projection 시간이 "원본 행렬 전체의 완전 고유분해 시간"이 아니라는 것이다. 예를 들어 Internet 데이터셋의 Random Projection `3.771초`는 `1,696,415 x 1,696,415` 원본 행렬의 모든 eigenvalue/eigenvector를 계산한 시간이 아니다. target rank `4` 근처의 leading eigenspace를 근사하기 위해 위의 1-6단계를 수행한 전체 시간이다. 작은 matrix `Q.T @ A @ Q`의 eigen decomposition은 이 시간 안에 포함되지만, `3.771초` 전체가 작은 matrix 분해 시간만을 뜻하지도 않는다.
+여기서 주의할 점은 Random Projection 시간이 "원본 행렬 전체의 완전 고유분해 시간"이 아니라는 것이다. 예를 들어 Internet 데이터셋의 Random Projection `2.548초`는 `1,696,415 x 1,696,415` 원본 행렬의 모든 eigenvalue/eigenvector를 계산한 시간이 아니다. target rank `4` 근처의 leading eigenspace를 근사하기 위해 위의 1-6단계를 수행한 전체 시간이다. 작은 matrix `Q.T @ A @ Q`의 eigen decomposition은 이 시간 안에 포함되지만, `2.548초` 전체가 작은 matrix 분해 시간만을 뜻하지도 않는다.
 
 ### 3.2 Random Sampling
 
@@ -119,32 +121,13 @@ Table 4에서는 Random Sampling 시간을 두 가지로 표시한다.
 - 괄호 밖 값: sampling을 포함한 전체 시간
 - 괄호 안 값: sampling을 제외한 eigenvector computation 시간
 
-예를 들어 `0.310(0.209)`는 sampling 포함 median time이 0.310초이고, sampling 제외 median time이 0.209초라는 뜻이다.
+예를 들어 `0.430(0.348)`는 sampling 포함 median time이 0.430초이고, sampling 제외 median time이 0.348초라는 뜻이다.
 
 ### 3.3 CountSketch
 
 CountSketch는 Random Projection의 Gaussian test matrix를 CountSketch sparse embedding으로 바꾼 방법이다. 현재 구현에서는 Gaussian RP와 같은 oversampling `r=10`, power parameter `q=2`를 사용한다.
 
-### 3.4 Random Sampling
-
-Random Sampling은 graph edge를 확률 `p`로 샘플링해 더 작은 sparse matrix를 만든 뒤, 그 matrix에서 eigenvectors를 계산하는 방법이다.
-
-현재 설정은 다음과 같다.
-
-| 파라미터 | 값 | 의미 |
-|---|---:|---|
-| `p` | 0.7 | 각 edge를 남길 확률 |
-
-샘플링된 edge는 weight를 `1/p`로 rescale한다. 이렇게 하면 expectation 관점에서 원래 adjacency matrix의 scale을 보존한다. 예를 들어 `p=0.7`이면 edge의 약 70%만 남기고, 남은 edge에는 `1/0.7` 배의 weight를 준다.
-
-Table 4에서는 Random Sampling 시간을 두 가지로 표시한다.
-
-- 괄호 밖 값: sampling을 포함한 전체 시간
-- 괄호 안 값: sampling을 제외한 eigenvector computation 시간
-
-예를 들어 `0.310(0.209)`는 sampling 포함 median time이 0.310초이고, sampling 제외 median time이 0.209초라는 뜻이다.
-
-### 3.5 Non-random
+### 3.4 Non-random
 
 `Non-random`은 기존 partial eigen solver baseline이다. 논문에서는 R 계열 구현을 사용한다. 현재 Python 재현에서는 동일한 R 함수를 직접 호출하지 않고, `scipy.sparse.linalg.eigsh`를 이용한 proxy 구현을 사용했다.
 
@@ -156,7 +139,7 @@ Table 4에서는 Random Sampling 시간을 두 가지로 표시한다.
 
 이 차이가 8.2 재현에서 가장 큰 해석상 주의점이다.
 
-### 3.6 SIGN Bidirectional
+### 3.5 SIGN Bidirectional
 
 SIGN Bidirectional은 Wang et al. (2025)의 generalized Nyström/subspace iteration 구조를 sparse graph timing benchmark에 적용한 방법이다. 한 iteration마다 `A.T`와 `A`를 번갈아 쓰는 양방향 QR 갱신을 수행한다. Section 8.2의 graph는 undirected adjacency라 `A.T`와 `A`가 같지만, 구현은 논문 구조를 유지한다.
 
@@ -169,6 +152,8 @@ SIGN Bidirectional은 Wang et al. (2025)의 generalized Nyström/subspace iterat
 | 방법 | 측정 시간 |
 |---|---|
 | Random Projection | random projection 기반 leading eigenvector 근사 파이프라인 전체 시간 |
+| CountSketch | CountSketch 기반 leading eigenvector 근사 파이프라인 전체 시간 |
+| SIGN Bidirectional | generalized Nyström/subspace iteration 기반 leading eigenvector 근사 시간 |
 | Random Sampling | sampling + sampled matrix eigenvector 계산 시간 |
 | Random Sampling excl. sampling | sampled matrix eigenvector 계산 시간만 |
 | partial_eigen | sparse partial eigen solver 시간 |
@@ -183,13 +168,13 @@ DBLP recheck 결과에는 KMeans 시간과 내부 단계별 시간이 추가로 
 
 공식 재현 결과는 `results/exp8_2_table4_paper_aligned/table4_like_median_time.md`에 저장되어 있다.
 
-| Networks | Random Projection | Random Sampling | partial_eigen |
-|---|---:|---:|---:|
-| DBLP | 0.476 | 0.310(0.209) | 0.239 |
-| Youtube | 2.053 | 1.661(1.349) | 1.140 |
-| Internet | 3.771 | 2.952(1.680) | 1.840 |
+| Networks | Random Projection | CountSketch | SIGN Bidirectional | Random Sampling | partial_eigen |
+|---|---:|---:|---:|---:|---:|
+| DBLP | 0.446 | 0.454 | 0.661 | 0.430(0.348) | 0.348 |
+| Youtube | 1.494 | 1.472 | 3.019 | 1.830(1.604) | 1.248 |
+| Internet | 2.548 | 2.576 | 3.963 | 2.403(1.760) | 1.972 |
 
-각 값은 20회 반복의 median time이다. 단위는 초다. 특히 Internet의 Random Projection `3.771초`는 원본 Internet 행렬 전체를 완전 고유분해한 시간이 아니라, target rank `4` leading eigenspace를 Random Projection으로 근사하는 전체 파이프라인 시간이다.
+각 값은 20회 반복의 median time이다. 단위는 초다. 특히 Internet의 Random Projection `2.548초`는 원본 Internet 행렬 전체를 완전 고유분해한 시간이 아니라, target rank `4` leading eigenspace를 Random Projection으로 근사하는 전체 파이프라인 시간이다.
 
 ### 5.1 DBLP
 
@@ -197,31 +182,32 @@ DBLP에서는 다음 순서로 빨랐다.
 
 | 기준 | 가장 빠른 방법 | 해석 |
 |---|---|---|
-| sampling 포함 | partial_eigen 0.239초 | Python/scipy proxy partial eigen이 가장 빠름 |
-| sampling 제외 비교 포함 | Random Sampling excl. sampling 0.209초 | 샘플링된 matrix의 eigen 계산만 보면 Random Sampling이 가장 빠름 |
+| sampling 포함 | partial_eigen 0.348초 | Python/scipy proxy partial eigen이 가장 빠름 |
+| sampling 제외 비교 포함 | Random Sampling excl. sampling 0.348초 | 샘플링된 matrix의 eigen 계산과 partial_eigen이 거의 같은 수준 |
 
-DBLP에서 Random Projection은 0.476초로 partial_eigen보다 약 2.0배 느렸다. Random Sampling은 sampling 포함 0.310초로 partial_eigen보다 느리지만, sampling 제외 eigen 계산만 보면 0.209초로 partial_eigen보다 빠르다. 즉 DBLP에서는 sampling으로 matrix를 줄인 효과가 있지만, sampling 자체의 비용도 무시할 수 없다.
+DBLP에서 Random Projection은 0.446초로 partial_eigen보다 약 1.28배 느렸다. Random Sampling은 sampling 포함 0.430초로 partial_eigen보다 느리지만, sampling 제외 eigen 계산만 보면 0.348초로 partial_eigen과 거의 같다. 즉 DBLP에서는 sampling으로 matrix를 줄인 효과가 있지만, sampling 자체의 비용도 무시할 수 없다.
 
 ### 5.2 Youtube
 
-Youtube에서는 partial_eigen proxy가 1.140초로 가장 빠르게 나왔다. Random Sampling은 1.661초, Random Projection은 2.053초다.
+Youtube에서는 partial_eigen proxy가 1.248초로 가장 빠르게 나왔다. CountSketch는 1.472초, Random Projection은 1.494초, Random Sampling은 1.830초다.
 
 논문에서는 partial_eigen이 9.111초로 매우 느렸지만, 현재 재현에서는 훨씬 빠르다. 이 차이는 현재 `partial_eigen`이 논문과 같은 구현체가 아니라 `scipy.sparse.linalg.eigsh` proxy이기 때문이다.
 
-Youtube에서 Random Sampling은 Random Projection보다 빠르다. sampling 제외 시간은 1.349초로 더 낮다. 즉 edge sampling으로 eigen 계산 자체는 줄어들지만, 현재 환경에서는 partial_eigen proxy가 더 빠르게 동작한다.
+Youtube에서 Random Projection과 CountSketch는 비슷한 시간대를 보인다. Random Sampling의 sampling 제외 시간은 1.604초로 낮아지지만, sampling 포함 기준에서는 Random Projection/CountSketch보다 느리다. 현재 환경에서는 partial_eigen proxy가 가장 빠르게 동작한다.
 
 ### 5.3 Internet
 
 Internet은 세 데이터셋 중 edge 수가 가장 많다. 결과는 다음과 같다.
 
-- Random Projection: 3.771초
-- Random Sampling: 2.952초
-- Random Sampling excl. sampling: 1.680초
-- partial_eigen: 1.840초
+- Random Projection: 2.548초
+- CountSketch: 2.576초
+- Random Sampling: 2.403초
+- Random Sampling excl. sampling: 1.760초
+- partial_eigen: 1.972초
 
-sampling 포함 기준으로는 partial_eigen proxy가 가장 빠르다. 하지만 sampling 제외 eigen computation만 보면 Random Sampling이 1.680초로 partial_eigen보다 약간 빠르다. 이 데이터셋에서는 sampling 자체가 약 1.27초 정도의 비용을 만든다. 따라서 "sampling 후 eigen 계산"은 빠르지만 "sampling을 만드는 비용"까지 포함하면 이득이 줄어든다.
+sampling 포함 기준으로는 Random Sampling이 가장 빠르다. sampling 제외 eigen computation만 보면 Random Sampling이 1.760초로 partial_eigen보다 약간 빠르다. 이 데이터셋에서는 sampling 자체가 약 0.64초 정도의 비용을 만든다. 따라서 "sampling 후 eigen 계산"은 빠르지만 "sampling을 만드는 비용"까지 포함하면 이득이 줄어든다.
 
-여기서 Random Projection의 3.771초는 Internet 원본 행렬의 완전한 eigen decomposition 시간이 아니다. Random Projection 과정에서 sparse matrix multiplication, QR decomposition, 작은 matrix `Q.T @ A @ Q` 생성, 작은 matrix eigen decomposition, 원래 공간으로의 projection을 모두 포함한 시간이다. 즉 "전체 분해시간"이라기보다 "rank 4 leading eigenvectors를 근사하기 위한 Random Projection 전체 계산 시간"으로 해석해야 한다.
+여기서 Random Projection의 2.548초는 Internet 원본 행렬의 완전한 eigen decomposition 시간이 아니다. Random Projection 과정에서 sparse matrix multiplication, QR decomposition, 작은 matrix `Q.T @ A @ Q` 생성, 작은 matrix eigen decomposition, 원래 공간으로의 projection을 모두 포함한 시간이다. 즉 "전체 분해시간"이라기보다 "rank 4 leading eigenvectors를 근사하기 위한 Random Projection 전체 계산 시간"으로 해석해야 한다.
 
 ## 6. 논문 Table 4와 비교
 
@@ -231,39 +217,39 @@ sampling 포함 기준으로는 partial_eigen proxy가 가장 빠르다. 하지�
 
 | 방법 | 논문 | 재현 결과 | 차이 |
 |---|---:|---:|---:|
-| Random Projection | 0.369 | 0.476 | +29.1% |
-| Random Sampling | 0.280(0.248) | 0.310(0.209) | 포함시간 +10.7%, 제외시간 -15.9% |
-| partial_eigen | 0.346 | 0.239 | -30.9% |
+| Random Projection | 0.369 | 0.446 | +21.0% |
+| Random Sampling | 0.280(0.248) | 0.430(0.348) | 포함시간 +53.6%, 제외시간 +40.3% |
+| partial_eigen | 0.346 | 0.348 | +0.6% |
 
-DBLP는 세 데이터셋 중 논문값과 가장 가까운 편이다. Random Projection은 다소 느리고, Random Sampling 포함 시간은 근접하며, sampling 제외 시간은 논문보다 빠르다. partial_eigen은 재현 결과가 더 빠르다.
+DBLP는 partial_eigen이 논문값과 거의 같게 나왔다. Random Projection과 Random Sampling은 논문보다 느리며, 특히 Random Sampling은 sampling 포함/제외 시간 모두 논문보다 높다.
 
 ### 6.2 Youtube
 
 | 방법 | 논문 | 재현 결과 | 차이 |
 |---|---:|---:|---:|
-| Random Projection | 2.037 | 2.053 | +0.8% |
-| Random Sampling | 2.302(2.204) | 1.661(1.349) | 포함시간 -27.8%, 제외시간 -38.8% |
-| partial_eigen | 9.111 | 1.140 | -87.5% |
+| Random Projection | 2.037 | 1.494 | -26.7% |
+| Random Sampling | 2.302(2.204) | 1.830(1.604) | 포함시간 -20.5%, 제외시간 -27.2% |
+| partial_eigen | 9.111 | 1.248 | -86.3% |
 
-Youtube에서 Random Projection은 논문과 거의 동일하다. 반면 Random Sampling과 partial_eigen은 재현 결과가 훨씬 빠르다. 특히 partial_eigen 차이가 매우 크다. 이는 데이터 크기 차이보다는 구현체와 실행 환경 차이로 보는 것이 자연스럽다.
+Youtube에서 Random Projection, Random Sampling, partial_eigen은 모두 논문보다 빠르게 나왔다. 특히 partial_eigen 차이가 매우 크다. 이는 데이터 크기 차이보다는 구현체와 실행 환경 차이로 보는 것이 자연스럽다.
 
 ### 6.3 Internet
 
 | 방법 | 논문 | 재현 결과 | 차이 |
 |---|---:|---:|---:|
-| Random Projection | 2.773 | 3.771 | +36.0% |
-| Random Sampling | 2.072(1.774) | 2.952(1.680) | 포함시간 +42.5%, 제외시간 -5.3% |
-| partial_eigen | 7.706 | 1.840 | -76.1% |
+| Random Projection | 2.773 | 2.548 | -8.1% |
+| Random Sampling | 2.072(1.774) | 2.403(1.760) | 포함시간 +16.0%, 제외시간 -0.8% |
+| partial_eigen | 7.706 | 1.972 | -74.4% |
 
-Internet에서는 Random Projection과 sampling 포함 Random Sampling이 논문보다 느리다. 하지만 sampling 제외 시간은 논문과 가까운 편이다. partial_eigen은 재현 결과가 논문보다 훨씬 빠르다.
+Internet에서는 Random Projection이 논문보다 약간 빠르고, sampling 제외 Random Sampling은 논문과 거의 같다. sampling 포함 Random Sampling은 논문보다 느리며, partial_eigen은 재현 결과가 논문보다 훨씬 빠르다.
 
 ### 6.4 종합 비교
 
 | 데이터셋 | Random Projection | Random Sampling | partial_eigen | 종합 해석 |
 |---|---|---|---|---|
-| DBLP | 논문보다 29.1% 느림 | 포함 시간은 근접, 제외 시간은 빠름 | 재현이 더 빠름 | 부분적으로 잘 맞음 |
-| Youtube | 논문과 거의 동일 | 재현이 더 빠름 | 재현이 훨씬 빠름 | baseline 구현 차이 큼 |
-| Internet | 재현이 더 느림 | 제외 시간은 근접, 포함 시간은 느림 | 재현이 훨씬 빠름 | sampling 비용과 baseline 차이 큼 |
+| DBLP | 논문보다 21.0% 느림 | 포함/제외 모두 느림 | 논문과 거의 같음 | partial_eigen은 잘 맞고 randomized는 느림 |
+| Youtube | 재현이 더 빠름 | 재현이 더 빠름 | 재현이 훨씬 빠름 | 실행 환경/구현 차이 큼 |
+| Internet | 재현이 약간 빠름 | 제외 시간은 거의 동일, 포함 시간은 느림 | 재현이 훨씬 빠름 | sampling 비용과 baseline 차이 큼 |
 
 따라서 8.2는 실험 구조와 timing 정의는 논문에 맞지만, 절대 runtime은 부분적으로만 재현되었다고 보는 것이 맞다.
 
@@ -273,9 +259,10 @@ Internet에서는 Random Projection과 sampling 포함 Random Sampling이 논문
 
 경로: `results/exp8_2_table4_paper_aligned/viz/table4_median_bar.png`
 
-이 plot은 dataset별 median runtime을 grouped bar로 보여준다. x축은 데이터셋이고, y축은 초 단위 runtime이다. 각 데이터셋 안에는 다음 네 막대가 있다.
+이 plot은 dataset별 median runtime을 grouped bar로 보여준다. x축은 데이터셋이고, y축은 초 단위 runtime이다. baseline plot의 각 데이터셋 안에는 다음 다섯 기준이 있다.
 
 - Random Projection
+- CountSketch
 - Random Sampling
 - Random Sampling excl. sampling
 - partial_eigen
@@ -335,13 +322,13 @@ DBLP recheck에서 중요한 관찰은 다음과 같다.
 
 ### 8.1 Random Projection
 
-Random Projection은 Youtube에서 논문과 거의 같은 시간이 나왔다. DBLP와 Internet에서는 논문보다 느렸다.
+Random Projection은 DBLP에서는 논문보다 느렸지만, Youtube와 Internet에서는 논문보다 빠르게 나왔다.
 
 해석은 다음과 같다.
 
 - Random Projection은 sparse matrix multiplication을 여러 번 수행한다.
 - sparse matrix multiplication은 데이터의 sparsity pattern, 메모리 locality, BLAS/scipy 구현에 민감하다.
-- Internet처럼 edge 수가 큰 graph에서는 matrix multiplication 비용이 커져 재현 결과가 논문보다 느릴 수 있다.
+- Internet처럼 edge 수가 큰 graph에서도 구현과 실행 환경에 따라 논문보다 빠르거나 느릴 수 있다.
 
 따라서 Random Projection은 이론적으로 큰 matrix의 spectral subspace를 빠르게 근사하는 방법이지만, 실제 runtime은 sparse matrix multiplication 구현과 하드웨어 환경에 크게 좌우된다. 이 시간은 full eigen decomposition 시간이 아니라 target rank에 해당하는 leading eigenspace 근사 시간이라는 점을 보고할 때 명확히 밝혀야 한다.
 
@@ -378,9 +365,9 @@ Random Sampling 결과를 볼 때는 반드시 두 값을 분리해야 한다.
 1. Section 8.2는 accuracy가 아니라 eigenvector computation runtime 실험이다.
 2. Table 4의 Random Sampling `a(b)` 표기는 `a=샘플링 포함 시간`, `b=샘플링 제외 시간`이다.
 3. 현재 재현은 DBLP, Youtube, Internet 세 데이터셋을 대상으로 20회 반복 median을 보고했다.
-4. Youtube의 Random Projection은 논문과 거의 같은 시간으로 재현되었다.
-5. Internet의 Random Projection `3.771초`는 원본 행렬 전체 고유분해 시간이 아니라 rank `4` leading eigenspace 근사 파이프라인 시간이다.
-6. DBLP의 Random Sampling은 논문과 비교적 근접하다.
+4. Youtube의 Random Projection은 이번 scaled Gaussian 재실행에서 논문보다 빠른 1.494초로 나왔다.
+5. Internet의 Random Projection `2.548초`는 원본 행렬 전체 고유분해 시간이 아니라 rank `4` leading eigenspace 근사 파이프라인 시간이다.
+6. DBLP의 partial_eigen은 논문과 거의 같지만, Random Sampling은 포함/제외 시간 모두 논문보다 느리다.
 7. Internet의 Random Sampling은 sampling 제외 시간은 논문과 근접하지만 sampling 포함 시간은 느리다.
 8. partial_eigen은 현재 Python/scipy proxy가 논문 baseline보다 훨씬 빠르게 나와, 논문값과 절대시간 비교가 어렵다.
 9. 따라서 8.2는 실험 구조와 timing 정의는 재현되었지만, 절대 runtime은 구현체와 환경 차이 때문에 부분 재현으로 보는 것이 타당하다.

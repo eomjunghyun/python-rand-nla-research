@@ -115,6 +115,7 @@ def run_experiment(cfg: Exp82Config):
         "seed": cfg.seed,
         "q": cfg.q,
         "r": cfg.r,
+        "gaussian_omega_scaling": "1/sqrt(target_rank + r)",
         "p": cfg.p,
         "non_random_note": "Python proxy implemented with scipy.sparse.linalg.eigsh",
     }

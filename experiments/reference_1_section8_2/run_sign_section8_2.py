@@ -416,6 +416,7 @@ Reference 1 Section 8.2는 대규모 sparse real network에서 eigenvector compu
 - 실행 스크립트: `experiments/reference_1_section8_2/run_sign_section8_2.py`
 - 출력 폴더: `{cfg.outdir}`
 - 기존 baseline: `{cfg.baseline_raw_csv}`
+- 기존 baseline의 Gaussian RP는 `N(0, 1) / sqrt(target_rank + r)` test matrix로 재실행했다.
 - SIGN Bidirectional 설정: 기존 8.2와 맞춰 oversampling `r={cfg.r}`, power parameter `k=q={cfg.q}`를 사용했다.
 - Section 8.2의 graph는 undirected adjacency로 읽기 때문에 `A.T`와 `A`가 같은 대칭 문제다. 따라서 여기서 SIGN Bidirectional은 비대칭 행렬용 장점보다는 양방향 subspace iteration의 runtime 특성을 보는 실험이다.
 - timing은 Table 4와 맞춰 KMeans나 accuracy 계산 없이 eigenvector approximation pipeline만 잰다.
@@ -492,6 +493,7 @@ def run_all(cfg: Sign82Config):
             {
                 "config": asdict(cfg),
                 "datasets": dataset_meta,
+                "baseline_gaussian_omega_scaling": "1/sqrt(target_rank + r)",
                 "artifacts": {key: str(value) for key, value in paths.items()},
             },
             ensure_ascii=False,

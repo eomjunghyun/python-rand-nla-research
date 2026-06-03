@@ -88,6 +88,7 @@ def write_report(specs) -> Path:
     lines.append("- 즉, CountSketch 행렬 `S`를 scipy CSR sparse matrix로 저장하고 `S @ Theta`를 계산합니다.")
     lines.append("- `index_set_countsketch` 방식은 이번 HSBM method comparison 실행 경로에서 사용하지 않았습니다.")
     lines.append("- `n`, `K`, `rho_n`, 반복 횟수, seed, `ell = K + 160`, power iteration `q=4`, eigensolver `eigsh`, k-means 설정은 기존 비교 실험과 동일합니다.")
+    lines.append("- Gaussian RP의 test matrix는 `N(0, 1) / sqrt(ell)`로 스케일링했습니다.")
     lines.append("- raw CSV의 `cs_sparse_explicit_sketch_sec` 컬럼으로 sparse explicit sketch 단계 시간을 확인할 수 있습니다.")
     lines.append("")
     lines.append("## 전체 요약")

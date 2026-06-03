@@ -487,6 +487,7 @@ def main():
         "seed": cfg.seed,
         "q": cfg.q,
         "r": cfg.r,
+        "gaussian_omega_scaling": "1/sqrt(target_rank + r)",
         "p_values": list(cfg.p_values),
         "kmeans_n_init": cfg.n_init,
         **stats,

@@ -34,5 +34,6 @@
     "Random sampling",
     "CountSketch random projection"
   ],
+  "gaussian_omega_scaling": "1/sqrt(K + 160)",
   "method_note": "All methods are evaluated on the same generated HSBM instance for each x_value and rep."
 }

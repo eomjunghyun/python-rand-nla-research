@@ -504,6 +504,7 @@ def write_spec_outputs(spec: ComparisonSpec, df_raw: pd.DataFrame):
     summary.to_csv(summary_path, index=False)
     config = asdict(spec)
     config["methods"] = METHOD_ORDER
+    config["gaussian_omega_scaling"] = "1/sqrt(K + 160)"
     config["method_note"] = "All methods are evaluated on the same generated HSBM instance for each x_value and rep."
     config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
     plot_summary(summary, spec, plot_path)
@@ -676,6 +677,7 @@ def write_comparison_report(out_path: Path | None = None) -> Path:
     lines.append("- `rho_n변화`: `n=5000`, `K=3`을 고정하고 `rho_n`을 `{2, 4, 8, 16, 32, 64}`로 바꿉니다.")
     lines.append("- 모든 method의 eigensolver 단계는 공정한 비교를 위해 `scipy.sparse.linalg.eigsh`로 통일했습니다.")
     lines.append("- Gaussian RP와 CountSketch RP는 모두 `ell = K + 160`, power iteration `q=4`를 사용했습니다.")
+    lines.append("- Gaussian RP의 test matrix는 `N(0, 1) / sqrt(ell)`로 스케일링했습니다.")
     lines.append("- CountSketch RP는 `src/common.py`의 `generate_hash_and_signs`와 `sparse_explicit_countsketch`를 사용해 `S @ Theta`를 계산하고, `Theta`의 대칭성으로 `Theta @ S.T`를 얻습니다.")
     lines.append("- `python uniform_hsbm_method_comparison.py all --refresh-method countsketch_random_projection` 실행 경로로 기존 raw CSV의 CountSketch 행만 같은 seed와 같은 생성 인스턴스 조건에서 재계산할 수 있게 했습니다.")
     lines.append("- Random sampling은 기존과 같이 `Theta`의 sparse nonzero entry를 확률 `p=0.7`로 샘플링하고 `1/p`로 rescale한 뒤 `eigsh`를 적용했습니다.")
