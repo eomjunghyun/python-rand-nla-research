@@ -147,55 +147,79 @@ Political blog의 논문 rank 결과는 NMI/ARI가 논문과 거의 같은 수�
 
 Statisticians 네트워크는 true label이 없고 Non-random을 reference label로 쓰는 relative score다. 따라서 논문과 재현값 차이는 "진짜 정답과의 차이"가 아니라 "우리 구현의 randomized method가 우리 구현의 Non-random 기준을 얼마나 따라갔는지"의 차이다.
 
-### 5.3 실행시간 요약
+### 5.3 성능 및 실행시간 통합 요약
 
-아래 표는 5방법 정리 결과의 summary CSV에 기록된 `time_total_sec`의 평균과 표준편차다. 표기 `0.257(0.024)`는 평균 실행시간이 0.257초, 표준편차가 0.024초라는 뜻이다.
+아래 표는 5방법 정리 결과의 summary CSV에 기록된 성능 지표와 `time_total_sec`를 한꺼번에 정리한 것이다. 표기 `0.257(0.024)`는 평균이 0.257, 표준편차가 0.024라는 뜻이다.
+
+F1, NMI, ARI는 높을수록 좋으므로 각 데이터셋과 rank 안에서 가장 높은 평균값을 **bold**로 표시했다. Time은 낮을수록 좋으므로 가장 짧은 평균 실행시간을 **bold**로 표시했다. Bold 판정은 반올림 전 평균값 기준이다.
 
 여기서 실행시간은 8.1 스크립트 기준의 end-to-end 시간이다. 즉 randomized embedding 또는 eigenvector 계산 뒤 KMeans까지 포함한다. 따라서 8.2의 Table 4 스타일처럼 eigenvector computation만 따로 떼어 비교하는 시간표와는 목적이 다르다. 절대 시간 자체보다는 같은 환경과 구현 안에서의 상대적 경향을 보는 것이 더 적절하다.
 
 European email 결과는 다음과 같다.
 
-| Methods | rank42 total sec | rank30 total sec |
-|---|---:|---:|
-| Random Projection | 0.257(0.024) | 0.233(0.014) |
-| CountSketch | 0.259(0.018) | 0.226(0.009) |
-| Random Sampling (p=0.7) | 0.415(0.022) | 0.369(0.023) |
-| Random Sampling (p=0.8) | 0.421(0.041) | 0.360(0.014) |
-| Non-random | 0.400(0.057) | 0.339(0.014) |
-| SIGN Bidirectional | 0.320(0.031) | 0.265(0.014) |
+| Rank | Methods | F1 | NMI | ARI | Time total sec |
+|---|---|---:|---:|---:|---:|
+| rank42 | Random Projection | 0.315(0.018) | 0.548(0.010) | **0.091(0.008)** | **0.257(0.024)** |
+| rank42 | CountSketch | 0.318(0.015) | 0.547(0.009) | 0.090(0.008) | 0.259(0.018) |
+| rank42 | Random Sampling (p=0.7) | 0.312(0.014) | 0.527(0.010) | 0.071(0.006) | 0.415(0.022) |
+| rank42 | Random Sampling (p=0.8) | 0.325(0.014) | 0.540(0.007) | 0.074(0.008) | 0.421(0.041) |
+| rank42 | Non-random | **0.351(0.014)** | **0.557(0.007)** | 0.082(0.006) | 0.400(0.057) |
+| rank42 | SIGN Bidirectional | 0.308(0.010) | 0.542(0.010) | 0.089(0.010) | 0.320(0.031) |
+| rank30 | Random Projection | 0.320(0.013) | 0.551(0.009) | **0.100(0.012)** | 0.233(0.014) |
+| rank30 | CountSketch | 0.321(0.018) | 0.548(0.009) | 0.097(0.012) | **0.226(0.009)** |
+| rank30 | Random Sampling (p=0.7) | 0.308(0.013) | 0.531(0.008) | 0.077(0.009) | 0.369(0.023) |
+| rank30 | Random Sampling (p=0.8) | 0.327(0.014) | 0.543(0.005) | 0.083(0.007) | 0.360(0.014) |
+| rank30 | Non-random | **0.353(0.013)** | **0.568(0.005)** | 0.094(0.010) | 0.339(0.014) |
+| rank30 | SIGN Bidirectional | 0.317(0.018) | 0.548(0.008) | 0.095(0.009) | 0.265(0.014) |
 
 Political blog 결과는 다음과 같다.
 
-| Methods | rank2 total sec | rank5 total sec |
-|---|---:|---:|
-| Random Projection | 0.067(0.014) | 0.101(0.011) |
-| CountSketch | 0.069(0.017) | 0.092(0.009) |
-| Random Sampling (p=0.7) | 0.085(0.023) | 0.140(0.013) |
-| Random Sampling (p=0.8) | 0.079(0.007) | 0.133(0.012) |
-| Non-random | 0.068(0.012) | 0.125(0.025) |
-| SIGN Bidirectional | 0.074(0.012) | 0.093(0.012) |
+| Rank | Methods | F1 | NMI | ARI | Time total sec |
+|---|---|---:|---:|---:|---:|
+| rank2 | Random Projection | 0.576(0.000) | 0.178(0.000) | 0.080(0.000) | **0.067(0.014)** |
+| rank2 | CountSketch | 0.576(0.000) | 0.178(0.000) | 0.080(0.000) | 0.069(0.017) |
+| rank2 | Random Sampling (p=0.7) | 0.572(0.009) | 0.178(0.007) | 0.077(0.006) | 0.085(0.023) |
+| rank2 | Random Sampling (p=0.8) | 0.572(0.004) | 0.178(0.005) | 0.077(0.003) | 0.079(0.007) |
+| rank2 | Non-random | 0.576(0.000) | 0.178(0.000) | 0.080(0.000) | 0.068(0.012) |
+| rank2 | SIGN Bidirectional | **0.576(0.000)** | **0.178(0.000)** | **0.080(0.000)** | 0.074(0.012) |
+| rank5 | Random Projection | 0.435(0.004) | 0.042(0.006) | 0.002(0.001) | 0.101(0.011) |
+| rank5 | CountSketch | 0.434(0.007) | 0.041(0.007) | 0.002(0.001) | **0.092(0.009)** |
+| rank5 | Random Sampling (p=0.7) | 0.501(0.008) | 0.125(0.006) | 0.037(0.004) | 0.140(0.013) |
+| rank5 | Random Sampling (p=0.8) | 0.499(0.007) | 0.125(0.005) | 0.037(0.003) | 0.133(0.012) |
+| rank5 | Non-random | **0.502(0.000)** | **0.127(0.000)** | **0.038(0.000)** | 0.125(0.025) |
+| rank5 | SIGN Bidirectional | 0.431(0.010) | 0.039(0.008) | 0.002(0.001) | 0.093(0.012) |
 
 Statisticians coauthor 결과는 다음과 같다.
 
-| Methods | rank3 total sec | rank5 total sec |
-|---|---:|---:|
-| Random Projection | 0.080(0.018) | 0.094(0.015) |
-| CountSketch | 0.072(0.008) | 0.099(0.015) |
-| Random Sampling (p=0.7) | 0.116(0.022) | 0.128(0.014) |
-| Random Sampling (p=0.8) | 0.108(0.009) | 0.124(0.014) |
-| SIGN Bidirectional | 0.086(0.009) | 0.112(0.011) |
+| Rank | Methods | F1 | NMI | ARI | Time total sec |
+|---|---|---:|---:|---:|---:|
+| rank3 | Random Projection | **1.000(0.000)** | **1.000(0.000)** | **1.000(0.000)** | 0.080(0.018) |
+| rank3 | CountSketch | 0.998(0.007) | 0.996(0.019) | 0.997(0.011) | **0.072(0.008)** |
+| rank3 | Random Sampling (p=0.7) | 0.873(0.205) | 0.786(0.190) | 0.835(0.198) | 0.116(0.022) |
+| rank3 | Random Sampling (p=0.8) | 0.969(0.023) | 0.914(0.055) | 0.948(0.038) | 0.108(0.009) |
+| rank3 | SIGN Bidirectional | 0.998(0.007) | 0.994(0.020) | 0.997(0.012) | 0.086(0.009) |
+| rank5 | Random Projection | 0.991(0.023) | 0.978(0.051) | 0.985(0.036) | **0.094(0.015)** |
+| rank5 | CountSketch | 0.992(0.023) | **0.982(0.049)** | 0.988(0.035) | 0.099(0.015) |
+| rank5 | Random Sampling (p=0.7) | 0.816(0.245) | 0.766(0.151) | 0.810(0.172) | 0.128(0.014) |
+| rank5 | Random Sampling (p=0.8) | 0.781(0.298) | 0.788(0.209) | 0.809(0.226) | 0.124(0.014) |
+| rank5 | SIGN Bidirectional | **0.994(0.012)** | 0.982(0.034) | **0.989(0.020)** | 0.112(0.011) |
 
 Statisticians citation 결과는 다음과 같다.
 
-| Methods | rank3 total sec | rank5 total sec |
-|---|---:|---:|
-| Random Projection | 0.152(0.012) | 0.127(0.038) |
-| CountSketch | 0.136(0.022) | 0.116(0.025) |
-| Random Sampling (p=0.7) | 0.222(0.044) | 0.167(0.039) |
-| Random Sampling (p=0.8) | 0.206(0.042) | 0.157(0.030) |
-| SIGN Bidirectional | 0.158(0.025) | 0.124(0.038) |
+| Rank | Methods | F1 | NMI | ARI | Time total sec |
+|---|---|---:|---:|---:|---:|
+| rank3 | Random Projection | **0.984(0.005)** | **0.936(0.021)** | **0.973(0.011)** | 0.152(0.012) |
+| rank3 | CountSketch | 0.984(0.005) | 0.935(0.018) | 0.972(0.009) | **0.136(0.022)** |
+| rank3 | Random Sampling (p=0.7) | 0.937(0.010) | 0.797(0.024) | 0.899(0.016) | 0.222(0.044) |
+| rank3 | Random Sampling (p=0.8) | 0.950(0.011) | 0.830(0.025) | 0.917(0.014) | 0.206(0.042) |
+| rank3 | SIGN Bidirectional | 0.971(0.014) | 0.896(0.038) | 0.953(0.021) | 0.158(0.025) |
+| rank5 | Random Projection | 0.898(0.124) | 0.752(0.267) | 0.794(0.267) | 0.127(0.038) |
+| rank5 | CountSketch | **0.921(0.102)** | **0.797(0.225)** | **0.848(0.220)** | **0.116(0.025)** |
+| rank5 | Random Sampling (p=0.7) | 0.854(0.116) | 0.634(0.218) | 0.732(0.232) | 0.167(0.039) |
+| rank5 | Random Sampling (p=0.8) | 0.835(0.132) | 0.602(0.261) | 0.685(0.266) | 0.157(0.030) |
+| rank5 | SIGN Bidirectional | 0.805(0.131) | 0.548(0.263) | 0.610(0.264) | 0.124(0.038) |
 
-European email에서는 rank를 42에서 30으로 낮추면 모든 방법의 총 실행시간이 줄어든다. Random Projection과 CountSketch가 가장 빠른 그룹이고, SIGN Bidirectional은 그 다음, Random Sampling과 Non-random은 상대적으로 더 오래 걸린다.
+European email에서는 rank를 42에서 30으로 낮추면 모든 방법의 총 실행시간이 줄어든다. Random Projection과 CountSketch가 가장 빠른 그룹이고, 성능 최고값은 F1/NMI 기준으로 Non-random, ARI 기준으로 Random Projection에 걸려 있다.
 
 Political blog와 statisticians 네트워크는 그래프 크기가 작아 전체 시간이 모두 짧다. 이 범위에서는 Random Projection, CountSketch, SIGN Bidirectional의 차이가 크지 않고, Random Sampling은 edge sampling과 후속 spectral clustering 비용 때문에 대체로 더 느리게 나타난다.
 
