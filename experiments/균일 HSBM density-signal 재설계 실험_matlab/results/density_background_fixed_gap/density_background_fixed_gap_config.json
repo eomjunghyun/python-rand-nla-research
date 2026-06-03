@@ -1,0 +1,36 @@
+{
+  "kind": "redesigned",
+  "name": "density_background_fixed_gap",
+  "sweep": "density_background_fixed_gap",
+  "title": "Density sweep with stronger fixed signal gap",
+  "x_col": "density_level",
+  "x_values": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "n": 6000,
+  "K": 6,
+  "m": 3,
+  "a_in": 36,
+  "b_out": 4,
+  "rho_n": null,
+  "center": 10,
+  "base_gap": 4,
+  "reps": 5,
+  "seed": 2.026050701E+9,
+  "rp_oversampling": 30,
+  "rp_power_iter": 1,
+  "random_sampling_p": 0.3,
+  "kmeans_n_init": 20,
+  "eigs_tol": 1E-6,
+  "clip_probs": false,
+  "methods": [
+    "Non-random eigs",
+    "Gaussian RP",
+    "Random sampling",
+    "CountSketch RP"
+  ]
+}

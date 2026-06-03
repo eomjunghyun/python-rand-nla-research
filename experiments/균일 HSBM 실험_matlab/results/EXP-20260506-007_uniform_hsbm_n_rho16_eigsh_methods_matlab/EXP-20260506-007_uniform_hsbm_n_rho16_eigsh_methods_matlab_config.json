@@ -1,0 +1,36 @@
+{
+  "kind": "uniform",
+  "name": "EXP-20260506-007_uniform_hsbm_n_rho16_eigsh_methods_matlab",
+  "sweep": "n",
+  "title": "Uniform HSBM n scaling - MATLAB method comparison",
+  "x_col": "n",
+  "x_values": [
+    2000,
+    4000,
+    6000,
+    8000,
+    10000
+  ],
+  "n": null,
+  "K": 3,
+  "m": 3,
+  "a_in": 36,
+  "b_out": 4,
+  "rho_n": 16,
+  "center": 10,
+  "base_gap": 4,
+  "reps": 10,
+  "seed": 2.0260506E+7,
+  "rp_oversampling": 160,
+  "rp_power_iter": 4,
+  "random_sampling_p": 0.7,
+  "kmeans_n_init": 20,
+  "eigs_tol": 1E-6,
+  "clip_probs": true,
+  "methods": [
+    "Non-random eigs",
+    "Gaussian RP",
+    "Random sampling",
+    "CountSketch RP"
+  ]
+}

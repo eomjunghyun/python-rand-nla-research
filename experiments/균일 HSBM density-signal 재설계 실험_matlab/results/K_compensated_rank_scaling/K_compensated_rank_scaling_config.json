@@ -1,0 +1,36 @@
+{
+  "kind": "redesigned",
+  "name": "K_compensated_rank_scaling",
+  "sweep": "K_compensated_rank_scaling",
+  "title": "Weak-gap diagnostic: K sweep with rho_n compensation",
+  "x_col": "K",
+  "x_values": [
+    3,
+    4,
+    6,
+    8,
+    10
+  ],
+  "n": 6000,
+  "K": null,
+  "m": 3,
+  "a_in": 36,
+  "b_out": 4,
+  "rho_n": null,
+  "center": 10,
+  "base_gap": 4,
+  "reps": 5,
+  "seed": 2.026050705E+9,
+  "rp_oversampling": 30,
+  "rp_power_iter": 1,
+  "random_sampling_p": 0.3,
+  "kmeans_n_init": 20,
+  "eigs_tol": 1E-6,
+  "clip_probs": false,
+  "methods": [
+    "Non-random eigs",
+    "Gaussian RP",
+    "Random sampling",
+    "CountSketch RP"
+  ]
+}

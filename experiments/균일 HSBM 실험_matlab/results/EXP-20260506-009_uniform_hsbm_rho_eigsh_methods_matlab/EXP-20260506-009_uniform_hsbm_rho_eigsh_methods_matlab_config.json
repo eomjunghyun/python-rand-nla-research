@@ -1,0 +1,37 @@
+{
+  "kind": "uniform",
+  "name": "EXP-20260506-009_uniform_hsbm_rho_eigsh_methods_matlab",
+  "sweep": "rho_n",
+  "title": "Uniform HSBM rho_n sweep - MATLAB method comparison",
+  "x_col": "rho_n",
+  "x_values": [
+    2,
+    4,
+    8,
+    16,
+    32,
+    64
+  ],
+  "n": 5000,
+  "K": 3,
+  "m": 3,
+  "a_in": 36,
+  "b_out": 4,
+  "rho_n": null,
+  "center": 10,
+  "base_gap": 4,
+  "reps": 10,
+  "seed": 2.0260506E+7,
+  "rp_oversampling": 160,
+  "rp_power_iter": 4,
+  "random_sampling_p": 0.7,
+  "kmeans_n_init": 20,
+  "eigs_tol": 1E-6,
+  "clip_probs": true,
+  "methods": [
+    "Non-random eigs",
+    "Gaussian RP",
+    "Random sampling",
+    "CountSketch RP"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "kind": "redesigned",
+  "name": "n_scaling_fixed_density_signal",
+  "sweep": "n_scaling_fixed_density_signal",
+  "title": "Weak-gap diagnostic: n scaling at fixed density-signal regime",
+  "x_col": "n",
+  "x_values": [
+    3000,
+    6000,
+    9000,
+    12000,
+    15000
+  ],
+  "n": null,
+  "K": 6,
+  "m": 3,
+  "a_in": 36,
+  "b_out": 4,
+  "rho_n": 32,
+  "center": 10,
+  "base_gap": 4,
+  "reps": 5,
+  "seed": 2.026050706E+9,
+  "rp_oversampling": 30,
+  "rp_power_iter": 1,
+  "random_sampling_p": 0.3,
+  "kmeans_n_init": 20,
+  "eigs_tol": 1E-6,
+  "clip_probs": false,
+  "methods": [
+    "Non-random eigs",
+    "Gaussian RP",
+    "Random sampling",
+    "CountSketch RP"
+  ]
+}

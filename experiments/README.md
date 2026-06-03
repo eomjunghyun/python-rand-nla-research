@@ -2,6 +2,8 @@
 
 - `메인 실험/`: 과거 비균일 HSBM의 `n` 변화, 큰 `n` 변화, `K` 변화 실험 기록. 현재 `src.common`에서는 비균일 HSBM 생성 함수가 제거되어 새 실험 기준 API는 아니다.
 - `균일 HSBM 실험/`: planted `d`-uniform HSBM의 `n` 변화 실험
+- `균일 HSBM 실험_matlab/`: 균일 HSBM method comparison의 MATLAB 독립 구현과 실행 결과
+- `균일 HSBM density-signal 재설계 실험_matlab/`: density-signal 재설계 실험의 MATLAB 독립 구현과 실행 결과
 - `nonuniform_hsbm_scaling/`: 초기 비균일 HSBM 스케일링 작업 폴더. 현재는 legacy 기록으로만 둔다.
 - `reference_1_section7_1/`: 논문 Section 7.1 Experiments 1-4 재현 노트북
 - `reference_1_section7_2/`: 논문 Section 7.2 Models 1-6 재현 스크립트
