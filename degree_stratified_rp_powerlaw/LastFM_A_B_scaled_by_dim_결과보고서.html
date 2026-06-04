@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>LastFM Asia Normalized Adjacency에서 Degree-Stratified RP 성능 분석</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      word-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">LastFM Asia Normalized Adjacency에서 Degree-Stratified RP 성능 분석</h1>
+</header>
+<h1 id="lastfm-asia-normalized-adjacency에서-degree-stratified-rp-성능-분석">LastFM Asia Normalized Adjacency에서 Degree-Stratified RP 성능 분석</h1>
+<h2 id="요약">0. 요약</h2>
+<p>본 실험은 LastFM Asia 그래프에서 normalized adjacency를 사용할 때, 표준 Gaussian Randomized Projection과 Degree-Stratified Randomized Projection의 label 기반 clustering 성능을 비교한 것입니다.</p>
+<p>실험의 핵심 질문은 다음과 같습니다.</p>
+<ol type="1">
+<li>Power-law degree structure를 갖는 실제 그래프에서 degree-stratified sketch가 표준 Gaussian sketch보다 label 구조를 더 잘 보존하는지 확인합니다.</li>
+<li>Oversampling dimension <code>r</code>이 증가할 때 두 방법의 성능 차이가 어떻게 변하는지 확인합니다.</li>
+<li>성능 개선이 전체 node에서만 나타나는지, 특정 degree group에서 더 강하게 나타나는지 확인합니다.</li>
+</ol>
+<p>주요 결론은 다음과 같습니다.</p>
+<blockquote>
+<p><strong>LastFM Asia의 normalized adjacency 조건에서 Degree-Stratified RP는 <code>r=10</code> 이후 Gaussian RP보다 높은 Macro F1, ARI, NMI를 보였습니다. 개선폭은 특히 degree 3-8의 mid-degree node group에서 가장 크게 나타났습니다.</strong></p>
+</blockquote>
+<p>전체 node 기준 주요 결과는 다음과 같습니다.</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">r</th>
+<th style="text-align: right;">Gaussian RP Macro F1</th>
+<th style="text-align: right;">Degree-Stratified RP Macro F1</th>
+<th style="text-align: right;">개선폭</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0.2239</td>
+<td style="text-align: right;"><strong>0.2757</strong></td>
+<td style="text-align: right;"><strong>+0.0518</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.2326</td>
+<td style="text-align: right;"><strong>0.2965</strong></td>
+<td style="text-align: right;"><strong>+0.0639</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">0.2654</td>
+<td style="text-align: right;"><strong>0.3500</strong></td>
+<td style="text-align: right;"><strong>+0.0846</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Mid-degree node group에서는 개선폭이 더 크게 관찰되었습니다.</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">r</th>
+<th style="text-align: right;">Gaussian RP Macro F1</th>
+<th style="text-align: right;">Degree-Stratified RP Macro F1</th>
+<th style="text-align: right;">개선폭</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0.2003</td>
+<td style="text-align: right;"><strong>0.2685</strong></td>
+<td style="text-align: right;"><strong>+0.0682</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.2123</td>
+<td style="text-align: right;"><strong>0.2904</strong></td>
+<td style="text-align: right;"><strong>+0.0781</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">0.2402</td>
+<td style="text-align: right;"><strong>0.3507</strong></td>
+<td style="text-align: right;"><strong>+0.1105</strong></td>
+</tr>
+</tbody>
+</table>
+<p>이번 실험에서는 Gaussian test matrix의 entry variance를 sketch dimension으로 나누는 scaling을 적용했습니다. 즉 Gaussian RP는 <code>Omega_ij ~ N(0, 1/ell)</code>, DS-RP는 bucket별 <code>G_j ~ N(0, 1/ell_j)</code>를 사용했습니다. 이 scaling은 randomized eigenspace approximation에서 column space를 바꾸지 않는 형태이므로, label 성능 지표는 unscaled Gaussian 실험과 동일하게 재현되었습니다.</p>
+<hr />
+<h2 id="실험-목적">1. 실험 목적</h2>
+<p>Power-law graph에서는 대부분의 node가 낮은 degree를 갖고, 소수의 hub node가 매우 높은 degree를 갖습니다. 이러한 degree heterogeneity는 spectral embedding에서 중요한 영향을 줄 수 있습니다.</p>
+<p>표준 Gaussian RP는 모든 node coordinate를 동일한 방식으로 섞는 degree-blind sketch입니다.</p>
+<pre class="text"><code>Y = S Omega</code></pre>
+<p>반면 Degree-Stratified RP는 node를 degree scale별 bucket으로 나누고, 각 bucket에 별도의 sketch dimension을 배정합니다.</p>
+<pre class="text"><code>Y = [S[:, B_1]G_1, S[:, B_2]G_2, ..., S[:, B_s]G_s]</code></pre>
+<p>이 방식은 low-degree, mid-degree, high-degree 영역의 정보가 sketch에 명시적으로 반영되도록 설계한 것입니다. 본 실험은 이 아이디어가 실제 LastFM Asia 그래프에서 clustering 성능 향상으로 이어지는지 확인하는 것을 목표로 합니다.</p>
+<hr />
+<h2 id="실험-설정">2. 실험 설정</h2>
+<h3 id="데이터셋">2.1 데이터셋</h3>
+<p>사용한 데이터셋은 LastFM Asia social network입니다.</p>
+<table>
+<thead>
+<tr class="header">
+<th>항목</th>
+<th style="text-align: right;">값</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Node 수</td>
+<td style="text-align: right;">7,624</td>
+</tr>
+<tr class="even">
+<td>Edge 수</td>
+<td style="text-align: right;">27,806</td>
+</tr>
+<tr class="odd">
+<td>Label class 수</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr class="even">
+<td>Largest connected component</td>
+<td style="text-align: right;">전체 7,624 nodes</td>
+</tr>
+<tr class="odd">
+<td>Degree min</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td>Degree median</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="odd">
+<td>Degree mean</td>
+<td style="text-align: right;">7.294</td>
+</tr>
+<tr class="even">
+<td>Degree q75</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr class="odd">
+<td>Degree q90</td>
+<td style="text-align: right;">16</td>
+</tr>
+<tr class="even">
+<td>Degree q99</td>
+<td style="text-align: right;">55.77</td>
+</tr>
+<tr class="odd">
+<td>Degree max</td>
+<td style="text-align: right;">216</td>
+</tr>
+<tr class="even">
+<td>Degree Gini</td>
+<td style="text-align: right;">0.583</td>
+</tr>
+<tr class="odd">
+<td>Tail log-log CCDF R²</td>
+<td style="text-align: right;">0.973</td>
+</tr>
+</tbody>
+</table>
+<p>Degree Gini와 tail log-log CCDF R²가 높으므로, LastFM Asia는 power-law 성격이 강한 그래프라고 볼 수 있습니다.</p>
+<h3 id="graph-operator">2.2 Graph operator</h3>
+<p>본 실험에서는 raw adjacency <code>A</code>가 아니라 normalized adjacency를 사용했습니다.</p>
+<pre class="text"><code>S = D^{-1/2} A D^{-1/2}</code></pre>
+<p>더 일반적으로는 다음 degree-tempered operator의 특수한 경우입니다.</p>
+<pre class="text"><code>S_{alpha,tau} = D_tau^{-alpha} A D_tau^{-alpha}
+D_tau = D + tau I</code></pre>
+<p>이번 실험에서는 다음 값을 고정했습니다.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th style="text-align: right;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>alpha</code></td>
+<td style="text-align: right;">0.5</td>
+</tr>
+<tr class="even">
+<td><code>tau</code></td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td><code>q</code></td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td><code>k</code></td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr class="odd">
+<td><code>r</code></td>
+<td style="text-align: right;">0, 2, 5, 10, 20, 40</td>
+</tr>
+<tr class="even">
+<td><code>reps</code></td>
+<td style="text-align: right;">10</td>
+</tr>
+<tr class="odd">
+<td><code>kmeans_n_init</code></td>
+<td style="text-align: right;">20</td>
+</tr>
+</tbody>
+</table>
+<p>즉 본 실험은 pure normalized adjacency 조건에서 두 randomized projection 방법을 비교한 것입니다.</p>
+<hr />
+<h2 id="비교-방법">3. 비교 방법</h2>
+<h3 id="gaussian-rp">3.1 Gaussian RP</h3>
+<p>Gaussian RP는 전체 node coordinate에 대해 하나의 dense Gaussian test matrix를 사용합니다.</p>
+<pre class="text"><code>Omega in R^{n x ell}
+Omega_ij ~ N(0, 1/ell)
+Y = S Omega</code></pre>
+<p>여기서 <code>ell = k + r</code>입니다. 모든 node coordinate가 같은 random sketch matrix 안에서 함께 섞이므로, degree scale별 정보를 따로 보장하지는 않습니다.</p>
+<h3 id="degree-stratified-rp">3.2 Degree-Stratified RP</h3>
+<p>Degree-Stratified RP는 먼저 raw graph degree를 기준으로 node를 logarithmic bucket으로 나눕니다.</p>
+<pre class="text"><code>B_j = { i : 2^j &lt;= d_i &lt; 2^{j+1} }</code></pre>
+<p>각 bucket의 mass는 다음과 같이 정의했습니다.</p>
+<pre class="text"><code>M_j = sum_{i in B_j} d_i</code></pre>
+<p>전체 sketch dimension <code>ell = k+r</code>은 bucket mass의 square root에 비례하도록 배정했습니다.</p>
+<pre class="text"><code>ell_j approximately proportional to sqrt(M_j)</code></pre>
+<p>이후 각 bucket에 대해 별도의 Gaussian matrix를 만들고, bucket별 sketch를 계산합니다.</p>
+<pre class="text"><code>G_j ~ N(0, 1/ell_j)^{|B_j| x ell_j}
+Y_j = S[:, B_j] G_j
+Y = [Y_1, ..., Y_s]</code></pre>
+<p>이 설계는 hub bucket에 더 많은 sketch dimension을 주되, mass에 정비례시키지는 않기 때문에 hub bucket이 전체 sketch budget을 독점하지 않도록 합니다.</p>
+<hr />
+<h2 id="평가-방법">4. 평가 방법</h2>
+<p>각 방법으로 approximate eigenvectors를 구한 뒤, row normalization과 k-means clustering을 적용했습니다. Clustering 결과는 실제 label과 비교했습니다.</p>
+<p>사용한 지표는 다음과 같습니다.</p>
+<table>
+<thead>
+<tr class="header">
+<th>지표</th>
+<th>의미</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Macro F1</td>
+<td>Hungarian matching 후 class별 F1을 평균</td>
+</tr>
+<tr class="even">
+<td>ARI</td>
+<td>Adjusted Rand Index</td>
+</tr>
+<tr class="odd">
+<td>NMI</td>
+<td>Normalized Mutual Information</td>
+</tr>
+</tbody>
+</table>
+<p>전체 node뿐 아니라 degree group별 성능도 함께 평가했습니다.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Group</th>
+<th>조건</th>
+<th style="text-align: right;">Node 수</th>
+<th style="text-align: right;">포함 class 수</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>all</code></td>
+<td>전체 node</td>
+<td style="text-align: right;">7,624</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr class="even">
+<td><code>low_deg_1_2</code></td>
+<td>degree 1-2</td>
+<td style="text-align: right;">2,942</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr class="odd">
+<td><code>mid_deg_3_8</code></td>
+<td>degree 3-8</td>
+<td style="text-align: right;">2,847</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr class="even">
+<td><code>high_deg_9_plus</code></td>
+<td>degree 9 이상</td>
+<td style="text-align: right;">1,835</td>
+<td style="text-align: right;">17</td>
+</tr>
+</tbody>
+</table>
+<p>위 degree group은 결과 해석을 위한 evaluation group입니다. 알고리즘 내부 bucket은 logarithmic degree bucket을 그대로 사용했습니다.</p>
+<hr />
+<h2 id="전체-node-결과">5. 전체 Node 결과</h2>
+<p>전체 node 기준 결과는 다음과 같습니다.</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">r</th>
+<th style="text-align: right;">Gaussian F1</th>
+<th style="text-align: right;">DS-RP F1</th>
+<th style="text-align: right;">Gaussian ARI</th>
+<th style="text-align: right;">DS-RP ARI</th>
+<th style="text-align: right;">Gaussian NMI</th>
+<th style="text-align: right;">DS-RP NMI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.2133</td>
+<td style="text-align: right;">0.2050</td>
+<td style="text-align: right;">0.0644</td>
+<td style="text-align: right;"><strong>0.0807</strong></td>
+<td style="text-align: right;">0.1475</td>
+<td style="text-align: right;"><strong>0.1795</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><strong>0.2229</strong></td>
+<td style="text-align: right;">0.2144</td>
+<td style="text-align: right;">0.0703</td>
+<td style="text-align: right;"><strong>0.0873</strong></td>
+<td style="text-align: right;">0.1535</td>
+<td style="text-align: right;"><strong>0.1987</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.2175</td>
+<td style="text-align: right;"><strong>0.2256</strong></td>
+<td style="text-align: right;">0.0665</td>
+<td style="text-align: right;"><strong>0.0870</strong></td>
+<td style="text-align: right;">0.1492</td>
+<td style="text-align: right;"><strong>0.1996</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0.2239</td>
+<td style="text-align: right;"><strong>0.2757</strong></td>
+<td style="text-align: right;">0.0726</td>
+<td style="text-align: right;"><strong>0.1164</strong></td>
+<td style="text-align: right;">0.1592</td>
+<td style="text-align: right;"><strong>0.2427</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.2326</td>
+<td style="text-align: right;"><strong>0.2965</strong></td>
+<td style="text-align: right;">0.0808</td>
+<td style="text-align: right;"><strong>0.1377</strong></td>
+<td style="text-align: right;">0.1689</td>
+<td style="text-align: right;"><strong>0.2713</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">0.2654</td>
+<td style="text-align: right;"><strong>0.3500</strong></td>
+<td style="text-align: right;">0.1019</td>
+<td style="text-align: right;"><strong>0.1995</strong></td>
+<td style="text-align: right;">0.1967</td>
+<td style="text-align: right;"><strong>0.3431</strong></td>
+</tr>
+</tbody>
+</table>
+<p>주요 관찰은 다음과 같습니다.</p>
+<ul>
+<li><code>r=0,2</code>에서는 Macro F1 기준으로 Gaussian RP가 비슷하거나 약간 높습니다.</li>
+<li><code>r=5</code>부터 DS-RP의 Macro F1이 Gaussian RP를 앞서기 시작합니다.</li>
+<li><code>r=10</code> 이후에는 DS-RP가 Macro F1, ARI, NMI에서 모두 Gaussian RP보다 높습니다.</li>
+<li><code>r=40</code>에서 전체 Macro F1은 Gaussian RP 0.2654, DS-RP 0.3500으로, 개선폭은 +0.0846입니다.</li>
+</ul>
+<hr />
+<h2 id="paired-difference-분석">6. Paired Difference 분석</h2>
+<p>동일한 반복 번호끼리 맞춰 다음 차이를 계산했습니다.</p>
+<pre class="text"><code>차이 = Degree-Stratified RP - Gaussian RP</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">r</th>
+<th style="text-align: right;">Macro F1 차이</th>
+<th style="text-align: right;">차이 표준편차</th>
+<th style="text-align: right;">ARI 차이</th>
+<th style="text-align: right;">ARI 표준편차</th>
+<th style="text-align: right;">NMI 차이</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">-0.0083</td>
+<td style="text-align: right;">0.0247</td>
+<td style="text-align: right;">+0.0164</td>
+<td style="text-align: right;">0.0182</td>
+<td style="text-align: right;">+0.0320</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">-0.0085</td>
+<td style="text-align: right;">0.0318</td>
+<td style="text-align: right;">+0.0170</td>
+<td style="text-align: right;">0.0174</td>
+<td style="text-align: right;">+0.0452</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">+0.0081</td>
+<td style="text-align: right;">0.0209</td>
+<td style="text-align: right;">+0.0205</td>
+<td style="text-align: right;">0.0158</td>
+<td style="text-align: right;">+0.0504</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;"><strong>+0.0518</strong></td>
+<td style="text-align: right;">0.0253</td>
+<td style="text-align: right;"><strong>+0.0438</strong></td>
+<td style="text-align: right;">0.0245</td>
+<td style="text-align: right;"><strong>+0.0836</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;"><strong>+0.0639</strong></td>
+<td style="text-align: right;">0.0270</td>
+<td style="text-align: right;"><strong>+0.0569</strong></td>
+<td style="text-align: right;">0.0169</td>
+<td style="text-align: right;"><strong>+0.1024</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;"><strong>+0.0846</strong></td>
+<td style="text-align: right;">0.0256</td>
+<td style="text-align: right;"><strong>+0.0976</strong></td>
+<td style="text-align: right;">0.0211</td>
+<td style="text-align: right;"><strong>+0.1463</strong></td>
+</tr>
+</tbody>
+</table>
+<p><code>r=10,20,40</code>에서는 Macro F1 개선폭이 반복 간 표준편차보다 크게 관찰되었습니다. 이 구간에서는 DS-RP의 개선이 시행별 변동보다 뚜렷하다고 볼 수 있습니다.</p>
+<hr />
+<h2 id="degree-group별-결과">7. Degree Group별 결과</h2>
+<h3 id="low-degree-node-degree-1-2">7.1 Low-degree node: degree 1-2</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">r</th>
+<th style="text-align: right;">Gaussian F1</th>
+<th style="text-align: right;">DS-RP F1</th>
+<th style="text-align: right;">Gaussian ARI</th>
+<th style="text-align: right;">DS-RP ARI</th>
+<th style="text-align: right;">Gaussian NMI</th>
+<th style="text-align: right;">DS-RP NMI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><strong>0.1451</strong></td>
+<td style="text-align: right;">0.1362</td>
+<td style="text-align: right;"><strong>0.0243</strong></td>
+<td style="text-align: right;">0.0203</td>
+<td style="text-align: right;">0.0817</td>
+<td style="text-align: right;"><strong>0.0934</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><strong>0.1506</strong></td>
+<td style="text-align: right;">0.1504</td>
+<td style="text-align: right;"><strong>0.0248</strong></td>
+<td style="text-align: right;">0.0245</td>
+<td style="text-align: right;">0.0821</td>
+<td style="text-align: right;"><strong>0.1063</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.1487</td>
+<td style="text-align: right;"><strong>0.1584</strong></td>
+<td style="text-align: right;"><strong>0.0249</strong></td>
+<td style="text-align: right;">0.0247</td>
+<td style="text-align: right;">0.0812</td>
+<td style="text-align: right;"><strong>0.1055</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0.1460</td>
+<td style="text-align: right;"><strong>0.1869</strong></td>
+<td style="text-align: right;">0.0255</td>
+<td style="text-align: right;"><strong>0.0350</strong></td>
+<td style="text-align: right;">0.0838</td>
+<td style="text-align: right;"><strong>0.1275</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.1575</td>
+<td style="text-align: right;"><strong>0.2000</strong></td>
+<td style="text-align: right;">0.0296</td>
+<td style="text-align: right;"><strong>0.0435</strong></td>
+<td style="text-align: right;">0.0903</td>
+<td style="text-align: right;"><strong>0.1443</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">0.1767</td>
+<td style="text-align: right;"><strong>0.2486</strong></td>
+<td style="text-align: right;">0.0367</td>
+<td style="text-align: right;"><strong>0.0742</strong></td>
+<td style="text-align: right;">0.1049</td>
+<td style="text-align: right;"><strong>0.1952</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Low-degree group은 구조 정보 자체가 제한적이므로 절대 성능은 낮습니다. 그러나 <code>r=10</code> 이후에는 DS-RP가 모든 지표에서 Gaussian RP보다 높게 나타났습니다.</p>
+<h3 id="mid-degree-node-degree-3-8">7.2 Mid-degree node: degree 3-8</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">r</th>
+<th style="text-align: right;">Gaussian F1</th>
+<th style="text-align: right;">DS-RP F1</th>
+<th style="text-align: right;">Gaussian ARI</th>
+<th style="text-align: right;">DS-RP ARI</th>
+<th style="text-align: right;">Gaussian NMI</th>
+<th style="text-align: right;">DS-RP NMI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.1878</td>
+<td style="text-align: right;"><strong>0.1931</strong></td>
+<td style="text-align: right;">0.0454</td>
+<td style="text-align: right;"><strong>0.0679</strong></td>
+<td style="text-align: right;">0.1363</td>
+<td style="text-align: right;"><strong>0.1831</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.1978</td>
+<td style="text-align: right;"><strong>0.2086</strong></td>
+<td style="text-align: right;">0.0502</td>
+<td style="text-align: right;"><strong>0.0747</strong></td>
+<td style="text-align: right;">0.1435</td>
+<td style="text-align: right;"><strong>0.2016</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.1976</td>
+<td style="text-align: right;"><strong>0.2179</strong></td>
+<td style="text-align: right;">0.0476</td>
+<td style="text-align: right;"><strong>0.0751</strong></td>
+<td style="text-align: right;">0.1407</td>
+<td style="text-align: right;"><strong>0.2048</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0.2003</td>
+<td style="text-align: right;"><strong>0.2685</strong></td>
+<td style="text-align: right;">0.0539</td>
+<td style="text-align: right;"><strong>0.1041</strong></td>
+<td style="text-align: right;">0.1514</td>
+<td style="text-align: right;"><strong>0.2499</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.2123</td>
+<td style="text-align: right;"><strong>0.2904</strong></td>
+<td style="text-align: right;">0.0610</td>
+<td style="text-align: right;"><strong>0.1271</strong></td>
+<td style="text-align: right;">0.1617</td>
+<td style="text-align: right;"><strong>0.2810</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">0.2402</td>
+<td style="text-align: right;"><strong>0.3507</strong></td>
+<td style="text-align: right;">0.0783</td>
+<td style="text-align: right;"><strong>0.1973</strong></td>
+<td style="text-align: right;">0.1870</td>
+<td style="text-align: right;"><strong>0.3656</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Mid-degree group에서 가장 큰 개선폭이 관찰되었습니다.</p>
+<ul>
+<li><code>r=40</code>에서 Macro F1 개선폭은 +0.1105입니다.</li>
+<li><code>r=40</code>에서 ARI 개선폭은 +0.1191입니다.</li>
+<li><code>r=40</code>에서 NMI 개선폭은 +0.1786입니다.</li>
+</ul>
+<p>이 결과는 degree-stratified sketch가 hub에만 치우치지 않고, 중간 degree 영역의 label structure를 더 잘 보존할 가능성을 보여줍니다.</p>
+<h3 id="high-degree-node-degree-9-이상">7.3 High-degree node: degree 9 이상</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">r</th>
+<th style="text-align: right;">Gaussian F1</th>
+<th style="text-align: right;">DS-RP F1</th>
+<th style="text-align: right;">Gaussian ARI</th>
+<th style="text-align: right;">DS-RP ARI</th>
+<th style="text-align: right;">Gaussian NMI</th>
+<th style="text-align: right;">DS-RP NMI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><strong>0.3373</strong></td>
+<td style="text-align: right;">0.3042</td>
+<td style="text-align: right;">0.2421</td>
+<td style="text-align: right;"><strong>0.3082</strong></td>
+<td style="text-align: right;">0.3919</td>
+<td style="text-align: right;"><strong>0.4318</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><strong>0.3509</strong></td>
+<td style="text-align: right;">0.3141</td>
+<td style="text-align: right;">0.2686</td>
+<td style="text-align: right;"><strong>0.3132</strong></td>
+<td style="text-align: right;">0.4047</td>
+<td style="text-align: right;"><strong>0.4565</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;"><strong>0.3559</strong></td>
+<td style="text-align: right;">0.3331</td>
+<td style="text-align: right;">0.2508</td>
+<td style="text-align: right;"><strong>0.3092</strong></td>
+<td style="text-align: right;">0.3981</td>
+<td style="text-align: right;"><strong>0.4554</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0.3627</td>
+<td style="text-align: right;"><strong>0.4042</strong></td>
+<td style="text-align: right;">0.2744</td>
+<td style="text-align: right;"><strong>0.3953</strong></td>
+<td style="text-align: right;">0.4200</td>
+<td style="text-align: right;"><strong>0.5327</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.3743</td>
+<td style="text-align: right;"><strong>0.4321</strong></td>
+<td style="text-align: right;">0.2930</td>
+<td style="text-align: right;"><strong>0.4389</strong></td>
+<td style="text-align: right;">0.4315</td>
+<td style="text-align: right;"><strong>0.5736</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">0.4242</td>
+<td style="text-align: right;"><strong>0.4819</strong></td>
+<td style="text-align: right;">0.3542</td>
+<td style="text-align: right;"><strong>0.5334</strong></td>
+<td style="text-align: right;">0.4877</td>
+<td style="text-align: right;"><strong>0.6548</strong></td>
+</tr>
+</tbody>
+</table>
+<p>High-degree group에서는 작은 <code>r</code>에서 Gaussian RP의 F1이 더 높지만, ARI와 NMI는 초기 구간부터 DS-RP가 높게 나타났습니다. <code>r=10</code> 이후에는 F1도 DS-RP가 더 높았습니다.</p>
+<hr />
+<h2 id="runtime-결과">8. Runtime 결과</h2>
+<p>전체 node 기준 10회 반복 평균 runtime은 다음과 같습니다. 단위는 초입니다.</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">r</th>
+<th style="text-align: right;">Gaussian embedding sec</th>
+<th style="text-align: right;">DS-RP embedding sec</th>
+<th style="text-align: right;">Gaussian total sec</th>
+<th style="text-align: right;">DS-RP total sec</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0063</td>
+<td style="text-align: right;">0.0081</td>
+<td style="text-align: right;">0.6652</td>
+<td style="text-align: right;">0.5295</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.0081</td>
+<td style="text-align: right;">0.0086</td>
+<td style="text-align: right;">0.6664</td>
+<td style="text-align: right;">0.5803</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.0082</td>
+<td style="text-align: right;">0.0114</td>
+<td style="text-align: right;">0.6785</td>
+<td style="text-align: right;">0.5971</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0.0117</td>
+<td style="text-align: right;">0.0144</td>
+<td style="text-align: right;">0.6920</td>
+<td style="text-align: right;">0.6247</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.0268</td>
+<td style="text-align: right;">0.0412</td>
+<td style="text-align: right;">0.7064</td>
+<td style="text-align: right;">0.6430</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">0.0515</td>
+<td style="text-align: right;">0.0669</td>
+<td style="text-align: right;">0.7092</td>
+<td style="text-align: right;">0.6665</td>
+</tr>
+</tbody>
+</table>
+<p>Embedding 계산만 보면 DS-RP가 Gaussian RP보다 느립니다. 이는 bucket별 sketch를 구성하고 concatenate하는 추가 연산이 있기 때문입니다. 다만 total time은 k-means 시간까지 포함하므로, embedding time만으로 알고리즘의 계산 비용을 해석하는 것이 더 적절합니다.</p>
+<hr />
+<h2 id="scaling에-대한-해석">9. Scaling에 대한 해석</h2>
+<p>이번 실험에서는 Gaussian test matrix의 entry variance를 sketch dimension으로 나누었습니다.</p>
+<pre class="text"><code>Gaussian RP: Omega -&gt; Omega / sqrt(ell)
+DS-RP:       G_j -&gt; G_j / sqrt(ell_j)</code></pre>
+<p>일반적인 random projection embedding에서는 이러한 scaling이 norm preservation 관점에서 자연스럽습니다. 그러나 본 알고리즘은 random projection 결과 자체를 최종 embedding으로 쓰는 것이 아니라, <code>range(S Omega)</code> 또는 <code>range([S[:,B_j]G_j]_j)</code>를 통해 approximate eigenspace를 구합니다.</p>
+<p>따라서 위 scaling은 각 sketch block에 nonzero scalar를 곱하는 효과를 가지며, exact arithmetic에서는 column space를 바꾸지 않습니다. 실제 실험에서도 scaled version과 unscaled version의 label 성능 지표는 동일하게 재현되었습니다.</p>
+<p>이 결과는 DS-RP의 성능 개선이 단순한 Gaussian variance scaling 때문이 아니라, degree scale별 sketch 구조에서 나온다는 점을 시사합니다.</p>
+<hr />
+<h2 id="결론">10. 결론</h2>
+<p>본 실험에서는 LastFM Asia normalized adjacency 조건에서 Degree-Stratified RP가 Gaussian RP보다 더 좋은 label 기반 clustering 성능을 보이는 구간이 명확하게 관찰되었습니다.</p>
+<p>핵심 결과는 다음과 같습니다.</p>
+<ul>
+<li>전체 node 기준으로 <code>r=10</code> 이후 DS-RP가 Macro F1, ARI, NMI에서 모두 Gaussian RP보다 높았습니다.</li>
+<li><code>r=40</code>에서 전체 Macro F1은 Gaussian RP 0.2654, DS-RP 0.3500으로 개선폭은 +0.0846입니다.</li>
+<li>가장 큰 개선은 mid-degree group에서 나타났으며, <code>r=40</code> 기준 Macro F1 개선폭은 +0.1105입니다.</li>
+<li>Scaling을 적용해도 성능 결과는 기존 unscaled 실험과 동일하게 재현되었습니다.</li>
+</ul>
+<p>따라서 본 실험은 다음 주장을 뒷받침합니다.</p>
+<blockquote>
+<p><strong>Power-law graph에서 Gaussian sketch가 충분히 degree-scale별 구조를 보존하지 못하는 구간이 존재하며, Degree-Stratified RP는 이 구간에서 label 구조를 더 잘 보존할 수 있습니다.</strong></p>
+</blockquote>
+</body>
+</html>

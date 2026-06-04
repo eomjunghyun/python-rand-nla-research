@@ -50,6 +50,7 @@ class StratumExperimentConfig:
     ell_min: int = 1
     normalize_embedding_rows: bool = True
     kmeans_n_init: int = 20
+    scale_test_matrix_by_dim: bool = False
     max_n: int = 0
     subgraph_mode: str = "none"
     no_plots: bool = False
@@ -93,7 +94,14 @@ def run_one_method(S, degrees, y_true, K, cfg: StratumExperimentConfig, r: int, 
     rng = np.random.default_rng(seed)
     t0 = time.perf_counter()
     if method == "Gaussian RP":
-        _, U, timings = gaussian_random_projection(S, K, r, cfg.q, rng)
+        _, U, timings = gaussian_random_projection(
+            S,
+            K,
+            r,
+            cfg.q,
+            rng,
+            scale_by_dim=cfg.scale_test_matrix_by_dim,
+        )
         bucket_rows = []
     elif method == "Degree-stratified RP":
         _, U, timings, bucket_rows = degree_stratified_random_projection(
@@ -104,6 +112,7 @@ def run_one_method(S, degrees, y_true, K, cfg: StratumExperimentConfig, r: int, 
             cfg.ell_min,
             rng,
             bucket_degrees=degrees,
+            scale_by_dim=cfg.scale_test_matrix_by_dim,
         )
     else:
         raise ValueError(method)
@@ -120,6 +129,7 @@ def run_one_method(S, degrees, y_true, K, cfg: StratumExperimentConfig, r: int, 
         "ell": int(K + r),
         "k": int(K),
         "q": int(cfg.q),
+        "test_matrix_scaling": "by_dim" if cfg.scale_test_matrix_by_dim else "none",
         "embedding_wall_sec": float(embedding_sec),
         "clustering_wall_sec": float(clustering_sec),
         "total_method_wall_sec": float(embedding_sec + clustering_sec),
@@ -266,7 +276,8 @@ def run_experiment(cfg: StratumExperimentConfig):
 
     print(
         f"Loaded {cfg.dataset_name}: n={A.shape[0]}, m={A.nnz // 2}, "
-        f"classes={np.unique(y_true).size}, k={K}, alpha={cfg.alpha}, tau={cfg.tau}"
+        f"classes={np.unique(y_true).size}, k={K}, alpha={cfg.alpha}, tau={cfg.tau}, "
+        f"test_matrix_scaling={'by_dim' if cfg.scale_test_matrix_by_dim else 'none'}"
     )
 
     rows = []
@@ -369,6 +380,11 @@ def parse_args():
     parser.add_argument("--ell-min", type=int, default=1)
     parser.add_argument("--no-normalize-embedding-rows", action="store_true")
     parser.add_argument("--kmeans-n-init", type=int, default=20)
+    parser.add_argument(
+        "--scale-test-matrix-by-dim",
+        action="store_true",
+        help="Scale Gaussian test matrix entries by the inverse square root of their sketch dimension.",
+    )
     parser.add_argument("--max-n", type=int, default=0)
     parser.add_argument(
         "--subgraph-mode",
@@ -395,6 +411,7 @@ def main():
         ell_min=args.ell_min,
         normalize_embedding_rows=not args.no_normalize_embedding_rows,
         kmeans_n_init=args.kmeans_n_init,
+        scale_test_matrix_by_dim=args.scale_test_matrix_by_dim,
         max_n=args.max_n,
         subgraph_mode=args.subgraph_mode,
         no_plots=args.no_plots,
@@ -404,4 +421,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

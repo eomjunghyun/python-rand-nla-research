@@ -234,6 +234,7 @@ def gaussian_random_projection(
     r: int,
     q: int,
     rng: np.random.Generator,
+    scale_by_dim: bool = False,
 ):
     n = int(A.shape[0])
     ell = int(k + r)
@@ -241,7 +242,12 @@ def gaussian_random_projection(
 
     t0 = time.perf_counter()
     omega = rng.standard_normal((n, ell))
+    if scale_by_dim:
+        omega /= math.sqrt(ell)
     timings["rp_draw_omega_sec"] = time.perf_counter() - t0
+    timings["rp_test_matrix_entry_std"] = float(
+        1.0 / math.sqrt(ell) if scale_by_dim else 1.0
+    )
 
     t0 = time.perf_counter()
     Y = omega
@@ -369,6 +375,7 @@ def degree_stratified_random_projection(
     ell_min: int,
     rng: np.random.Generator,
     bucket_degrees: np.ndarray | None = None,
+    scale_by_dim: bool = False,
 ):
     ell = int(k + r)
     timings: dict[str, Any] = {}
@@ -391,6 +398,8 @@ def degree_stratified_random_projection(
     for bucket, dim in zip(buckets, dims):
         idx = bucket["idx"]
         G = rng.standard_normal((idx.size, int(dim)))
+        if scale_by_dim:
+            G /= math.sqrt(int(dim))
         parts.append(A[:, idx] @ G)
     Y = np.hstack(parts)
     timings["ds_draw_and_initial_multiply_sec"] = time.perf_counter() - t0
@@ -424,6 +433,9 @@ def degree_stratified_random_projection(
                 "mass": float(bucket["mass"]),
                 "sqrt_mass": float(math.sqrt(max(0.0, bucket["mass"]))),
                 "sketch_dim": int(dim),
+                "test_matrix_entry_std": float(
+                    1.0 / math.sqrt(int(dim)) if scale_by_dim else 1.0
+                ),
             }
         )
     timings["ds_num_buckets"] = int(len(buckets))
