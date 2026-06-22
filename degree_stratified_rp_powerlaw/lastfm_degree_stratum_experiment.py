@@ -14,6 +14,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from scipy.sparse.linalg import eigsh
 from sklearn.metrics import adjusted_rand_score, f1_score, normalized_mutual_info_score
 
 from degree_stratified_rp_powerlaw import (
@@ -26,13 +27,15 @@ from degree_stratified_rp_powerlaw import (
 )
 from lastfm_operator_r_sweep import (
     degree_tempered_operator,
+    load_cora,
     load_lastfm_asia,
+    load_polblogs,
     parse_csv_list,
     select_subgraph,
 )
 
 
-METHODS = ("Gaussian RP", "Degree-stratified RP")
+METHODS = ("Exact spectral", "Gaussian RP", "Degree-stratified RP")
 
 
 @dataclass(frozen=True)
@@ -40,6 +43,7 @@ class StratumExperimentConfig:
     dataset_path: Path
     outdir: Path = Path("results/lastfm_degree_stratum_alpha05_tau0")
     dataset_name: str = "lastfm-asia"
+    dataset_kind: str = "auto"
     r_values: tuple[int, ...] = (0, 2, 5, 10, 20, 40)
     alpha: float = 0.5
     tau: str = "0"
@@ -50,7 +54,7 @@ class StratumExperimentConfig:
     ell_min: int = 1
     normalize_embedding_rows: bool = True
     kmeans_n_init: int = 20
-    scale_test_matrix_by_dim: bool = False
+    scale_test_matrix_by_dim: bool = True
     max_n: int = 0
     subgraph_mode: str = "none"
     no_plots: bool = False
@@ -90,10 +94,51 @@ def cluster_embedding(U: np.ndarray, y_true: np.ndarray, K: int, rng, cfg: Strat
     return kmeans_on_rows(X, K, rng, n_init=cfg.kmeans_n_init)
 
 
-def run_one_method(S, degrees, y_true, K, cfg: StratumExperimentConfig, r: int, rep: int, seed: int, method: str):
+def deterministic_eigsh_start(n: int):
+    idx = np.arange(1, int(n) + 1, dtype=float)
+    v0 = np.sin(12.9898 * idx) + np.cos(78.233 * idx)
+    norm = np.linalg.norm(v0)
+    if not np.isfinite(norm) or norm == 0.0:
+        v0 = np.ones(int(n), dtype=float)
+        norm = np.linalg.norm(v0)
+    return v0 / norm
+
+
+def exact_spectral_embedding(S, K: int):
+    t0 = time.perf_counter()
+    vals, U = eigsh(S, k=int(K), which="LM", v0=deterministic_eigsh_start(S.shape[0]))
+    eigsh_sec = time.perf_counter() - t0
+    order = np.argsort(np.abs(vals))[::-1]
+    vals = vals[order]
+    U = U[:, order]
+    timings = {
+        "exact_eigsh_sec": float(eigsh_sec),
+        "eigen_decomposition_wall_sec": float(eigsh_sec),
+    }
+    return vals, U, timings
+
+
+def run_one_method(
+    S,
+    degrees,
+    y_true,
+    K,
+    cfg: StratumExperimentConfig,
+    r: int,
+    rep: int,
+    seed: int,
+    method: str,
+    exact_result=None,
+):
     rng = np.random.default_rng(seed)
     t0 = time.perf_counter()
-    if method == "Gaussian RP":
+    if method == "Exact spectral":
+        if exact_result is None:
+            raise ValueError("Exact spectral baseline requires a cached exact_result.")
+        _, U, exact_timings = exact_result
+        timings = dict(exact_timings)
+        bucket_rows = []
+    elif method == "Gaussian RP":
         _, U, timings = gaussian_random_projection(
             S,
             K,
@@ -117,6 +162,8 @@ def run_one_method(S, degrees, y_true, K, cfg: StratumExperimentConfig, r: int, 
     else:
         raise ValueError(method)
     embedding_sec = time.perf_counter() - t0
+    if method == "Exact spectral":
+        embedding_sec = float(timings["eigen_decomposition_wall_sec"])
 
     t0 = time.perf_counter()
     y_pred = cluster_embedding(U, y_true, K, rng, cfg)
@@ -126,7 +173,7 @@ def run_one_method(S, degrees, y_true, K, cfg: StratumExperimentConfig, r: int, 
         "method": method,
         "rep": int(rep),
         "r": int(r),
-        "ell": int(K + r),
+        "ell": int(K if method == "Exact spectral" else K + r),
         "k": int(K),
         "q": int(cfg.q),
         "test_matrix_scaling": "by_dim" if cfg.scale_test_matrix_by_dim else "none",
@@ -204,7 +251,11 @@ def plot_results(summary: pd.DataFrame, paired: pd.DataFrame, outdir: Path):
         ("ARI_true_mean", "ARI"),
         ("NMI_true_mean", "NMI"),
     ]
-    colors = {"Gaussian RP": "#4C78A8", "Degree-stratified RP": "#E45756"}
+    colors = {
+        "Exact spectral": "#222222",
+        "Gaussian RP": "#4C78A8",
+        "Degree-stratified RP": "#E45756",
+    }
     for group in ["all", "low_deg_1_2", "mid_deg_3_8", "high_deg_9_plus"]:
         block = summary[summary["group"] == group]
         if block.empty:
@@ -213,6 +264,8 @@ def plot_results(summary: pd.DataFrame, paired: pd.DataFrame, outdir: Path):
         for ax, (col, ylabel) in zip(axes, metrics):
             for method in METHODS:
                 d = block[block["method"] == method].sort_values("r")
+                if d.empty:
+                    continue
                 std_col = col.replace("_mean", "_std")
                 ax.errorbar(
                     d["r"],
@@ -223,6 +276,7 @@ def plot_results(summary: pd.DataFrame, paired: pd.DataFrame, outdir: Path):
                     capsize=3,
                     label=method,
                     color=colors[method],
+                    linestyle="--" if method == "Exact spectral" else "-",
                 )
             ax.set_title(ylabel)
             ax.set_xlabel("r")
@@ -255,7 +309,24 @@ def plot_results(summary: pd.DataFrame, paired: pd.DataFrame, outdir: Path):
 
 def run_experiment(cfg: StratumExperimentConfig):
     cfg.outdir.mkdir(parents=True, exist_ok=True)
-    A_full, y_full, ids_full, source_meta = load_lastfm_asia(cfg.dataset_path)
+    dataset_kind = cfg.dataset_kind.lower()
+    if dataset_kind == "auto":
+        name = cfg.dataset_name.lower()
+        suffix = cfg.dataset_path.suffix.lower()
+        if "cora" in name or suffix in {".tgz", ".gz"}:
+            dataset_kind = "cora"
+        elif "polblog" in name:
+            dataset_kind = "polblogs"
+        else:
+            dataset_kind = "musae"
+    if dataset_kind == "cora":
+        A_full, y_full, ids_full, source_meta = load_cora(cfg.dataset_path)
+    elif dataset_kind == "polblogs":
+        A_full, y_full, ids_full, source_meta = load_polblogs(cfg.dataset_path)
+    elif dataset_kind in {"musae", "lastfm", "deezer"}:
+        A_full, y_full, ids_full, source_meta = load_lastfm_asia(cfg.dataset_path)
+    else:
+        raise ValueError(f"Unknown dataset kind: {cfg.dataset_kind}")
     A, y_true, ids, subgraph_meta = select_subgraph(
         A_full, y_full, ids_full, cfg.max_n, cfg.subgraph_mode
     )
@@ -279,6 +350,8 @@ def run_experiment(cfg: StratumExperimentConfig):
         f"classes={np.unique(y_true).size}, k={K}, alpha={cfg.alpha}, tau={cfg.tau}, "
         f"test_matrix_scaling={'by_dim' if cfg.scale_test_matrix_by_dim else 'none'}"
     )
+    print("Computing exact spectral baseline...", flush=True)
+    exact_result = exact_spectral_embedding(S, K)
 
     rows = []
     bucket_rows_all = []
@@ -298,6 +371,7 @@ def run_experiment(cfg: StratumExperimentConfig):
                     rep,
                     seed=rep_seed + 10_000 * (method_index + 1),
                     method=method,
+                    exact_result=exact_result,
                 )
                 for group, mask in strata.items():
                     metrics = label_metrics_for_pred(y_true[mask], y_pred[mask], K)
@@ -370,6 +444,12 @@ def parse_args():
     parser.add_argument("--dataset-path", type=Path, required=True)
     parser.add_argument("--outdir", type=Path, default=Path("results/lastfm_degree_stratum_alpha05_tau0"))
     parser.add_argument("--dataset-name", type=str, default="lastfm-asia")
+    parser.add_argument(
+        "--dataset-kind",
+        choices=["auto", "musae", "lastfm", "deezer", "cora", "polblogs"],
+        default="auto",
+        help="Dataset loader to use. 'musae' covers LastFM/Deezer-style edge/target CSV archives.",
+    )
     parser.add_argument("--r-values", type=str, default="0,2,5,10,20,40")
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--tau", type=str, default="0")
@@ -382,7 +462,8 @@ def parse_args():
     parser.add_argument("--kmeans-n-init", type=int, default=20)
     parser.add_argument(
         "--scale-test-matrix-by-dim",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
+        default=True,
         help="Scale Gaussian test matrix entries by the inverse square root of their sketch dimension.",
     )
     parser.add_argument("--max-n", type=int, default=0)
@@ -401,6 +482,7 @@ def main():
         dataset_path=args.dataset_path,
         outdir=args.outdir,
         dataset_name=args.dataset_name,
+        dataset_kind=args.dataset_kind,
         r_values=parse_csv_list(args.r_values, int),
         alpha=args.alpha,
         tau=args.tau,

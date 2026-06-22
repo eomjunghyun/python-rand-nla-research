@@ -212,7 +212,6 @@ def rayleigh_ritz_from_sketch(A: sp.csr_matrix, Y: np.ndarray, k: int):
     t0 = time.perf_counter()
     AQ = A @ Q
     B = Q.T @ AQ
-    B = 0.5 * (B + B.T)
     timings["build_core_sec"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
@@ -234,7 +233,7 @@ def gaussian_random_projection(
     r: int,
     q: int,
     rng: np.random.Generator,
-    scale_by_dim: bool = False,
+    scale_by_dim: bool = True,
 ):
     n = int(A.shape[0])
     ell = int(k + r)
@@ -375,7 +374,7 @@ def degree_stratified_random_projection(
     ell_min: int,
     rng: np.random.Generator,
     bucket_degrees: np.ndarray | None = None,
-    scale_by_dim: bool = False,
+    scale_by_dim: bool = True,
 ):
     ell = int(k + r)
     timings: dict[str, Any] = {}

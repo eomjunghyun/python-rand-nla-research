@@ -7,6 +7,8 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
+import tarfile
 import zipfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -157,6 +159,141 @@ def load_lastfm_asia(path: Path):
         "label_mapping_original_to_zero_based": label_mapping,
     }
     return A, y, all_ids, meta
+
+
+def load_cora(path: Path):
+    path = Path(path)
+
+    def read_from_archive(archive_path: Path):
+        if archive_path.is_file() and archive_path.suffix.lower() in {".tgz", ".gz"}:
+            with tarfile.open(archive_path, "r:*") as tf:
+                names = tf.getnames()
+                content_name = next(n for n in names if n.endswith("cora.content"))
+                cites_name = next(n for n in names if n.endswith("cora.cites"))
+                with tf.extractfile(content_name) as f:
+                    content = pd.read_csv(f, sep="\t", header=None)
+                with tf.extractfile(cites_name) as f:
+                    cites = pd.read_csv(f, sep="\t", header=None, names=["source", "target"])
+            return content, cites, {
+                "archive_file": str(archive_path),
+                "content_member": content_name,
+                "cites_member": cites_name,
+            }
+        if archive_path.is_dir():
+            content_file = next(archive_path.rglob("cora.content"))
+            cites_file = next(archive_path.rglob("cora.cites"))
+            content = pd.read_csv(content_file, sep="\t", header=None)
+            cites = pd.read_csv(cites_file, sep="\t", header=None, names=["source", "target"])
+            return content, cites, {
+                "content_file": str(content_file),
+                "cites_file": str(cites_file),
+            }
+        raise FileNotFoundError(f"Expected Cora .tgz/.tar.gz archive or directory, got {archive_path}")
+
+    content, cites, source_meta = read_from_archive(path)
+    paper_ids = content.iloc[:, 0].to_numpy(dtype=np.int64)
+    labels_raw = content.iloc[:, -1].astype(str)
+    label_codes, label_names = pd.factorize(labels_raw, sort=True)
+
+    id_to_idx = {int(node_id): i for i, node_id in enumerate(paper_ids)}
+    cites = cites.dropna().astype(np.int64)
+    cites = cites[cites["source"].isin(id_to_idx) & cites["target"].isin(id_to_idx)]
+    rows = cites["source"].map(id_to_idx).to_numpy(dtype=np.int32)
+    cols = cites["target"].map(id_to_idx).to_numpy(dtype=np.int32)
+
+    n = int(len(paper_ids))
+    data = np.ones(rows.size, dtype=np.float32)
+    A = sp.coo_matrix((data, (rows, cols)), shape=(n, n)).tocsr()
+    A = A.maximum(A.T)
+    A.setdiag(0)
+    A.eliminate_zeros()
+
+    meta = {
+        **source_meta,
+        "dataset_format": "linqs_cora",
+        "num_features": int(content.shape[1] - 2),
+        "num_citation_rows": int(cites.shape[0]),
+        "labels": [str(x) for x in label_names.tolist()],
+        "label_counts": {
+            str(label): int(count)
+            for label, count in labels_raw.value_counts().sort_index().items()
+        },
+    }
+    return A, label_codes.astype(np.int64), paper_ids, meta
+
+
+def load_polblogs(path: Path):
+    path = Path(path)
+    if path.is_file() and path.suffix.lower() == ".zip":
+        with zipfile.ZipFile(path) as zf:
+            gml_name = next(n for n in zf.namelist() if n.lower().endswith(".gml"))
+            txt_name = next((n for n in zf.namelist() if n.lower().endswith(".txt")), None)
+            text = zf.read(gml_name).decode("latin1")
+            readme = zf.read(txt_name).decode("latin1") if txt_name else ""
+            source_meta = {"zip_file": str(path), "gml_member": gml_name, "readme_member": txt_name}
+    elif path.is_dir():
+        gml_file = next(path.rglob("*.gml"))
+        text = gml_file.read_text(encoding="latin1")
+        readme_file = next(path.rglob("*.txt"), None)
+        readme = readme_file.read_text(encoding="latin1") if readme_file else ""
+        source_meta = {"gml_file": str(gml_file), "readme_file": str(readme_file) if readme_file else None}
+    else:
+        raise FileNotFoundError(f"Expected PolBlogs .zip archive or directory, got {path}")
+
+    node_blocks = re.findall(r"node\s*\[(.*?)\]", text, flags=re.S)
+    edge_blocks = re.findall(r"edge\s*\[(.*?)\]", text, flags=re.S)
+
+    node_ids = []
+    labels = []
+    blog_labels = []
+    sources = []
+    for block in node_blocks:
+        node_id = int(re.search(r"\bid\s+(-?\d+)", block).group(1))
+        value = int(re.search(r"\bvalue\s+(-?\d+)", block).group(1))
+        label_match = re.search(r'\blabel\s+"(.*?)"', block, flags=re.S)
+        source_match = re.search(r'\bsource\s+"(.*?)"', block, flags=re.S)
+        node_ids.append(node_id)
+        labels.append(value)
+        blog_labels.append(label_match.group(1) if label_match else "")
+        sources.append(source_match.group(1) if source_match else "")
+
+    id_to_idx = {node_id: i for i, node_id in enumerate(node_ids)}
+    rows = []
+    cols = []
+    dropped_edges = 0
+    for block in edge_blocks:
+        source = int(re.search(r"\bsource\s+(-?\d+)", block).group(1))
+        target = int(re.search(r"\btarget\s+(-?\d+)", block).group(1))
+        if source in id_to_idx and target in id_to_idx:
+            rows.append(id_to_idx[source])
+            cols.append(id_to_idx[target])
+        else:
+            dropped_edges += 1
+
+    n = len(node_ids)
+    data = np.ones(len(rows), dtype=np.float32)
+    A = sp.coo_matrix((data, (rows, cols)), shape=(n, n)).tocsr()
+    A = A.maximum(A.T)
+    A.setdiag(0)
+    A.eliminate_zeros()
+
+    labels_arr = np.asarray(labels, dtype=np.int64)
+    meta = {
+        **source_meta,
+        "dataset_format": "newman_gml_polblogs",
+        "directed_source_graph": True,
+        "symmetrized_for_experiment": True,
+        "num_gml_nodes": int(n),
+        "num_gml_directed_edges": int(len(edge_blocks)),
+        "num_dropped_edges": int(dropped_edges),
+        "label_meaning": {"0": "left_or_liberal", "1": "right_or_conservative"},
+        "label_counts": {
+            "left_or_liberal": int(np.sum(labels_arr == 0)),
+            "right_or_conservative": int(np.sum(labels_arr == 1)),
+        },
+        "readme_excerpt": readme[:600],
+    }
+    return A, labels_arr, np.asarray(node_ids, dtype=np.int64), meta
 
 
 def largest_connected_component(A: sp.csr_matrix):

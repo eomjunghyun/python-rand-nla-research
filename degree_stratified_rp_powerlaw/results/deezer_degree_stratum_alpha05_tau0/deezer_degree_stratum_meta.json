@@ -1,0 +1,99 @@
+{
+  "config": {
+    "dataset_path": "..\\data\\deezer_europe\\deezer_europe.zip",
+    "outdir": "results\\deezer_degree_stratum_alpha05_tau0",
+    "dataset_name": "deezer-europe",
+    "dataset_kind": "deezer",
+    "r_values": [
+      0,
+      2,
+      5,
+      10,
+      20,
+      40
+    ],
+    "alpha": 0.5,
+    "tau": "0",
+    "k": null,
+    "q": 1,
+    "reps": 10,
+    "seed": 20260519,
+    "ell_min": 1,
+    "normalize_embedding_rows": true,
+    "kmeans_n_init": 20,
+    "scale_test_matrix_by_dim": true,
+    "max_n": 0,
+    "subgraph_mode": "none",
+    "no_plots": false
+  },
+  "source": {
+    "zip_file": "..\\data\\deezer_europe\\deezer_europe.zip",
+    "edge_member": "deezer_europe/deezer_europe_edges.csv",
+    "target_member": "deezer_europe/deezer_europe_target.csv",
+    "edge_columns": [
+      "node_1",
+      "node_2"
+    ],
+    "target_columns": [
+      "id",
+      "target"
+    ],
+    "label_mapping_original_to_zero_based": {
+      "0": 0,
+      "1": 1
+    }
+  },
+  "graph": {
+    "full_nodes": 28281,
+    "full_edges": 92752,
+    "experiment_nodes": 28281,
+    "experiment_edges": 92752,
+    "num_classes": 2,
+    "k_used": 2,
+    "subgraph_mode": "largest-connected-component",
+    "component_sizes_top10": [
+      28281
+    ],
+    "degree_min": 1.0,
+    "degree_q25": 2.0,
+    "degree_median": 4.0,
+    "degree_mean": 6.559315204620361,
+    "degree_q75": 8.0,
+    "degree_q90": 15.0,
+    "degree_q99": 38.0,
+    "degree_max": 172.0,
+    "degree_gini": 0.5229802028921207,
+    "tail_xmin": 8.0,
+    "tail_count": 7990,
+    "tail_alpha_mle_rough": 2.8658638944403627,
+    "tail_loglog_ccdf_slope": -3.0250760195089597,
+    "tail_loglog_ccdf_r2": 0.9759292772653209
+  },
+  "strata": {
+    "all": {
+      "num_nodes": 28281,
+      "num_classes_present": 2,
+      "degree_min": 1.0,
+      "degree_max": 172.0
+    },
+    "low_deg_1_2": {
+      "num_nodes": 10028,
+      "num_classes_present": 2,
+      "degree_min": 1.0,
+      "degree_max": 2.0
+    },
+    "mid_deg_3_8": {
+      "num_nodes": 11333,
+      "num_classes_present": 2,
+      "degree_min": 3.0,
+      "degree_max": 8.0
+    },
+    "high_deg_9_plus": {
+      "num_nodes": 6920,
+      "num_classes_present": 2,
+      "degree_min": 9.0,
+      "degree_max": 172.0
+    }
+  },
+  "operator": "S = D^{-1/2} A D^{-1/2}"
+}

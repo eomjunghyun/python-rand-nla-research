@@ -1,0 +1,117 @@
+{
+  "config": {
+    "dataset_path": "..\\data\\cora\\cora.tgz",
+    "outdir": "results\\cora_degree_stratum_alpha05_tau0",
+    "dataset_name": "cora",
+    "dataset_kind": "cora",
+    "r_values": [
+      0,
+      2,
+      5,
+      10,
+      20,
+      40
+    ],
+    "alpha": 0.5,
+    "tau": "0",
+    "k": null,
+    "q": 1,
+    "reps": 10,
+    "seed": 20260519,
+    "ell_min": 1,
+    "normalize_embedding_rows": true,
+    "kmeans_n_init": 20,
+    "scale_test_matrix_by_dim": true,
+    "max_n": 0,
+    "subgraph_mode": "none",
+    "no_plots": false
+  },
+  "source": {
+    "archive_file": "..\\data\\cora\\cora.tgz",
+    "content_member": "cora/cora.content",
+    "cites_member": "cora/cora.cites",
+    "dataset_format": "linqs_cora",
+    "num_features": 1433,
+    "num_citation_rows": 5429,
+    "labels": [
+      "Case_Based",
+      "Genetic_Algorithms",
+      "Neural_Networks",
+      "Probabilistic_Methods",
+      "Reinforcement_Learning",
+      "Rule_Learning",
+      "Theory"
+    ],
+    "label_counts": {
+      "Case_Based": 298,
+      "Genetic_Algorithms": 418,
+      "Neural_Networks": 818,
+      "Probabilistic_Methods": 426,
+      "Reinforcement_Learning": 217,
+      "Rule_Learning": 180,
+      "Theory": 351
+    }
+  },
+  "graph": {
+    "full_nodes": 2708,
+    "full_edges": 5278,
+    "experiment_nodes": 2485,
+    "experiment_edges": 5069,
+    "num_classes": 7,
+    "k_used": 7,
+    "subgraph_mode": "largest-connected-component",
+    "component_sizes_top10": [
+      2485,
+      26,
+      9,
+      8,
+      6,
+      5,
+      5,
+      5,
+      4,
+      4
+    ],
+    "degree_min": 1.0,
+    "degree_q25": 2.0,
+    "degree_median": 3.0,
+    "degree_mean": 4.079678058624268,
+    "degree_q75": 5.0,
+    "degree_q90": 7.0,
+    "degree_q99": 19.0,
+    "degree_max": 168.0,
+    "degree_gini": 0.39698470959908194,
+    "tail_xmin": 5.0,
+    "tail_count": 686,
+    "tail_alpha_mle_rough": 4.001846203317931,
+    "tail_loglog_ccdf_slope": -1.9371244619456962,
+    "tail_loglog_ccdf_r2": 0.982904578061296
+  },
+  "strata": {
+    "all": {
+      "num_nodes": 2485,
+      "num_classes_present": 7,
+      "degree_min": 1.0,
+      "degree_max": 168.0
+    },
+    "low_deg_1_2": {
+      "num_nodes": 899,
+      "num_classes_present": 7,
+      "degree_min": 1.0,
+      "degree_max": 2.0
+    },
+    "mid_deg_3_8": {
+      "num_nodes": 1439,
+      "num_classes_present": 7,
+      "degree_min": 3.0,
+      "degree_max": 8.0
+    },
+    "high_deg_9_plus": {
+      "num_nodes": 147,
+      "num_classes_present": 7,
+      "degree_min": 9.0,
+      "degree_max": 168.0
+    }
+  },
+  "operator": "S = D^{-1/2} A D^{-1/2}"
+}

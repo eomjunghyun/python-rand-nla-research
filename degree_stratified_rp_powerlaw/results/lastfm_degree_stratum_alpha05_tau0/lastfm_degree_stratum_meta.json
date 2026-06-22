@@ -3,6 +3,7 @@
     "dataset_path": "..\\data\\lastfm_asia\\lastfm_asia.zip",
     "outdir": "results\\lastfm_degree_stratum_alpha05_tau0",
     "dataset_name": "lastfm-asia",
+    "dataset_kind": "lastfm",
     "r_values": [
       0,
       2,
@@ -20,6 +21,7 @@
     "ell_min": 1,
     "normalize_embedding_rows": true,
     "kmeans_n_init": 20,
+    "scale_test_matrix_by_dim": true,
     "max_n": 0,
     "subgraph_mode": "none",
     "no_plots": false
@@ -80,7 +82,7 @@
     "tail_xmin": 8.0,
     "tail_count": 2105,
     "tail_alpha_mle_rough": 2.5336056990834557,
-    "tail_loglog_ccdf_slope": -2.207259660206475,
+    "tail_loglog_ccdf_slope": -2.207259660206476,
     "tail_loglog_ccdf_r2": 0.9727520221051862
   },
   "strata": {

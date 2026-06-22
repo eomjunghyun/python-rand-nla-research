@@ -1,0 +1,111 @@
+{
+  "config": {
+    "dataset_path": "..\\data\\polblogs\\polblogs.zip",
+    "outdir": "results\\polblogs_degree_stratum_alpha05_tau0",
+    "dataset_name": "polblogs",
+    "dataset_kind": "polblogs",
+    "r_values": [
+      0,
+      2,
+      5,
+      10,
+      20,
+      40
+    ],
+    "alpha": 0.5,
+    "tau": "0",
+    "k": null,
+    "q": 1,
+    "reps": 10,
+    "seed": 20260519,
+    "ell_min": 1,
+    "normalize_embedding_rows": true,
+    "kmeans_n_init": 20,
+    "scale_test_matrix_by_dim": true,
+    "max_n": 0,
+    "subgraph_mode": "none",
+    "no_plots": false
+  },
+  "source": {
+    "zip_file": "..\\data\\polblogs\\polblogs.zip",
+    "gml_member": "polblogs.gml",
+    "readme_member": "polblogs.txt",
+    "dataset_format": "newman_gml_polblogs",
+    "directed_source_graph": true,
+    "symmetrized_for_experiment": true,
+    "num_gml_nodes": 1490,
+    "num_gml_directed_edges": 19090,
+    "num_dropped_edges": 0,
+    "label_meaning": {
+      "0": "left_or_liberal",
+      "1": "right_or_conservative"
+    },
+    "label_counts": {
+      "left_or_liberal": 758,
+      "right_or_conservative": 732
+    },
+    "readme_excerpt": "Political blogosphere Feb. 2005\nData compiled by Lada Adamic and Natalie Glance\n\nNode \"value\" attributes indicate political leaning according to:\n\n  0 (left or liberal)\n  1 (right or conservative)\n\nData on political leaning comes from blog directories as indicated.  Some\nblogs were labeled manually, based on incoming and outgoing links and posts\naround the time of the 2004 presidential election.  Directory-derived\nlabels are prone to error; manual labels even more so.\n\nLinks between blogs were automatically extracted from a crawl of the front\npage of the blog.\n\nThese data should be cited as La"
+  },
+  "graph": {
+    "full_nodes": 1490,
+    "full_edges": 16715,
+    "experiment_nodes": 1222,
+    "experiment_edges": 16714,
+    "num_classes": 2,
+    "k_used": 2,
+    "subgraph_mode": "largest-connected-component",
+    "component_sizes_top10": [
+      1222,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "degree_min": 1.0,
+    "degree_q25": 3.0,
+    "degree_median": 13.0,
+    "degree_mean": 27.461538314819336,
+    "degree_q75": 36.0,
+    "degree_q90": 74.9000015258789,
+    "degree_q99": 178.11000061035156,
+    "degree_max": 352.0,
+    "degree_gini": 0.622582257125436,
+    "tail_xmin": 36.0,
+    "tail_count": 315,
+    "tail_alpha_mle_rough": 2.563751113794984,
+    "tail_loglog_ccdf_slope": -2.2852355855433593,
+    "tail_loglog_ccdf_r2": 0.9631783563326608
+  },
+  "strata": {
+    "all": {
+      "num_nodes": 1222,
+      "num_classes_present": 2,
+      "degree_min": 1.0,
+      "degree_max": 352.0
+    },
+    "low_deg_1_2": {
+      "num_nodes": 242,
+      "num_classes_present": 2,
+      "degree_min": 1.0,
+      "degree_max": 2.0
+    },
+    "mid_deg_3_8": {
+      "num_nodes": 271,
+      "num_classes_present": 2,
+      "degree_min": 3.0,
+      "degree_max": 8.0
+    },
+    "high_deg_9_plus": {
+      "num_nodes": 709,
+      "num_classes_present": 2,
+      "degree_min": 9.0,
+      "degree_max": 352.0
+    }
+  },
+  "operator": "S = D^{-1/2} A D^{-1/2}"
+}

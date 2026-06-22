@@ -234,3 +234,4 @@ experiments/reference_1_section7_1/results/**/*.png
 
 # Local Matplotlib cache
 .matplotlib-cache/
+degree_stratified_rp_powerlaw/.mplconfig/
